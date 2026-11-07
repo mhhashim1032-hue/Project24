@@ -1,0 +1,17 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+export const runtime='nodejs';
+const api=(method:string)=>`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/${method}`;
+async function send(chatId:number|string,text:string,extra:any={}){return fetch(api('sendMessage'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({chat_id:chatId,text,parse_mode:'HTML',...extra})})}
+export async function POST(req:NextRequest){
+ const secret=process.env.TELEGRAM_WEBHOOK_SECRET;
+ if(!process.env.TELEGRAM_BOT_TOKEN||!secret||req.headers.get('x-telegram-bot-api-secret-token')!==secret)return NextResponse.json({ok:false},{status:401});
+ const update=await req.json();const msg=update.message;const cb=update.callback_query;
+ if(cb){const chatId=cb.message?.chat?.id;const [kind,id]=String(cb.data||'').split(':');if(kind==='p'&&id&&chatId){const db=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);const {data:p}=await db.from('products').select('id,name,description,category,product_plans(name,price,currency,duration_days)').eq('id',id).eq('is_active',true).maybeSingle();const text=p?`<b>${escapeHtml(p.name)}</b>\n${escapeHtml(p.description||p.category)}\n\n${(p.product_plans||[]).map((x:any)=>`• ${escapeHtml(x.name)} — ${x.price} ${x.currency}${x.duration_days?` / ${x.duration_days} days`:''}`).join('\n')}\n\nTo order, contact the store admin${process.env.SUPPORT_USERNAME?' '+process.env.SUPPORT_USERNAME:''}.`:'This product is no longer available.';await fetch(api('answerCallbackQuery'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({callback_query_id:cb.id})});await send(chatId,text)}return NextResponse.json({ok:true})}
+ if(!msg?.chat?.id)return NextResponse.json({ok:true});const chatId=msg.chat.id;const input=String(msg.text||'').trim();
+ if(input.startsWith('/start')||input.startsWith('/help')){await send(chatId,`<b>${escapeHtml(process.env.STORE_NAME||'NOVA SOFTWARE')}</b>\nWelcome! Browse our software and subscription catalogue with /catalog.\nFor support, contact the store administrator.`);return NextResponse.json({ok:true})}
+ if(input.startsWith('/catalog')){const db=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);const {data,error}=await db.from('products').select('id,name,category').eq('is_active',true).order('sort_order').limit(30);if(error||!data?.length){await send(chatId,'The catalogue is being prepared. Please check back soon.')}else{await send(chatId,'<b>Available products</b>\nChoose an item to view its plans:',{reply_markup:{inline_keyboard:data.map(p=>[{text:`${p.name} · ${p.category}`,callback_data:`p:${p.id}`}])}})}return NextResponse.json({ok:true})}
+ if(input.startsWith('/orders')){await send(chatId,'To check an order, please contact the store administrator with your order number.');return NextResponse.json({ok:true})}
+ await send(chatId,'I did not recognise that command. Try /catalog or /help.');return NextResponse.json({ok:true});
+}
+function escapeHtml(s:string){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!))}
