@@ -70,7 +70,7 @@ async function verifyTelegramInitData(raw: string, botId: string) {
 }
 function decimalToUnits(value: unknown): bigint | null {
   const s=String(value ?? "").trim();
-  if(!/^\\d+(\\.\\d+)?$/.test(s)) return null;
+  if(!/^\d+(\.\d+)?$/.test(s)) return null;
   const [whole,frac=""]=s.split(".");
   return BigInt(whole)*100000000n+BigInt((frac+"00000000").slice(0,8));
 }
