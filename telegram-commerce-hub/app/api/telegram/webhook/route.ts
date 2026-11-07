@@ -1,18 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import {NextRequest,NextResponse} from 'next/server';
 export const runtime='nodejs';
 const api=(method:string)=>`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/${method}`;
-const miniButton={text:'Open Gold Feather Premium',web_app:{url:(process.env.APP_URL||'https://nova-telegram-commerce.onrender.com')+'/miniapp'}};
 async function send(chatId:number|string,text:string,extra:any={}){return fetch(api('sendMessage'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({chat_id:chatId,text,parse_mode:'HTML',...extra})})}
+function esc(s:string){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]!))}
 export async function POST(req:NextRequest){
  const secret=process.env.TELEGRAM_WEBHOOK_SECRET;
  if(!process.env.TELEGRAM_BOT_TOKEN||!secret||req.headers.get('x-telegram-bot-api-secret-token')!==secret)return NextResponse.json({ok:false},{status:401});
- const update=await req.json();const msg=update.message;const cb=update.callback_query;
- if(cb){const chatId=cb.message?.chat?.id;const [kind,id]=String(cb.data||'').split(':');if(kind==='catalog'&&chatId){await send(chatId,'Open the Gold Feather Premium Mini App to browse products, register and manage purchases.',{reply_markup:{inline_keyboard:[[miniButton]]}});await fetch(api('answerCallbackQuery'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({callback_query_id:cb.id})});return NextResponse.json({ok:true})}if(kind==='p'&&id&&chatId){const db=createClient('https://ckresrujdienuqczzyki.supabase.co','sb_publishable_DF1KAMN_dssbRpWxWuBLIw_VdH_Jndm');const {data:p}=await db.from('products').select('id,name,description,category,product_plans(name,price,currency,duration_days)').eq('id',id).eq('is_active',true).maybeSingle();const text=p?`<b>${escapeHtml(p.name)}</b>\n${escapeHtml(p.description||p.category)}\n\n${(p.product_plans||[]).map((x:any)=>`• ${escapeHtml(x.name)} — ${x.price} ${x.currency}${x.duration_days?` / ${x.duration_days} days`:''}`).join('\n')}\n\nTo order, contact the store admin${process.env.SUPPORT_USERNAME?' '+process.env.SUPPORT_USERNAME:''}.`:'This product is no longer available.';await fetch(api('answerCallbackQuery'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({callback_query_id:cb.id})});await send(chatId,text,{reply_markup:{inline_keyboard:[[{text:'Open store & place order',url:(process.env.APP_URL||'https://nova-telegram-commerce.onrender.com')+'/store'}]]}})}return NextResponse.json({ok:true})}
- if(!msg?.chat?.id)return NextResponse.json({ok:true});const chatId=msg.chat.id;const input=String(msg.text||'').trim();
- if(input.startsWith('/start')||input.startsWith('/help')){await send(chatId,`<b>GOLD FEATHER PREMIUM</b>\nWelcome to your premium digital store. Browse software, subscriptions and manage your orders securely.`,{reply_markup:{inline_keyboard:[[miniButton],[{text:'Browse catalogue',callback_data:'catalog'}]]}});return NextResponse.json({ok:true})}
- if(input.startsWith('/catalog')){const db=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);const {data,error}=await db.from('products').select('id,name,category').eq('is_active',true).order('sort_order').limit(30);if(error||!data?.length){await send(chatId,'The catalogue is being prepared. Please check back soon.')}else{await send(chatId,'<b>Available products</b>\nChoose an item to view its plans:',{reply_markup:{inline_keyboard:[...data.map(p=>[{text:`${p.name} · ${p.category}`,callback_data:`p:${p.id}`}]),[miniButton]]}})}return NextResponse.json({ok:true})}
- if(input.startsWith('/orders')){await send(chatId,'Open your customer account to view your orders, payment status and digital deliveries.',{reply_markup:{inline_keyboard:[[miniButton]]}});return NextResponse.json({ok:true})}
- await send(chatId,'I did not recognise that command. Try /catalog or /help.');return NextResponse.json({ok:true});
+ const update=await req.json();const msg=update.message;if(!msg?.chat?.id)return NextResponse.json({ok:true});
+ const chatId=msg.chat.id;const input=String(msg.text||'').trim();const appUrl=(process.env.APP_URL||'https://nova-telegram-commerce.onrender.com').replace(/\/$/,'')+'/miniapp';
+ const keyboard={keyboard:[[{text:'Open Gold Feather Premium',web_app:{url:appUrl}}],[{text:'Browse catalogue'},{text:'My orders'}]],resize_keyboard:true};
+ const welcome=`<b>${esc(process.env.STORE_NAME||'GOLD FEATHER PREMIUM')}</b>\nWelcome. Open our Telegram store to register, browse products, pay and track deliveries.`;
+ if(input.startsWith('/start')||input.startsWith('/help')){await send(chatId,welcome,{reply_markup:keyboard});return NextResponse.json({ok:true})}
+ if(input==='/catalog'||input==='Browse catalogue'||input.startsWith('/catalog')){await send(chatId,'Browse products, choose a plan and complete checkout inside the secure Mini App.',{reply_markup:{inline_keyboard:[[{text:'Open Gold Feather Premium',web_app:{url:appUrl}}]]}});return NextResponse.json({ok:true})}
+ if(input==='/orders'||input==='My orders'||input.startsWith('/orders')){await send(chatId,'Your profile, payment status and digital deliveries are available in your customer account.',{reply_markup:{inline_keyboard:[[{text:'Open my account',web_app:{url:appUrl}}]]}});return NextResponse.json({ok:true})}
+ await send(chatId,'Use /start to open Gold Feather Premium.',{reply_markup:keyboard});return NextResponse.json({ok:true});
 }
-function escapeHtml(s:string){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!))}
