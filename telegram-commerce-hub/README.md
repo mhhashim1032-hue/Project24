@@ -26,7 +26,7 @@ The custom domain can be connected later; update `APP_URL` when it is ready.
 4. On server startup the app sets the bot display name to **Gold Feather Premium**, configures the webhook and installs the persistent **Open Store** Mini App menu button.
 5. Send `/start` to the bot.
 
-The Telegram Mini App uses Telegram's signed third-party `initData` verification with the configured Bot ID and freshness checks. The browser's `initDataUnsafe` is never trusted. A customer profile is automatically created from Telegram identity when the Mini App opens; customers add their Binance UID once in their profile.
+The Telegram Mini App verifies signed `initData` server-side: Ed25519 third-party signature when available, with Telegram's standard bot-token HMAC validation as a compatibility fallback. Both paths enforce a freshness window. The browser's `initDataUnsafe` is never trusted. A customer profile is automatically created from Telegram identity when the Mini App opens; customers add their Binance UID once in their profile.
 
 Telegram usernames, display names, language and profile photos are only available when Telegram provides them. Telegram does not automatically provide the customer's email address or phone number.
 
@@ -44,12 +44,13 @@ In Supabase Dashboard → Edge Functions → Secrets, add:
 
 - `BINANCE_API_KEY`
 - `BINANCE_API_SECRET`
+- `TELEGRAM_BOT_TOKEN` (same bot token also configured in Render; required for standard Telegram HMAC validation when the client does not provide an Ed25519 signature)
 
 Create a personal Binance API key with **Read-only / USER_DATA** permission only. Do not enable trading or withdrawals. Never put the API secret in GitHub, Render frontend variables, browser code, Telegram messages or the admin form.
 
 In the admin dashboard:
 - Set the receiving **Binance Pay ID** under Bot & Store.
-- Set the numeric **Telegram Bot ID** under Store identity.
+- Optionally set the numeric **Telegram Bot ID** (digits before the colon in the bot token) for Telegram's Ed25519 third-party signature validation. The server also supports standard HMAC validation using the Edge Function bot-token secret.
 - Customers enter their own numeric Binance UID in the Mini App profile.
 
 ### Verification rules
