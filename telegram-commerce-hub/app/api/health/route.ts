@@ -7,7 +7,7 @@ export async function GET(){
  return NextResponse.json({
   ok:true,service:'gold-feather-premium-commerce-os',timestamp:new Date().toISOString(),
   telegramConfigured:token,webhookConfigured:webhook,databaseConfigured:Boolean(supabase&&process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
-  customerRegistrationConfigured:Boolean(supabase&&serviceRole),binanceConfigured:Boolean(process.env.BINANCE_API_KEY&&process.env.BINANCE_API_SECRET),
+  customerRegistrationConfigured:Boolean(supabase&&serviceRole),binanceConfigured:null,binanceSecretsLocation:'supabase_edge_function_secrets',binanceHealthCheck:'Not readable from Render; tested during payment verification',
   miniAppConfigured:Boolean(token&&process.env.INTERNAL_API_SECRET)
  });
 }
