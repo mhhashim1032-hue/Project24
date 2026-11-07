@@ -435,3 +435,17 @@
 .mini-shell .mini-orders-empty>b{margin-top:12px;font:800 15px Manrope}
 .mini-shell .mini-orders-empty p{margin:5px 0 15px;font-size:11px;opacity:.7}
 @media(max-width:520px){.mini-shell .mini-header{height:54px;min-height:54px;padding:0 12px}.mini-shell .mini-design-ribbon{padding:8px 13px!important}.mini-shell .mini-design-ribbon b{font-size:17px}.mini-shell .mini-design-ribbon small{font-size:8px}.mini-shell .mini-design-ribbon:after{width:42px;height:42px;right:5%;top:20%}.mini-shell .mini-content{padding-bottom:calc(96px + env(safe-area-inset-bottom))}}
+
+
+/* Wallet recharge chooser */
+.mini-recharge-overlay{position:fixed;inset:0;z-index:1200;background:rgba(8,9,12,.78);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.mini-recharge-dialog{width:min(100%,520px);max-height:calc(100dvh - 32px);overflow-y:auto;margin:auto;border:1px solid rgba(190,158,91,.28);box-shadow:0 24px 90px rgba(0,0,0,.48);padding:22px!important}
+.mini-recharge-dialog>small{display:block;color:var(--mini-accent);letter-spacing:.16em;font-size:10px;margin:8px 0}
+.mini-recharge-dialog>h2{margin:4px 0 8px;font-size:25px}
+.mini-recharge-dialog>p{font-size:13px;line-height:1.6;opacity:.78;margin:0 0 16px}
+.mini-recharge-option{border:1px solid var(--mini-border,rgba(150,130,95,.24));border-radius:15px;padding:14px;margin:12px 0;background:rgba(140,120,80,.055)}
+.mini-recharge-option>b{display:flex;align-items:center;gap:8px;font-size:14px}
+.mini-recharge-option>p{font-size:12px;line-height:1.65;opacity:.82;margin:8px 0}
+.mini-recharge-option>small{display:block;font-size:10px;opacity:.72;margin-top:8px}
+.mini-recharge-option .mini-payid{margin-top:9px}
+.mini-recharge-dialog>.mini-secondary{margin-top:8px}
