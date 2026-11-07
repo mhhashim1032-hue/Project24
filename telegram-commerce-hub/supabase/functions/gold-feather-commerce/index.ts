@@ -236,7 +236,7 @@ Deno.serve(async (req: Request) => {
       const { data: order } = await admin.from("orders").select("*").eq("id", orderId).eq("telegram_customer_id", customer.id).maybeSingle();
       if (!order || order.status !== "awaiting_payment") return json({ error: "ORDER_NOT_PAYABLE" }, 409);
       if (new Date(order.expires_at).getTime() < Date.now() - 120000) return json({ error: "ORDER_EXPIRED" }, 409);
-      const { data: prior } = await admin.from("payment_submissions").select("id").eq("provider", "binance_pay_api").eq("transaction_reference", transactionId).maybeSingle();
+      const { data: prior } = await admin.from("payment_submissions").select("id,provider").in("provider", ["binance_pay_api", "binance_pay_id"]).ilike("transaction_reference", transactionId).maybeSingle();
       if (prior) return json({ error: "DUPLICATE_TRANSACTION", message: "This transaction ID has already been used and cannot be reused. Submit a different transaction ID." }, 409);
       const { data: pending } = await admin.from("payment_submissions").select("id").eq("order_id", order.id).eq("provider", "binance_pay_api").eq("status", "submitted").maybeSingle();
       if (pending) return json({ error: "PAYMENT_ALREADY_PENDING", message: "This order already has a payment reference awaiting verification." }, 409);
