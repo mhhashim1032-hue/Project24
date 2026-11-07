@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://siteshiftkit.onrender.com/sitemap.xml
+Sitemap: https://siteshiftkit-site.onrender.com/sitemap.xml
