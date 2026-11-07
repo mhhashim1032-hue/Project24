@@ -54,7 +54,7 @@ In the admin dashboard:
 
 ### Verification rules
 
-The server accepts a payment only when the Binance Pay history record matches all of these:
+The server accepts a payment only when the Binance Pay history record matches all of these. For asset-converted payments it checks both the transaction's headline amount/currency and the actual transferred assets in `fundsDetail`:
 - Exact transaction ID
 - Incoming receiver identity matching the configured store Binance Pay ID
 - Payer Binance UID matching the customer's saved Binance UID
@@ -75,7 +75,7 @@ A submitted transaction ID is not accepted as proof by itself. If Binance has no
 - Idempotency key protects order creation from repeat taps/network retries.
 - Expired unpaid orders are cancelled before a new order is created.
 
-Binance Pay transaction history has a high UID request weight. The app only calls the API when a customer submits a transaction or explicitly rechecks a pending submission, and enforces a cooldown. If the API returns the maximum 100 records in the search window, verification fails closed rather than accepting an incomplete match.
+Binance Pay transaction history has a high UID request weight. The app only calls the API when a customer submits a transaction or explicitly rechecks a pending submission, and enforces a 60-second per-submission cooldown plus a 31-second account-wide request gate. If the API returns the maximum 100 records in the search window, verification fails closed rather than accepting an incomplete match.
 
 ## Customer Mini App
 
