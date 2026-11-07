@@ -209,10 +209,40 @@ Deno.serve(async (req: Request) => {
 
     const body = await req.json();
     const action = String(body.action || "");
+    if (action === "wallet_balance") {
+      const { data: rows, error } = await admin.from("wallet_transactions").select("amount,currency,direction").eq("telegram_customer_id", customer.id);
+      if (error) return json({ error: "WALLET_READ_FAILED" }, 500);
+      const balances: Record<string, number> = {};
+      for (const row of rows || []) balances[row.currency] = (balances[row.currency] || 0) + (row.direction === "credit" ? 1 : -1) * Number(row.amount);
+      return json({ ok: true, balances });
+    }
+    if (action === "request_refund") {
+      const orderId = String(body.orderId || "");
+      const reason = String(body.reason || "").trim().slice(0, 2000);
+      if (!orderId || reason.length < 5) return json({ error: "REFUND_DETAILS_REQUIRED" }, 400);
+      const { data: order } = await admin.from("orders").select("id,amount,currency,status").eq("id", orderId).eq("telegram_customer_id", customer.id).maybeSingle();
+      if (!order || !["paid","fulfilled"].includes(order.status)) return json({ error: "REFUND_ORDER_NOT_ELIGIBLE" }, 409);
+      const { data: prior } = await admin.from("refund_requests").select("id").eq("order_id", orderId).maybeSingle();
+      if (prior) return json({ error: "REFUND_ALREADY_REQUESTED" }, 409);
+      const { data, error } = await admin.from("refund_requests").insert({ order_id: order.id, telegram_customer_id: customer.id, amount: order.amount, currency: order.currency, reason }).select("id,status").single();
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true, refund: data });
+    }
+    if (action === "submit_warranty_claim") {
+      const orderId = String(body.orderId || "");
+      const reason = String(body.reason || "").trim().slice(0, 2000);
+      if (!orderId || reason.length < 5) return json({ error: "WARRANTY_DETAILS_REQUIRED" }, 400);
+      const { data: claimId, error } = await admin.rpc("submit_warranty_claim", {
+        p_order_id: orderId, p_customer_id: customer.id, p_reason: reason,
+        p_evidence_url: body.evidenceUrl ? String(body.evidenceUrl).slice(0, 2048) : null
+      });
+      if (error) return json({ error: error.message || "WARRANTY_CLAIM_FAILED" }, 400);
+      return json({ ok: true, claimId });
+    }
     if (action === "bootstrap") {
       const [products, orders] = await Promise.all([
         admin.from("products").select("id,name,description,category,image_url,product_plans(id,name,description,price,currency,duration_days,stock,is_active)").eq("is_active", true).eq("product_plans.is_active", true).order("sort_order"),
-        admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,product_id,products(name)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(50),
+        admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,product_id,paid_at,products(name,warranty_days)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(50),
       ]);
       return json({ ok: true, profile: customer, settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency }, products: products.data || [], orders: orders.data || [] });
     }
