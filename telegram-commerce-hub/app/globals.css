@@ -330,3 +330,52 @@
 @media(max-width:520px){.mini-hero{min-height:235px;padding:22px 17px;border-radius:20px}.mini-hero-copy{max-width:73%}.mini-hero h1{font-size:27px}.mini-hero-art{right:-7%;width:48%}.hero-crystal{width:82px;height:102px}.hero-orbit{width:145px;height:145px}.design-product-stage{height:126px}.design-product-body{padding:11px}.design-product h3{font-size:12px}.design-product-foot{align-items:flex-start;flex-direction:column}.design-product-foot .mini-primary{width:100%}.mini-content{padding:16px 12px 25px}}
 @media(min-width:650px){.mini-products{grid-template-columns:repeat(3,minmax(0,1fr))}.mini-hero{min-height:300px}}
 @media(prefers-reduced-motion:reduce){.hero-crystal,.design-product-object,.hero-float{animation:none}}
+
+
+/* Per-design composition overrides: ten genuinely different catalogue rhythms */
+.mini-shell.design-gold .mini-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.mini-shell.design-gold .design-product-stage{height:166px}
+.mini-shell.design-midnight .mini-products{grid-template-columns:1fr;gap:12px}
+.mini-shell.design-midnight .design-product{flex-direction:row;min-height:142px}
+.mini-shell.design-midnight .design-product-stage{width:132px;height:auto;min-height:142px;flex:0 0 132px}
+.mini-shell.design-midnight .design-product-body{justify-content:center}
+.mini-shell.design-ocean .mini-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.mini-shell.design-ocean .design-product{border-radius:23px!important}
+.mini-shell.design-ocean .design-product-stage{height:132px}
+.mini-shell.design-rose .mini-products{grid-template-columns:1fr;gap:0}
+.mini-shell.design-rose .design-product{flex-direction:row;border:0!important;border-bottom:1px solid #e4c7ce!important;border-radius:0!important;background:transparent!important}
+.mini-shell.design-rose .design-product-stage{width:126px;height:150px;flex:0 0 126px}
+.mini-shell.design-rose .design-product-body{justify-content:center;padding:14px 12px}
+.mini-shell.design-emerald .mini-products{grid-template-columns:1fr;gap:10px}
+.mini-shell.design-emerald .design-product{flex-direction:row;border-radius:13px!important}
+.mini-shell.design-emerald .design-product-stage{width:96px;height:auto;min-height:120px;flex:0 0 96px}
+.mini-shell.design-emerald .design-product-body{justify-content:center}
+.mini-shell.design-graphite .mini-products{grid-template-columns:1fr;gap:0}
+.mini-shell.design-graphite .design-product{flex-direction:row;border:0!important;border-bottom:1px solid #cbd0d2!important;border-radius:0!important;background:transparent!important}
+.mini-shell.design-graphite .design-product-stage{width:62px;height:62px;flex:0 0 62px;margin:10px 0}
+.mini-shell.design-graphite .design-product-body{display:grid;grid-template-columns:1fr;align-content:center;padding:10px 12px}
+.mini-shell.design-graphite .design-product-body>p{min-height:0}
+.mini-shell.design-graphite .design-product-foot{padding-top:7px}
+.mini-shell.design-lavender .mini-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.mini-shell.design-lavender .design-product{border-radius:27px!important;transform:rotate(-.5deg)}
+.mini-shell.design-lavender .design-product:nth-child(even){transform:rotate(.7deg);margin-top:17px}
+.mini-shell.design-lavender .design-product-stage{height:145px}
+.mini-shell.design-crimson .mini-products{grid-template-columns:1fr;gap:11px}
+.mini-shell.design-crimson .design-product{flex-direction:row;border-radius:5px!important}
+.mini-shell.design-crimson .design-product-stage{width:118px;height:auto;min-height:144px;flex:0 0 118px}
+.mini-shell.design-crimson .design-product-body{justify-content:center}
+.mini-shell.design-arctic .mini-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.mini-shell.design-arctic .design-product{background:#ffffffa8!important;backdrop-filter:blur(20px);border-radius:22px!important}
+.mini-shell.design-arctic .design-product-stage{height:138px;background:linear-gradient(140deg,#ffffffb8,#b8dce7a8)}
+.mini-shell.design-cyber .mini-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.mini-shell.design-cyber .design-product{border-radius:8px!important}
+.mini-shell.design-cyber .design-product-stage:after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 8px,#b56bff0b 9px 10px);animation:cyber-scan 6s linear infinite}
+.mini-shell.design-cyber .design-product-index{color:#e3baff}
+@keyframes cyber-scan{from{transform:translateY(-15%)}to{transform:translateY(15%)}}
+@media(max-width:420px){
+ .mini-shell.design-midnight .design-product-stage{width:104px;flex-basis:104px}
+ .mini-shell.design-rose .design-product-stage{width:104px;flex-basis:104px}
+ .mini-shell.design-emerald .design-product-stage{width:78px;flex-basis:78px}
+ .mini-shell.design-crimson .design-product-stage{width:98px;flex-basis:98px}
+ .mini-shell.design-lavender .design-product{margin-top:0!important}
+}
