@@ -1,0 +1,17 @@
+import {NextResponse} from 'next/server';
+import {dbInternal,telegramUser} from '@/lib/telegram-server';
+export const runtime='nodejs';
+export async function POST(req:Request){
+ try{
+  const user=await telegramUser(req);const db=dbInternal();
+  const {data:profile,error:profileError}=await db.rpc('telegram_register_customer',{p_user:user});
+  if(profileError)throw profileError;
+  const [products,settings,orders]=await Promise.all([
+   db.from('products').select('id,name,description,category,kind,image_url,product_plans(id,name,description,price,currency,duration_days,stock)').eq('is_active',true).order('sort_order'),
+   db.from('bot_settings').select('store_name,welcome_message,payment_instructions,binance_pay_id,support_username,currency').eq('id',1).maybeSingle(),
+   db.rpc('telegram_get_customer_orders',{p_telegram_user_id:String(user.id)})
+  ]);
+  if(products.error)throw products.error;if(orders.error)throw orders.error;
+  return NextResponse.json({ok:true,profile,products:products.data||[],settings:settings.data||{},orders:orders.data||[]});
+ }catch(e:any){return NextResponse.json({error:e.message||'Unable to authenticate Telegram user'},{status:401})}
+}
