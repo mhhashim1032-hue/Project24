@@ -95,6 +95,12 @@ async function binancePayHistory(startTime: number, endTime: number) {
 }
 async function checkPayment(order: any, customer: any, submission: any, settings: any) {
   const now = Date.now();
+  const { data: slot, error: gateError } = await admin.rpc('reserve_binance_pay_history_slot');
+  if (gateError) throw gateError;
+  if (slot !== true) {
+    await admin.from('payment_submissions').update({ last_verification_at: new Date().toISOString(), review_note: 'Binance account-wide request cooldown is active. Use Check again after about 60 seconds.' }).eq('id', submission.id);
+    return { state: 'pending', message: 'Verification is queued to protect your Binance API rate limit. Check again in about one minute.' };
+  }
   const start = new Date(order.created_at).getTime() - 120000;
   const rows = await binancePayHistory(start, now);
   if (rows.length >= 100) {
