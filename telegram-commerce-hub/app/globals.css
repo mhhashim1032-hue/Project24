@@ -379,3 +379,23 @@
  .mini-shell.design-crimson .design-product-stage{width:98px;flex-basis:98px}
  .mini-shell.design-lavender .design-product{margin-top:0!important}
 }
+
+/* Search and discovery controls */
+.mini-catalog-heading{margin-bottom:12px}
+.mini-catalog-search{height:46px;display:flex;align-items:center;gap:10px;padding:0 14px;border:1px solid #e4ddce;border-radius:14px;background:#ffffffd9;box-shadow:0 8px 22px #201a0d0a}
+.mini-catalog-search>span{font-size:25px;line-height:1;color:#9a7837}
+.mini-catalog-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#28271f;font:500 12px Manrope}
+.mini-catalog-search input::placeholder{color:#a39b8d}
+.mini-category-rail{display:flex;gap:7px;overflow-x:auto;padding:12px 0 5px;scrollbar-width:none}
+.mini-category-rail::-webkit-scrollbar{display:none}
+.mini-category-rail button{flex:0 0 auto;border:1px solid #e5ddcd;background:#fff;color:#807966;border-radius:30px;padding:8px 13px;font:600 10px Manrope;white-space:nowrap}
+.mini-category-rail button.active{background:#1d2118;border-color:#1d2118;color:#e8d39c;box-shadow:0 5px 14px #17191424}
+.mini-shell.design-midnight .mini-catalog-search,.mini-shell.design-cyber .mini-catalog-search{background:#141e2c;border-color:#ffffff28}
+.mini-shell.design-midnight .mini-catalog-search input,.mini-shell.design-cyber .mini-catalog-search input{color:#fff}
+.mini-shell.design-midnight .mini-category-rail button,.mini-shell.design-cyber .mini-category-rail button{background:#182235;border-color:#ffffff20;color:#c1c9d8}
+.mini-shell.design-midnight .mini-category-rail button.active,.mini-shell.design-cyber .mini-category-rail button.active{background:#b18be5;color:#171020}
+.mini-shell.design-cyber .mini-catalog-search{border-color:#8555b0;box-shadow:0 0 20px #a65aff1a}
+.mini-shell.design-rose .mini-catalog-search{border-radius:2px;background:#fff9f9}
+.mini-shell.design-graphite .mini-catalog-search{border-radius:5px;box-shadow:none}
+.mini-shell.design-lavender .mini-catalog-search{border-radius:25px;box-shadow:0 10px 24px #7961a51b}
+.mini-shell.design-arctic .mini-catalog-search{backdrop-filter:blur(20px);background:#ffffffa8}
