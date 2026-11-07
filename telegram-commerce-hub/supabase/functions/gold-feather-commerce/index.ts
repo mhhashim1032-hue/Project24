@@ -261,10 +261,11 @@ Deno.serve(async (req: Request) => {
       if (!/^[0-9a-f-]{36}$/i.test(idempotencyKey)) return json({ error: "INVALID_IDEMPOTENCY_KEY" }, 400);
       if (!customer.binance_id) return json({ error: "SAVE_BINANCE_UID_FIRST" }, 400);
       if (!settings.binance_pay_id) return json({ error: "STORE_BINANCE_PAY_ID_NOT_CONFIGURED" }, 503);
-      const { data: order, error } = await admin.rpc("create_telegram_order_service", {
+      const { data: order, error } = await admin.rpc("create_telegram_order_quantity_service", {
         p_telegram_customer_id: customer.id,
         p_plan_id: planId,
         p_idempotency_key: idempotencyKey,
+        p_quantity: Math.max(1, Math.min(1000, Number(body.quantity || 1))),
       });
       if (error) return json({ error: error.message || "ORDER_CREATE_FAILED" }, 400);
       return json({ ok: true, order, reusedOpenOrder: Boolean(order?.reusedOpenOrder) });
