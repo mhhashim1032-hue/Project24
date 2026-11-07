@@ -17,7 +17,7 @@ type TelegramUser = {
   is_premium?: boolean;
 };
 
-const api = (method: string) => `https://api.telegram.org/bot${BOT_TOKEN}/`;
+const api = (method: string) => `https://api.telegram.org/bot${BOT_TOKEN}/${method}`;
 
 async function telegram(method: string, body: Record<string, unknown>) {
   const response = await fetch(api(method), {
