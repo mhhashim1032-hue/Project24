@@ -33,14 +33,16 @@ export async function POST(req:Request){
   const sameReceiver=receiverPayId===String(settings.binance_pay_id).trim();
   const sameAmount=Math.abs(Number(tx.amount)-Number(context.amount))<0.00000001;
   const sameCurrency=String(tx.currency||'')===String(context.currency||'');
+  const payerBinanceId=String(tx.payerInfo?.binanceId||'');
+  const payerMatches=!!context.binance_id&&payerBinanceId===String(context.binance_id).trim();
   const txTime=Number(tx.transactionTime||0);
   const createdAt=new Date(context.order_created_at).getTime();
   const expiresAt=new Date(context.order_expires_at).getTime();
-  if(!incoming||!supportedType||!sameReceiver||!sameAmount||!sameCurrency||!Number.isFinite(txTime)||txTime<createdAt||txTime>expiresAt){
+  if(!incoming||!supportedType||!sameReceiver||!sameAmount||!sameCurrency||!payerMatches||!Number.isFinite(txTime)||txTime<createdAt||txTime>expiresAt){
     await db.rpc('telegram_reject_payment',{p_payment_id:paymentId,p_reason:'Binance Pay transaction did not match order recipient, amount, currency, type or time window'});
     return NextResponse.json({ok:true,status:'rejected',message:'The transaction did not match the order details and was rejected. Contact support if you believe this is an error.'});
   }
-  const verifiedPayload={transactionId:String(tx.transactionId),amount:String(tx.amount),currency:String(tx.currency),receiverPayId,income:incoming,orderType:String(tx.orderType),transactionTime:txTime,payerBinanceId:String(tx.payerInfo?.binanceId||'')};
+  const verifiedPayload={transactionId:String(tx.transactionId),amount:String(tx.amount),currency:String(tx.currency),receiverPayId,income:incoming,orderType:String(tx.orderType),transactionTime:txTime,payerBinanceId};
   const {data:verified,error:verifyError}=await db.rpc('confirm_binance_payment',{p_secret:verifySecret,p_payment_id:paymentId,p_payload:verifiedPayload});
   if(verifyError)throw verifyError;
   return NextResponse.json({ok:true,status:verified?.status||'paid',message:verified?.status==='fulfilled'?'Payment verified. Your digital product is ready.':'Payment verified. Your order is paid.'});
