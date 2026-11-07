@@ -117,6 +117,28 @@ async function binancePayHistory(startTime: number, endTime: number) {
   }
   return Array.isArray(result.data) ? result.data : [];
 }
+async function verifyTronPayment(order: any, customer: any, submission: any, settings: any) {
+  const hash = String(submission.transaction_reference || '').trim();
+  const response = await fetch('https://apilist.tronscanapi.com/api/transaction-info?hash=' + encodeURIComponent(hash), {
+    headers: { 'Accept': 'application/json', ...(Deno.env.get('TRONSCAN_API_KEY') ? { 'TRON-PRO-API-KEY': Deno.env.get('TRONSCAN_API_KEY')! } : {}) },
+    signal: AbortSignal.timeout(12000),
+  });
+  if (!response.ok) throw new Error('TRONSCAN_UNAVAILABLE');
+  const tx = await response.json();
+  if (!tx || tx.hash !== hash) return { state: 'pending', message: 'Transaction not indexed yet. Check again shortly.' };
+  if (tx.confirmed !== true || tx.contractRet !== 'SUCCESS') return { state: 'pending', message: 'The transfer is not yet confirmed successfully on TRON. Check again after network confirmation.' };
+  const transfer = tx.tokenTransferInfo || {}; const token = transfer.tokenInfo || tx.contractData?.tokenInfo || {};
+  const contract = String(token.tokenId || token.address || tx.contractData?.contract_address || '');
+  const receiver = String(transfer.to_address || tx.contractData?.to_address || '');
+  const sender = String(transfer.from_address || tx.contractData?.owner_address || '');
+  const amount = String(transfer.amount_str || ''); const timestamp = Number(tx.timestamp || 0);
+  const configured = String(settings.usdt_wallet_address || '').trim();
+  const valid = contract === 'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj' && String(token.tokenAbbr || token.token_abbr || 'USDT').toUpperCase() === 'USDT' && receiver.toLowerCase() === configured.toLowerCase() && decimalEqual(amount, order.amount) && timestamp >= new Date(order.created_at).getTime()-120000 && timestamp <= new Date(order.expires_at).getTime()+120000;
+  if (!valid) { await admin.from('payment_submissions').update({ status:'rejected',verification_source:'onchain_explorer',verification_payload:tx,review_note:'On-chain transfer rejected: token contract, recipient, exact amount or payment time did not match.',last_verification_at:new Date().toISOString(),verification_attempts:(submission.verification_attempts||0)+1 }).eq('id',submission.id); return { state:'rejected',message:'This transaction does not match the required USDT token, receiving address, exact amount or 30-minute order window.' }; }
+  const { data, error } = await admin.rpc('record_verified_onchain_payment',{p_order_id:order.id,p_customer_id:customer.id,p_submission_id:submission.id,p_tx_hash:hash,p_network:'TRON',p_amount:String(amount),p_token_contract:contract,p_sender:sender,p_receiver:receiver,p_block_time:new Date(timestamp).toISOString(),p_raw:tx});
+  if (error) { if (error.code==='23505'||error.message?.includes('duplicate key')) return {state:'duplicate',message:'This transaction hash has already been used.'}; if(error.message?.includes('ORDER_NOT_PAYABLE')) return {state:'rejected',message:'The order has expired or is no longer payable.'}; throw error; }
+  return {state:data.status,message:'USDT transfer confirmed on TRON. Payment verified successfully.',order:data};
+}
 async function checkPayment(order: any, customer: any, submission: any, settings: any) {
   const now = Date.now();
   const { data: slot, error: gateError } = await admin.rpc('reserve_binance_pay_history_slot');
@@ -244,7 +266,7 @@ Deno.serve(async (req: Request) => {
         admin.from("products").select("id,name,description,category,image_url,product_plans(id,name,description,price,currency,duration_days,stock,is_active,quantity_discount_tiers)").eq("is_active", true).eq("product_plans.is_active", true).order("sort_order"),
         admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,product_id,paid_at,products(name,warranty_days)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(50),
       ]);
-      return json({ ok: true, profile: customer, settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency, miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837' }, products: products.data || [], orders: orders.data || [] });
+      return json({ ok: true, profile: customer, settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency, usdt_network: settings.usdt_network||'TRON', usdt_wallet_address: settings.usdt_wallet_address, support_url: settings.support_url, required_channel_url: settings.required_channel_url, tempsms_url: settings.tempsms_url||'https://tempsmslive.com', miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837' }, products: products.data || [], orders: orders.data || [] });
     }
     if (action === "save_binance_id") {
       const binanceId = String(body.binanceId || "").trim();
@@ -259,8 +281,6 @@ Deno.serve(async (req: Request) => {
       const planId = String(body.planId || "");
       const idempotencyKey = String(body.idempotencyKey || "");
       if (!/^[0-9a-f-]{36}$/i.test(idempotencyKey)) return json({ error: "INVALID_IDEMPOTENCY_KEY" }, 400);
-      if (!customer.binance_id) return json({ error: "SAVE_BINANCE_UID_FIRST" }, 400);
-      if (!settings.binance_pay_id) return json({ error: "STORE_BINANCE_PAY_ID_NOT_CONFIGURED" }, 503);
       const { data: order, error } = await admin.rpc("create_telegram_order_quantity_service", {
         p_telegram_customer_id: customer.id,
         p_plan_id: planId,
@@ -268,7 +288,36 @@ Deno.serve(async (req: Request) => {
         p_quantity: Math.max(1, Math.min(1000, Number(body.quantity || 1))),
       });
       if (error) return json({ error: error.message || "ORDER_CREATE_FAILED" }, 400);
-      return json({ ok: true, order, reusedOpenOrder: Boolean(order?.reusedOpenOrder) });
+      if (body.paymentMethod) await admin.from('orders').update({payment_method:String(body.paymentMethod)}).eq('id',order.id);
+      return json({ ok: true, order: {...order,payment_deadline_at:order.payment_deadline_at||order.expires_at}, reusedOpenOrder: Boolean(order?.reusedOpenOrder) });
+    }
+    if (action === 'pay_with_wallet') {
+      const orderId=String(body.orderId||''); if(!orderId)return json({error:'ORDER_ID_REQUIRED'},400);
+      const {data,error}=await admin.rpc('pay_telegram_order_from_wallet',{p_order_id:orderId,p_customer_id:customer.id});
+      if(error)return json({error:error.message||'WALLET_PAYMENT_FAILED'},400); return json({ok:true,...data});
+    }
+    if (action === 'verify_usdt_onchain') {
+      const orderId=String(body.orderId||''); const txHash=String(body.transactionHash||'').trim().toLowerCase();
+      if(!orderId||!/^[0-9a-f]{64}$/.test(txHash))return json({error:'INVALID_TRON_TRANSACTION_HASH'},400);
+      if(String(settings.usdt_network||'TRON').toUpperCase()!=='TRON')return json({error:'UNSUPPORTED_USDT_NETWORK'},400);
+      if(!settings.usdt_wallet_address)return json({error:'STORE_USDT_ADDRESS_NOT_CONFIGURED'},503);
+      const {data:order}=await admin.from('orders').select('*').eq('id',orderId).eq('telegram_customer_id',customer.id).maybeSingle();
+      if(!order||order.status!=='awaiting_payment'||new Date(order.expires_at).getTime()<=Date.now())return json({error:'ORDER_NOT_PAYABLE_OR_EXPIRED'},409);
+      if(String(order.currency).toUpperCase()!=='USDT')return json({error:'ONCHAIN_REQUIRES_USDT_ORDER'},400);
+      const {data:prior}=await admin.from('payment_submissions').select('id').ilike('transaction_reference',txHash).maybeSingle(); if(prior)return json({error:'DUPLICATE_TRANSACTION',message:'This transaction hash has already been submitted.'},409);
+      const {data:submission,error}=await admin.from('payment_submissions').insert({order_id:order.id,telegram_customer_id:customer.id,provider:'usdt_tron',transaction_reference:txHash,amount:order.amount,currency:'USDT',status:'submitted',verification_source:'tronscan',verification_payload:{},chain_network:'TRON',chain_token_contract:'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj',last_verification_at:new Date().toISOString()}).select('*').single();
+      if(error)return json({error:error.code==='23505'?'DUPLICATE_TRANSACTION':error.message},409);
+      try { const result=await verifyTronPayment(order,customer,submission,settings); return json({ok:true,submissionId:submission.id,...result}); }
+      catch { await admin.from('payment_submissions').update({review_note:'TRON explorer temporarily unavailable. Retry verification.',last_verification_at:new Date().toISOString()}).eq('id',submission.id); return json({ok:true,state:'pending',submissionId:submission.id,message:'Explorer is temporarily unavailable. Your hash is saved; check again shortly.'}); }
+    }
+    if (action === 'refresh_onchain_payment') {
+      const submissionId=String(body.submissionId||''); const {data:submission}=await admin.from('payment_submissions').select('*').eq('id',submissionId).eq('telegram_customer_id',customer.id).eq('provider','usdt_tron').maybeSingle();
+      if(!submission)return json({error:'SUBMISSION_NOT_FOUND'},404); if(submission.status==='verified')return json({ok:true,state:'verified',message:'USDT transfer already verified.'});
+      if(submission.status==='rejected')return json({error:'PAYMENT_REJECTED',message:submission.review_note},409);
+      if(submission.last_verification_at&&Date.now()-new Date(submission.last_verification_at).getTime()<15000)return json({ok:true,state:'pending',message:'Wait a few seconds before checking again.'},429);
+      const {data:order}=await admin.from('orders').select('*').eq('id',submission.order_id).eq('telegram_customer_id',customer.id).maybeSingle();
+      if(!order||order.status!=='awaiting_payment'||new Date(order.expires_at).getTime()<=Date.now())return json({error:'ORDER_NOT_PAYABLE_OR_EXPIRED'},409);
+      const result=await verifyTronPayment(order,customer,submission,settings); return json({ok:true,submissionId,...result});
     }
     if (action === "verify_payment") {
       const orderId = String(body.orderId || "");
@@ -277,7 +326,7 @@ Deno.serve(async (req: Request) => {
       const { data: order } = await admin.from("orders").select("*").eq("id", orderId).eq("telegram_customer_id", customer.id).maybeSingle();
       if (!order || order.status !== "awaiting_payment") return json({ error: "ORDER_NOT_PAYABLE" }, 409);
       if (new Date(order.expires_at).getTime() < Date.now() - 120000) return json({ error: "ORDER_EXPIRED" }, 409);
-      const { data: prior } = await admin.from("payment_submissions").select("id,provider").in("provider", ["binance_pay_api", "binance_pay_id"]).ilike("transaction_reference", transactionId).maybeSingle();
+      const { data: prior } = await admin.from("payment_submissions").select("id,provider").ilike("transaction_reference", transactionId).maybeSingle();
       if (prior) return json({ error: "DUPLICATE_TRANSACTION", message: "This transaction ID has already been used and cannot be reused. Submit a different transaction ID." }, 409);
       const { data: pending } = await admin.from("payment_submissions").select("id").eq("order_id", order.id).eq("provider", "binance_pay_api").eq("status", "submitted").maybeSingle();
       if (pending) return json({ error: "PAYMENT_ALREADY_PENDING", message: "This order already has a payment reference awaiting verification." }, 409);
