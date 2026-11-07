@@ -27,15 +27,20 @@ async function verifyTelegramInitData(raw: string, botId: string) {
   if (!authDate || !hash) throw new Error("TELEGRAM_SIGNATURE_MISSING");
   const now = Math.floor(Date.now() / 1000);
   if (authDate > now + 60 || now - authDate > 3600) throw new Error("TELEGRAM_SESSION_EXPIRED");
-  const pairs: string[] = [];
+  if (!/^[0-9a-f]{64}$/i.test(hash)) throw new Error("TELEGRAM_HASH_INVALID");
+  const hmacPairs: string[] = [];
+  const signaturePairs: string[] = [];
   for (const [key, value] of params.entries()) {
-    if (key !== "hash" && key !== "signature") pairs.push([key, value].join("="));
+    if (key !== "hash") hmacPairs.push([key, value].join("="));
+    if (key !== "hash" && key !== "signature") signaturePairs.push([key, value].join("="));
   }
-  pairs.sort((a, b) => a.localeCompare(b));
-  const dataCheckString = pairs.join("\n");
+  hmacPairs.sort((a, b) => a.localeCompare(b));
+  signaturePairs.sort((a, b) => a.localeCompare(b));
+  const hmacCheckString = hmacPairs.join("\n");
+  const signatureCheckString = signaturePairs.join("\n");
   let valid = false;
   if (signature && botId) {
-    const checkString = `${botId}:WebAppData\n${dataCheckString}`;
+    const checkString = `${botId}:WebAppData\n${signatureCheckString}`;
     const publicKey = await crypto.subtle.importKey(
       "raw", fromHex("e7bf03a2fa4602af4580703d88dda5bb59f32ed8b02a56c187fe7d34caed242d"),
       { name: "Ed25519" }, false, ["verify"]
@@ -48,7 +53,7 @@ async function verifyTelegramInitData(raw: string, botId: string) {
     const secretKey = await crypto.subtle.importKey("raw", encoder.encode("WebAppData"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
     const secret = await crypto.subtle.sign("HMAC", secretKey, encoder.encode(botToken));
     const hmacKey = await crypto.subtle.importKey("raw", secret, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-    const expected = new Uint8Array(await crypto.subtle.sign("HMAC", hmacKey, encoder.encode(dataCheckString)));
+    const expected = new Uint8Array(await crypto.subtle.sign("HMAC", hmacKey, encoder.encode(hmacCheckString)));
     const supplied = fromHex(hash);
     let diff = expected.length ^ supplied.length;
     for (let i = 0; i < Math.min(expected.length, supplied.length); i++) diff |= expected[i] ^ supplied[i];
