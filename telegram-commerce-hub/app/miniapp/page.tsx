@@ -18,7 +18,7 @@ export default function MiniApp(){
  const copy=async(t:string)=>{try{await navigator.clipboard.writeText(t);setError('Copied to clipboard.')}catch{setError('Copy is unavailable on this device.')}};
  const back=()=>{setOrder(null);setPaymentId('');setStatus('');setSelected(null);setPlan(null);setQuantity(1);setError('')};
  const statusLabel=(s:string)=>s?.replaceAll('_',' ')||'unknown';
- return <main className="mini-shell"><header className="mini-header"><div className="mini-logo"><span className="mini-emblem">GF</span><div><b>GOLD FEATHER</b><small>PREMIUM</small></div></div><span className="mini-secure"><ShieldCheck size={14}/> SECURE STORE</span></header><div className="mini-content">
+ return <main className={`mini-shell theme-${settings.miniapp_theme||'gold'} layout-${settings.miniapp_layout||'grid'}`} style={{'--mini-accent':settings.miniapp_accent_color||'#9a7837'} as React.CSSProperties}><header className="mini-header"><div className="mini-logo"><span className="mini-emblem">GF</span><div><b>GOLD FEATHER</b><small>PREMIUM</small></div></div><span className="mini-secure"><ShieldCheck size={14}/> SECURE STORE</span></header><div className="mini-content">
  {!initData&&<section className="mini-panel mini-center"><div className="mini-icon"><ShoppingBag/></div><h2>Open in Telegram</h2><p>This store uses Telegram's signed Mini App authentication. Open it from the Gold Feather Premium bot.</p></section>}
  {initData&&!profile&&!error&&<section className="mini-panel mini-center"><div className="mini-spinner"/><h2>Connecting your account</h2><p>Verifying your Telegram profile securely…</p></section>}
  {error&&<div className="mini-notice">{error}</div>}
