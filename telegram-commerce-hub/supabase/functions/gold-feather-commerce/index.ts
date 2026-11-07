@@ -241,10 +241,10 @@ Deno.serve(async (req: Request) => {
     }
     if (action === "bootstrap") {
       const [products, orders] = await Promise.all([
-        admin.from("products").select("id,name,description,category,image_url,product_plans(id,name,description,price,currency,duration_days,stock,is_active)").eq("is_active", true).eq("product_plans.is_active", true).order("sort_order"),
+        admin.from("products").select("id,name,description,category,image_url,product_plans(id,name,description,price,currency,duration_days,stock,is_active,quantity_discount_tiers)").eq("is_active", true).eq("product_plans.is_active", true).order("sort_order"),
         admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,product_id,paid_at,products(name,warranty_days)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(50),
       ]);
-      return json({ ok: true, profile: customer, settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency }, products: products.data || [], orders: orders.data || [] });
+      return json({ ok: true, profile: customer, settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency, miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837' }, products: products.data || [], orders: orders.data || [] });
     }
     if (action === "save_binance_id") {
       const binanceId = String(body.binanceId || "").trim();
