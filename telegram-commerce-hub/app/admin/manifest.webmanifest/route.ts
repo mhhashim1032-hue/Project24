@@ -10,7 +10,7 @@ export async function GET() {
     background_color: '#101116',
     theme_color: '#111318',
     orientation: 'any',
-    icons: [{ src: '/admin-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }]
+    icons: [{ src: '/admin-icon.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'any' }, { src: '/admin-icon.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' }]
   };
   return Response.json(manifest, {
     headers: {
