@@ -31,9 +31,7 @@ from auth.users u where p.id = u.id and u.email = 'YOUR_ADMIN_EMAIL';
 4. Sign out and sign in again. Admin access is enforced by database RLS, not by hiding UI controls.
 
 ## Telegram setup
-Set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, and `APP_URL` in Render. Configure the webhook at:
-`POST /api/telegram/setup` with header `x-setup-secret: <TELEGRAM_WEBHOOK_SECRET>`.
-The bot supports `/start`, `/catalog`, `/help` and `/orders` entry points. Bot customers can browse products and open a hosted order/payment link after the storefront checkout flow is enabled.
+Set `TELEGRAM_BOT_TOKEN` in Render. `TELEGRAM_WEBHOOK_SECRET` is generated and stored in the Render environment; `APP_URL` is already configured. On server startup, the app registers its Telegram webhook automatically. If needed, the secure manual endpoint is `POST /api/telegram/setup` with header `x-setup-secret: <TELEGRAM_WEBHOOK_SECRET>`. The bot supports `/start`, `/catalog`, `/help` and `/orders`. Customers can browse products in Telegram, open the hosted store, register, place an order and submit their Binance transaction reference.
 
 ## Binance Pay ID safety
 This release records customer-submitted transaction references and routes them to the admin payment-review queue. A reference ID is not independently verifiable proof of payment. Binance personal Pay ID transfers do not provide a general public transaction-verification API for arbitrary recipients. Do not automatically deliver a product from a submitted reference alone. Admins must verify the incoming transfer in their own Binance account before approving. Do not add Binance Merchant API credentials if you do not intend to use that product.
