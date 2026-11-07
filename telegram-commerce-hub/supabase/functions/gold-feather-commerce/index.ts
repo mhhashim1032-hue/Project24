@@ -197,6 +197,9 @@ Deno.serve(async (req: Request) => {
       username: tg.username ? String(tg.username).slice(0, 64) : null,
       photo_url: tg.photo_url ? String(tg.photo_url).slice(0, 2048) : null,
       language_code: tg.language_code ? String(tg.language_code).slice(0, 16) : null,
+      is_premium: Boolean(tg.is_premium),
+      allows_write_to_pm: Boolean(tg.allows_write_to_pm),
+      added_to_attachment_menu: Boolean(tg.added_to_attachment_menu),
       updated_at: new Date().toISOString(),
     }, { onConflict: "telegram_user_id" }).select("*").single();
     if (customerError || !customer) return json({ error: "PROFILE_CREATE_FAILED" }, 500);
