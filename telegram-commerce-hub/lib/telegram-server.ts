@@ -17,6 +17,6 @@ export function dbInternal(){
 }
 export async function telegramUser(req:Request){
  const token=process.env.TELEGRAM_BOT_TOKEN;if(!token)throw new Error('Telegram bot is not connected yet');
- const body=await req.json();const raw=String(body.initData||'');if(!raw)throw new Error('Telegram launch data missing');
+ const body=await req.clone().json();const raw=String(body.initData||'');if(!raw)throw new Error('Telegram launch data missing');
  return validateTelegramInitData(raw,token);
 }
