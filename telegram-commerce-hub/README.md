@@ -1,4 +1,4 @@
-# NOVA Commerce OS — Telegram Software Store
+# Gold Feather Premium — Telegram Commerce OS
 
 A secure Next.js + Supabase control plane for selling software, licences and subscriptions through Telegram. Includes product/plan management, order tracking, Binance Pay ID reference submissions, manual payment review and fulfilment operations.
 
