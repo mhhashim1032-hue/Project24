@@ -162,3 +162,18 @@ begin
 end; $$;
 revoke all on function public.record_verified_binance_payment(uuid,uuid,uuid,text,numeric,text,text,text,timestamptz,jsonb) from public,anon,authenticated;
 grant execute on function public.record_verified_binance_payment(uuid,uuid,uuid,text,numeric,text,text,text,timestamptz,jsonb) to service_role;
+
+
+-- Explicitly deny browser/client access to the global Binance request gate.
+drop policy if exists "deny client access to Binance request gate" on public.binance_api_request_gate;
+create policy "deny client access to Binance request gate" on public.binance_api_request_gate
+ for all to anon,authenticated using(false) with check(false);
+
+-- Split subscription admin policies so SELECT has a single permissive policy.
+drop policy if exists "admins manage subscriptions" on public.subscriptions;
+create policy "admins insert subscriptions" on public.subscriptions for insert to authenticated with check((select private.is_admin()));
+create policy "admins update subscriptions" on public.subscriptions for update to authenticated using((select private.is_admin())) with check((select private.is_admin()));
+create policy "admins delete subscriptions" on public.subscriptions for delete to authenticated using((select private.is_admin()));
+create index if not exists subscriptions_customer_id_idx on public.subscriptions(customer_id);
+create index if not exists subscriptions_plan_id_idx on public.subscriptions(plan_id);
+create index if not exists subscriptions_product_id_idx on public.subscriptions(product_id);
