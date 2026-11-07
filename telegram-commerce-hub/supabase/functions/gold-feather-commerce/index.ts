@@ -176,14 +176,10 @@ async function checkPayment(order: any, customer: any, submission: any, settings
     return { state: "pending", message: "Transaction not visible yet. Wait briefly and use Check again. Do not submit the same ID again." };
   }
   const receiver = tx.receiverInfo || {};
-  const payer = tx.payerInfo || {};
   const configuredPayId = String(settings.binance_pay_id || "").trim();
   if (!configuredPayId) return { state: "rejected", message: "The store receiving Binance Pay ID is not configured." };
   const receiverIds = [receiver.accountId, receiver.binanceId, receiver.email, receiver.phoneNumber].filter(Boolean).map((v: any) => String(v).trim().toLowerCase());
   const receiverMatches = configuredPayId && receiverIds.includes(configuredPayId.toLowerCase());
-  // Customers are not asked for a Binance UID. The transaction ID, configured receiver,
-  // exact amount/currency, successful status and order time are the payment proof.
-  const payerMatches = true;
   const time = Number(tx.transactionTime || 0);
   const timeMatches = time >= new Date(order.created_at).getTime() - 120000 && time <= new Date(order.expires_at).getTime() + 120000;
   const typeMatches = String(tx.orderType || "").toUpperCase() === "C2C" && String(payer.type || "").toUpperCase() === "USER" && String(receiver.type || "").toUpperCase() === "USER";
@@ -192,7 +188,7 @@ async function checkPayment(order: any, customer: any, submission: any, settings
   const fundsValueMatches = fundsDetailMatches(tx, order.amount, currency);
   const amountCurrencyMatches = directValueMatches || fundsValueMatches;
   const transactionSucceeded = tx.success !== false;
-  if (!receiverMatches || !payerMatches || !timeMatches || !typeMatches || !amountCurrencyMatches || !transactionSucceeded) {
+  if (!receiverMatches || !timeMatches || !typeMatches || !amountCurrencyMatches || !transactionSucceeded) {
     const reasons = [
       !receiverMatches && "recipient mismatch",
       !timeMatches && "transaction time outside order window",
@@ -210,7 +206,7 @@ async function checkPayment(order: any, customer: any, submission: any, settings
     p_transaction_id: String(tx.transactionId),
     p_amount: String(tx.amount),
     p_currency: String(tx.currency),
-    p_payer_binance_id: String(payer.binanceId || ""),
+    p_payer_binance_id: "",
     p_receiver_pay_id: configuredPayId,
     p_transaction_time: new Date(time).toISOString(),
     p_raw_transaction: tx,
