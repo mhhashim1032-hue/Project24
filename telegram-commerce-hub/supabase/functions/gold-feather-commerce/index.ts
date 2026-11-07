@@ -212,6 +212,7 @@ async function checkPayment(order: any, customer: any, submission: any, settings
     if (error.message?.includes("ORDER_NOT_PAYABLE")) return { state: "rejected", message: "This order is no longer payable." };
     throw error;
   }
+  await notifyCommerceEvent(settings,'Binance Pay order paid\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\nOrder: '+order.order_number+'\nAmount: '+order.amount+' '+order.currency+'\nTransaction: '+String(tx.transactionId));
   return { state: result.status, message: result.status === "fulfilled" ? "Payment verified. Your digital delivery is ready." : "Payment verified successfully. Your order is now paid.", order: result };
 }
 
