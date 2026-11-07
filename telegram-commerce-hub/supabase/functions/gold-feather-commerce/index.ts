@@ -81,6 +81,12 @@ function fundsDetailMatches(tx: any, expectedAmount: unknown, expectedCurrency: 
     .reduce((sum:bigint,f:any)=>sum+(decimalToUnits(f.amount)??0n),0n);
   return total===target;
 }
+function rawTokenUnitsToDecimal(raw: unknown, decimals: unknown): string {
+  const value=String(raw??''); const d=Number(decimals);
+  if(!/^\\d+$/.test(value)||!Number.isInteger(d)||d<0||d>18)return '';
+  const units=BigInt(value), base=10n**BigInt(d), whole=units/base, fraction=(units%base).toString().padStart(d,'0').replace(/0+$/,'');
+  return fraction ? whole.toString()+'.'+fraction : whole.toString();
+}
 function decimalEqual(a: unknown, b: unknown) {
   const norm = (v: unknown) => {
     const s = String(v ?? "").trim();
@@ -138,12 +144,12 @@ async function verifyTronPayment(order: any, customer: any, submission: any, set
   if (!tx || tx.hash !== hash) return { state: 'pending', message: 'Transaction not indexed yet. Check again shortly.' };
   if (tx.confirmed !== true || tx.contractRet !== 'SUCCESS') return { state: 'pending', message: 'The transfer is not yet confirmed successfully on TRON. Check again after network confirmation.' };
   const transfer = tx.tokenTransferInfo || {}; const token = transfer.tokenInfo || tx.contractData?.tokenInfo || {};
-  const contract = String(token.tokenId || token.address || tx.contractData?.contract_address || '');
+  const contract = String(transfer.contract_address || token.tokenId || token.address || tx.contractData?.contract_address || '');
   const receiver = String(transfer.to_address || tx.contractData?.to_address || '');
   const sender = String(transfer.from_address || tx.contractData?.owner_address || '');
-  const amount = String(transfer.amount_str || ''); const timestamp = Number(tx.timestamp || 0);
+  const amount = rawTokenUnitsToDecimal(transfer.amount_str, transfer.decimals); const timestamp = Number(tx.timestamp || 0);
   const configured = String(settings.usdt_wallet_address || '').trim();
-  const valid = contract === 'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj' && String(token.tokenAbbr || token.token_abbr || 'USDT').toUpperCase() === 'USDT' && receiver.toLowerCase() === configured.toLowerCase() && decimalEqual(amount, order.amount) && timestamp >= new Date(order.created_at).getTime()-120000 && timestamp <= new Date(order.expires_at).getTime()+120000;
+  const valid = contract === 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t' && String(transfer.symbol || token.tokenAbbr || token.token_abbr || '').toUpperCase() === 'USDT' && Number(transfer.decimals) === 6 && String(transfer.type || '').toLowerCase() === 'transfer' && Number(transfer.status) === 0 && tx.revert !== true && receiver.toLowerCase() === configured.toLowerCase() && decimalEqual(amount, order.amount) && timestamp >= new Date(order.created_at).getTime()-120000 && timestamp <= new Date(order.expires_at).getTime()+120000;
   if (!valid) { await admin.from('payment_submissions').update({ status:'rejected',verification_source:'onchain_explorer',verification_payload:tx,review_note:'On-chain transfer rejected: token contract, recipient, exact amount or payment time did not match.',last_verification_at:new Date().toISOString(),verification_attempts:(submission.verification_attempts||0)+1 }).eq('id',submission.id); return { state:'rejected',message:'This transaction does not match the required USDT token, receiving address, exact amount or 30-minute order window.' }; }
   const { data, error } = await admin.rpc('record_verified_onchain_payment',{p_order_id:order.id,p_customer_id:customer.id,p_submission_id:submission.id,p_tx_hash:hash,p_network:'TRON',p_amount:String(amount),p_token_contract:contract,p_sender:sender,p_receiver:receiver,p_block_time:new Date(timestamp).toISOString(),p_raw:tx});
   if (error) { if (error.code==='23505'||error.message?.includes('duplicate key')) return {state:'duplicate',message:'This transaction hash has already been used.'}; if(error.message?.includes('ORDER_NOT_PAYABLE')) return {state:'rejected',message:'The order has expired or is no longer payable.'}; throw error; }
@@ -322,7 +328,7 @@ Deno.serve(async (req: Request) => {
       if(!order||order.status!=='awaiting_payment'||new Date(order.expires_at).getTime()<=Date.now())return json({error:'ORDER_NOT_PAYABLE_OR_EXPIRED'},409);
       if(String(order.currency).toUpperCase()!=='USDT')return json({error:'ONCHAIN_REQUIRES_USDT_ORDER'},400);
       const {data:prior}=await admin.from('payment_submissions').select('id').ilike('transaction_reference',txHash).maybeSingle(); if(prior)return json({error:'DUPLICATE_TRANSACTION',message:'This transaction hash has already been submitted.'},409);
-      const {data:submission,error}=await admin.from('payment_submissions').insert({order_id:order.id,telegram_customer_id:customer.id,provider:'usdt_tron',transaction_reference:txHash,amount:order.amount,currency:'USDT',status:'submitted',verification_source:'tronscan',verification_payload:{},chain_network:'TRON',chain_token_contract:'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj',last_verification_at:new Date().toISOString()}).select('*').single();
+      const {data:submission,error}=await admin.from('payment_submissions').insert({order_id:order.id,telegram_customer_id:customer.id,provider:'usdt_tron',transaction_reference:txHash,amount:order.amount,currency:'USDT',status:'submitted',verification_source:'tronscan',verification_payload:{},chain_network:'TRON',chain_token_contract:'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',last_verification_at:new Date().toISOString()}).select('*').single();
       if(error)return json({error:error.code==='23505'?'DUPLICATE_TRANSACTION':error.message},409);
       try { const result=await verifyTronPayment(order,customer,submission,settings); return json({ok:true,submissionId:submission.id,...result}); }
       catch { await admin.from('payment_submissions').update({review_note:'TRON explorer temporarily unavailable. Retry verification.',last_verification_at:new Date().toISOString()}).eq('id',submission.id); return json({ok:true,state:'pending',submissionId:submission.id,message:'Explorer is temporarily unavailable. Your hash is saved; check again shortly.'}); }
