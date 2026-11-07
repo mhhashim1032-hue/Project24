@@ -179,3 +179,10 @@ create index if not exists subscriptions_plan_id_idx on public.subscriptions(pla
 create index if not exists subscriptions_product_id_idx on public.subscriptions(product_id);
 
 create unique index if not exists payment_submissions_binance_reference_global_ci on public.payment_submissions(lower(transaction_reference)) where provider in ('binance_pay_id','binance_pay_api');
+
+
+alter table public.telegram_customers add column if not exists allows_write_to_pm boolean not null default false;
+alter table public.telegram_customers add column if not exists added_to_attachment_menu boolean not null default false;
+create unique index if not exists payment_submissions_binance_reference_global_ci
+ on public.payment_submissions(lower(transaction_reference))
+ where provider in ('binance_pay_id','binance_pay_api');
