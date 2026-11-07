@@ -1,2 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://siteshiftkit.onrender.com/</loc></url></urlset>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://siteshiftkit-site.onrender.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+<url><loc>https://siteshiftkit-site.onrender.com/url-list-comparator.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://siteshiftkit-site.onrender.com/redirect-map-validator.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://siteshiftkit-site.onrender.com/robots-txt-analyzer.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://siteshiftkit-site.onrender.com/xml-sitemap-analyzer.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://siteshiftkit-site.onrender.com/canonical-tag-checker.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://siteshiftkit-site.onrender.com/llms-txt-generator.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://siteshiftkit-site.onrender.com/website-migration-checklist.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://siteshiftkit-site.onrender.com/redirect-mapping-guide.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+<url><loc>https://siteshiftkit-site.onrender.com/robots-txt-redesign-guide.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+<url><loc>https://siteshiftkit-site.onrender.com/ai-search-readiness-guide.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+<url><loc>https://siteshiftkit-site.onrender.com/about.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://siteshiftkit-site.onrender.com/privacy.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://siteshiftkit-site.onrender.com/contact.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+</urlset>
