@@ -28,7 +28,7 @@ The Render service hostname is still the technical `nova-telegram-commerce` host
 
 The display name is set to **Gold Feather Premium**. The bot username (the `@username`) is controlled by BotFather and cannot be renamed through the Bot API.
 
-The Mini App authenticates Telegram users using the signed `initData` and Telegram's Ed25519 verification key. It does not trust the browser's `initDataUnsafe`. Customer registration is automatic when the Mini App opens.
+The Mini App authenticates Telegram users using signed `initData`: Telegram's Ed25519 verification is preferred, with standard Bot-token HMAC validation as a compatibility fallback. It does not trust the browser's `initDataUnsafe`. Customer registration is automatic when the Mini App opens.
 
 Telegram shares the fields available in the Telegram profile: Telegram ID, first/last name, username, language, optional profile photo and premium status. Telegram does not automatically share email or phone number.
 
@@ -54,10 +54,11 @@ In the Supabase Dashboard, open **Edge Functions → Secrets** and add:
 
 - `BINANCE_API_KEY`
 - `BINANCE_API_SECRET`
+- `TELEGRAM_BOT_TOKEN` (same token used by Render; enables HMAC fallback on Telegram clients that do not provide the Ed25519 signature)
 
 Create the personal Binance API key with **Enable Reading / USER_DATA only**. Do not enable trading, withdrawals or transfers. Use IP restrictions if your Binance account supports them. These secrets are available only to the Edge Function; they are never sent to the Mini App or browser.
 
-Until both Binance credentials are configured, transaction references can be saved but orders remain unpaid. The system fails closed and does not deliver products without a successful Binance verification.
+Until both Binance credentials are configured, transaction references can be saved but automatic verification remains unavailable. Admins can manually approve or reject a submission after checking the receiving Binance account; all manual approvals are audited and transaction IDs are globally claimed. No product is delivered without either a successful automatic match or an explicit admin approval.
 
 ## Duplicate-payment and order protection
 
