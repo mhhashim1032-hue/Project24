@@ -83,7 +83,7 @@ function fundsDetailMatches(tx: any, expectedAmount: unknown, expectedCurrency: 
 }
 function rawTokenUnitsToDecimal(raw: unknown, decimals: unknown): string {
   const value=String(raw??''); const d=Number(decimals);
-  if(!/^\\d+$/.test(value)||!Number.isInteger(d)||d<0||d>18)return '';
+  if(!/^[0-9]+$/.test(value)||!Number.isInteger(d)||d<0||d>18)return '';
   const units=BigInt(value), base=10n**BigInt(d), whole=units/base, fraction=(units%base).toString().padStart(d,'0').replace(/0+$/,'');
   return fraction ? whole.toString()+'.'+fraction : whole.toString();
 }
