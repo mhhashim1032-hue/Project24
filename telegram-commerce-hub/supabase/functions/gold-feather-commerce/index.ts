@@ -162,8 +162,8 @@ async function verifyTronRecharge(recharge: any, customer: any, settings: any) {
   const response=await fetch('https://apilist.tronscanapi.com/api/transaction-info?hash='+encodeURIComponent(hash),{headers:{'Accept':'application/json',...(Deno.env.get('TRONSCAN_API_KEY')?{'TRON-PRO-API-KEY':Deno.env.get('TRONSCAN_API_KEY')!}:{})},signal:AbortSignal.timeout(12000)});
   if(!response.ok) throw new Error('TRONSCAN_UNAVAILABLE');
   const tx=await response.json();
-  if(!tx||String(tx.hash||'').toLowerCase()!==hash) return {state:'pending',message:'Transaction is not indexed on TRON yet. Check again shortly.'};
-  if(tx.confirmed!==true||tx.contractRet!=='SUCCESS') return {state:'pending',message:'The transfer is not confirmed successfully yet. Check again after network confirmation.'};
+  if(!tx||String(tx.hash||'').toLowerCase()!==hash){await admin.from('wallet_recharge_requests').update({last_verification_at:new Date().toISOString(),verification_attempts:(recharge.verification_attempts||0)+1,review_note:'Transaction not indexed on TRON yet.',updated_at:new Date().toISOString()}).eq('id',recharge.id);return {state:'pending',message:'Transaction is not indexed on TRON yet. Check again shortly.'};}
+  if(tx.confirmed!==true||tx.contractRet!=='SUCCESS'){await admin.from('wallet_recharge_requests').update({last_verification_at:new Date().toISOString(),verification_attempts:(recharge.verification_attempts||0)+1,review_note:'Waiting for successful TRON confirmation.',updated_at:new Date().toISOString()}).eq('id',recharge.id);return {state:'pending',message:'The transfer is not confirmed successfully yet. Check again after network confirmation.'};}
   const transfer=tx.tokenTransferInfo||{}, token=transfer.tokenInfo||tx.contractData?.tokenInfo||{};
   const contract=String(transfer.contract_address||token.tokenId||token.address||tx.contractData?.contract_address||'');
   const receiver=String(transfer.to_address||tx.contractData?.to_address||''), amount=rawTokenUnitsToDecimal(transfer.amount_str,transfer.decimals), timestamp=Number(tx.timestamp||0);
@@ -181,7 +181,7 @@ async function verifyBinanceRecharge(recharge: any, customer: any, settings: any
   if(gateError)throw gateError;
   if(slot!==true){await admin.from('wallet_recharge_requests').update({last_verification_at:new Date().toISOString(),review_note:'Binance verification cooldown active. Try again in about one minute.',verification_attempts:(recharge.verification_attempts||0)+1,updated_at:new Date().toISOString()}).eq('id',recharge.id);return {state:'pending',message:'Binance verification is rate-limited. Check again in about one minute.'};}
   const now=Date.now(), start=now-86400000, rows=await binancePayHistory(start,now);
-  if(rows.length>=100)return {state:'pending',message:'Binance returned a full 100-record history page. Verification is paused safely; contact support.'};
+  if(rows.length>=100){await admin.from('wallet_recharge_requests').update({last_verification_at:new Date().toISOString(),review_note:'Binance returned a full 100-record history page; manual review may be required.',verification_attempts:(recharge.verification_attempts||0)+1,updated_at:new Date().toISOString()}).eq('id',recharge.id);return {state:'pending',message:'Binance returned a full 100-record history page. Verification is paused safely; contact support.'};}
   const tx=rows.find((x:any)=>String(x.transactionId||'').toUpperCase()===String(recharge.transaction_reference).toUpperCase());
   if(!tx){await admin.from('wallet_recharge_requests').update({last_verification_at:new Date().toISOString(),review_note:'Transaction not visible in Binance Pay history yet.',verification_attempts:(recharge.verification_attempts||0)+1,updated_at:new Date().toISOString()}).eq('id',recharge.id);return {state:'pending',message:'Transaction ID is not visible in Binance Pay history yet. Wait briefly and check again.'};}
   const receiver=tx.receiverInfo||{}, payer=tx.payerInfo||{}, configured=String(settings.binance_pay_id||'').trim();
@@ -317,6 +317,8 @@ Deno.serve(async (req: Request) => {
       if(provider==="binance_pay_api"&&(reference.length<5||reference.length>128))return json({error:"INVALID_BINANCE_TRANSACTION_ID"},400);
       if(provider==="usdt_tron"&&!settings.usdt_wallet_address)return json({error:"STORE_USDT_ADDRESS_NOT_CONFIGURED"},503);
       if(provider==="binance_pay_api"&&!settings.binance_pay_id)return json({error:"STORE_BINANCE_PAY_NOT_CONFIGURED"},503);
+      const {data:usedOrderSubmission}=await admin.from("payment_submissions").select("id").ilike("transaction_reference",reference).limit(1).maybeSingle();
+      if(usedOrderSubmission)return json({error:"DUPLICATE_TRANSACTION",message:"This transaction has already been used for an order payment."},409);
       const {data:recharge,error}=await admin.from("wallet_recharge_requests").insert({telegram_customer_id:customer.id,amount,currency:"USDT",provider,transaction_reference:provider==="usdt_tron"?reference.toLowerCase():reference,status:"pending"}).select("*").single();
       if(error)return json({error:error.code==="23505"?"DUPLICATE_TRANSACTION":error.message},409);
       try {const result=await attemptWalletRecharge(recharge,customer,settings);return json({ok:true,rechargeId:recharge.id,...result});}
@@ -490,6 +492,8 @@ Deno.serve(async (req: Request) => {
       if (!orderId || transactionId.length < 5 || transactionId.length > 128) return json({ error: "INVALID_PAYMENT_REFERENCE" }, 400);
       const { data: order } = await admin.from("orders").select("*").eq("id", orderId).eq("telegram_customer_id", customer.id).maybeSingle();
       if (!order || order.status !== "awaiting_payment") return json({ error: "ORDER_NOT_PAYABLE" }, 409);
+      const {data:rechargeClaim}=await admin.from("wallet_recharge_requests").select("id").eq("provider","binance_pay_api").ilike("transaction_reference",transactionId).limit(1).maybeSingle();
+      if(rechargeClaim)return json({error:"DUPLICATE_TRANSACTION",message:"This Binance transaction has already been submitted as a wallet recharge."},409);
       if (new Date(order.expires_at).getTime() < Date.now() - 120000) return json({ error: "ORDER_EXPIRED" }, 409);
       const { data: prior } = await admin.from("payment_submissions").select("id,provider").ilike("transaction_reference", transactionId).maybeSingle();
       if (prior) return json({ error: "DUPLICATE_TRANSACTION", message: "This transaction ID has already been used and cannot be reused. Submit a different transaction ID." }, 409);
