@@ -9,6 +9,7 @@ export async function register() {
     await call('setMyName',{name:'Gold Feather Premium',language_code:'en'});
     await call('setMyDescription',{description:'Gold Feather Premium — premium digital products, software and subscriptions with secure Binance Pay checkout.'});
     await call('setMyShortDescription',{short_description:'Shop premium digital products and subscriptions.'});
+    await call('setMyCommands',{commands:[{command:'start',description:'Open Gold Feather Premium'},{command:'catalog',description:'Browse software and subscriptions'},{command:'orders',description:'View your orders'},{command:'help',description:'Get store help'}]});
     await call('setChatMenuButton',{menu_button:{type:'web_app',text:'Open Store',web_app:{url:appUrl.replace(/\/$/,'')+'/miniapp'}}});
     await call('setWebhook',{url:appUrl.replace(/\/$/,'')+'/api/telegram/webhook',secret_token:secret,allowed_updates:['message','callback_query'],drop_pending_updates:false});
     console.info('Gold Feather Premium Telegram bot configured.',{botId:me.result?.id});
