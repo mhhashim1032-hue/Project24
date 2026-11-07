@@ -156,6 +156,53 @@ async function verifyTronPayment(order: any, customer: any, submission: any, set
   await notifyCommerceEvent(settings,'USDT order paid\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\nOrder: '+order.order_number+'\nAmount: '+order.amount+' USDT\nNetwork: TRON TRC20\nTX: '+hash);
   return {state:data.status,message:'USDT transfer confirmed on TRON. Payment verified successfully.',order:data};
 }
+
+async function verifyTronRecharge(recharge: any, customer: any, settings: any) {
+  const hash=String(recharge.transaction_reference||'').trim().toLowerCase();
+  const response=await fetch('https://apilist.tronscanapi.com/api/transaction-info?hash='+encodeURIComponent(hash),{headers:{'Accept':'application/json',...(Deno.env.get('TRONSCAN_API_KEY')?{'TRON-PRO-API-KEY':Deno.env.get('TRONSCAN_API_KEY')!}:{})},signal:AbortSignal.timeout(12000)});
+  if(!response.ok) throw new Error('TRONSCAN_UNAVAILABLE');
+  const tx=await response.json();
+  if(!tx||String(tx.hash||'').toLowerCase()!==hash) return {state:'pending',message:'Transaction is not indexed on TRON yet. Check again shortly.'};
+  if(tx.confirmed!==true||tx.contractRet!=='SUCCESS') return {state:'pending',message:'The transfer is not confirmed successfully yet. Check again after network confirmation.'};
+  const transfer=tx.tokenTransferInfo||{}, token=transfer.tokenInfo||tx.contractData?.tokenInfo||{};
+  const contract=String(transfer.contract_address||token.tokenId||token.address||tx.contractData?.contract_address||'');
+  const receiver=String(transfer.to_address||tx.contractData?.to_address||''), amount=rawTokenUnitsToDecimal(transfer.amount_str,transfer.decimals), timestamp=Number(tx.timestamp||0);
+  const configured=String(settings.usdt_wallet_address||'').trim();
+  const timeOk=timestamp>0&&timestamp>=new Date(recharge.created_at).getTime()-86400000&&timestamp<=Date.now()+120000;
+  const valid=contract==='TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'&&String(transfer.symbol||token.tokenAbbr||token.token_abbr||'').toUpperCase()==='USDT'&&Number(transfer.decimals)===6&&String(transfer.type||'').toLowerCase()==='transfer'&&Number(transfer.status)===0&&tx.revert!==true&&receiver===configured&&decimalEqual(amount,recharge.amount)&&timeOk;
+  if(!valid){await admin.from('wallet_recharge_requests').update({status:'rejected',verification_source:'tronscan',verification_payload:tx,review_note:'Rejected: token contract, recipient, exact amount or transaction time did not match.',last_verification_at:new Date().toISOString(),verification_attempts:(recharge.verification_attempts||0)+1,updated_at:new Date().toISOString()}).eq('id',recharge.id);return {state:'rejected',message:'This transaction does not match the exact USDT amount, TRC20 token, receiving wallet or valid time window.'};}
+  const {data,error}=await admin.rpc('credit_verified_wallet_recharge',{p_recharge_id:recharge.id,p_provider:'usdt_tron',p_transaction_reference:hash,p_amount:String(amount),p_currency:'USDT',p_payload:tx});
+  if(error)throw error;
+  await notifyCommerceEvent(settings,'USDT wallet recharge verified\\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\\nAmount: '+recharge.amount+' USDT\\nNetwork: TRON TRC20\\nTX: '+hash);
+  return {state:'verified',message:'USDT recharge verified on-chain. Your wallet has been credited.',credit:data};
+}
+async function verifyBinanceRecharge(recharge: any, customer: any, settings: any) {
+  const {data:slot,error:gateError}=await admin.rpc('reserve_binance_pay_history_slot');
+  if(gateError)throw gateError;
+  if(slot!==true){await admin.from('wallet_recharge_requests').update({last_verification_at:new Date().toISOString(),review_note:'Binance verification cooldown active. Try again in about one minute.',verification_attempts:(recharge.verification_attempts||0)+1,updated_at:new Date().toISOString()}).eq('id',recharge.id);return {state:'pending',message:'Binance verification is rate-limited. Check again in about one minute.'};}
+  const now=Date.now(), start=now-86400000, rows=await binancePayHistory(start,now);
+  if(rows.length>=100)return {state:'pending',message:'Binance returned a full 100-record history page. Verification is paused safely; contact support.'};
+  const tx=rows.find((x:any)=>String(x.transactionId||'').toUpperCase()===String(recharge.transaction_reference).toUpperCase());
+  if(!tx){await admin.from('wallet_recharge_requests').update({last_verification_at:new Date().toISOString(),review_note:'Transaction not visible in Binance Pay history yet.',verification_attempts:(recharge.verification_attempts||0)+1,updated_at:new Date().toISOString()}).eq('id',recharge.id);return {state:'pending',message:'Transaction ID is not visible in Binance Pay history yet. Wait briefly and check again.'};}
+  const receiver=tx.receiverInfo||{}, payer=tx.payerInfo||{}, configured=String(settings.binance_pay_id||'').trim();
+  const receiverIds=[receiver.accountId,receiver.binanceId,receiver.email,receiver.phoneNumber].filter(Boolean).map((v:any)=>String(v).trim().toLowerCase());
+  const receiverMatches=Boolean(configured)&&receiverIds.includes(configured.toLowerCase()), time=Number(tx.transactionTime||0);
+  const timeMatches=time>=now-86400000&&time<=now+120000, typeMatches=String(tx.orderType||'').toUpperCase()==='C2C'&&String(payer.type||'').toUpperCase()==='USER'&&String(receiver.type||'').toUpperCase()==='USER';
+  const direct=decimalEqual(tx.amount,recharge.amount)&&String(tx.currency||'').toUpperCase()==='USDT', funds=fundsDetailMatches(tx,recharge.amount,'USDT'), success=tx.success!==false;
+  if(!receiverMatches||!timeMatches||!typeMatches||(!direct&&!funds)||!success){const reasons=[!receiverMatches&&'recipient mismatch',!timeMatches&&'transaction outside 24-hour verification window',!typeMatches&&'unsupported transaction type',(!direct&&!funds)&&'amount/currency mismatch',!success&&'transaction not successful'].filter(Boolean).join(', ');await admin.from('wallet_recharge_requests').update({status:'rejected',verification_source:'binance_pay_api',verification_payload:{transactionId:tx.transactionId,orderType:tx.orderType,amount:tx.amount,currency:tx.currency},review_note:'Automatic verification rejected: '+reasons,last_verification_at:new Date().toISOString(),verification_attempts:(recharge.verification_attempts||0)+1,updated_at:new Date().toISOString()}).eq('id',recharge.id);return {state:'rejected',message:'Binance payment rejected: '+reasons+'.'};}
+  const {data,error}=await admin.rpc('credit_verified_wallet_recharge',{p_recharge_id:recharge.id,p_provider:'binance_pay_api',p_transaction_reference:String(tx.transactionId),p_amount:String(recharge.amount),p_currency:'USDT',p_payload:tx});
+  if(error)throw error;
+  await notifyCommerceEvent(settings,'Binance Pay wallet recharge verified\\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\\nAmount: '+recharge.amount+' USDT\\nTransaction: '+String(tx.transactionId));
+  return {state:'verified',message:'Binance Pay verified automatically. Your wallet has been credited.',credit:data};
+}
+async function attemptWalletRecharge(recharge: any, customer: any, settings: any) {
+  if(recharge.status==='verified')return {state:'verified',message:'This recharge has already been credited.'};
+  if(recharge.status==='rejected')return {state:'rejected',message:recharge.review_note||'This recharge was rejected.'};
+  if(recharge.provider==='usdt_tron')return await verifyTronRecharge(recharge,customer,settings);
+  if(recharge.provider==='binance_pay_api')return await verifyBinanceRecharge(recharge,customer,settings);
+  throw new Error('UNSUPPORTED_RECHARGE_PROVIDER');
+}
+
 async function checkPayment(order: any, customer: any, submission: any, settings: any) {
   const now = Date.now();
   const { data: slot, error: gateError } = await admin.rpc('reserve_binance_pay_history_slot');
@@ -250,9 +297,42 @@ Deno.serve(async (req: Request) => {
     const action = String(body.action || "");
     const { error: expiryError } = await admin.rpc("expire_telegram_orders");
     if (expiryError) console.error("Expired order cleanup failed", expiryError);
-    const needsChannel = ["create_order","pay_with_wallet","verify_usdt_onchain","refresh_onchain_payment","verify_payment","refresh_payment"].includes(action);
+    const needsChannel = ["create_order","pay_with_wallet","verify_usdt_onchain","refresh_onchain_payment","verify_payment","refresh_payment","resume_order","submit_wallet_recharge","refresh_wallet_recharge"].includes(action);
     const channelJoined = await telegramChannelJoined(customer,settings);
     if (needsChannel && !channelJoined) return json({error:"CHANNEL_JOIN_REQUIRED",message:"Join our Telegram channel before purchasing.",joinUrl:settings.required_channel_url||null},403);
+    if (action === "resume_order") {
+      const orderId=String(body.orderId||"");
+      const {data:order,error}=await admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,payment_deadline_at,product_id,plan_id,quantity,payment_method,products(name)").eq("id",orderId).eq("telegram_customer_id",customer.id).maybeSingle();
+      if(error||!order)return json({error:"ORDER_NOT_FOUND"},404);
+      if(order.status!=="awaiting_payment")return json({error:"ORDER_NOT_PAYABLE",order},409);
+      if(new Date(order.expires_at).getTime()<=Date.now())return json({error:"ORDER_EXPIRED",message:"This order's payment window has expired. Please create a new order."},409);
+      const {data:submission}=await admin.from("payment_submissions").select("id,provider,transaction_reference,status,review_note,last_verification_at").eq("order_id",order.id).eq("telegram_customer_id",customer.id).in("status",["submitted","verified"]).order("created_at",{ascending:false}).limit(1).maybeSingle();
+      return json({ok:true,order,pendingSubmission:submission||null});
+    }
+    if (action === "submit_wallet_recharge") {
+      const provider=String(body.provider||""), amountText=String(body.amount||"").trim(), amount=Number(amountText), reference=String(body.transactionReference||"").trim();
+      if(!["usdt_tron","binance_pay_api"].includes(provider))return json({error:"UNSUPPORTED_RECHARGE_PROVIDER"},400);
+      if(!Number.isFinite(amount)||amount<=0||amount>10000||!/^\d+(\.\d{1,8})?$/.test(amountText))return json({error:"INVALID_RECHARGE_AMOUNT"},400);
+      if(provider==="usdt_tron"&&!/^[0-9a-f]{64}$/i.test(reference))return json({error:"INVALID_TRON_TRANSACTION_HASH"},400);
+      if(provider==="binance_pay_api"&&(reference.length<5||reference.length>128))return json({error:"INVALID_BINANCE_TRANSACTION_ID"},400);
+      if(provider==="usdt_tron"&&!settings.usdt_wallet_address)return json({error:"STORE_USDT_ADDRESS_NOT_CONFIGURED"},503);
+      if(provider==="binance_pay_api"&&!settings.binance_pay_id)return json({error:"STORE_BINANCE_PAY_NOT_CONFIGURED"},503);
+      const {data:recharge,error}=await admin.from("wallet_recharge_requests").insert({telegram_customer_id:customer.id,amount,currency:"USDT",provider,transaction_reference:provider==="usdt_tron"?reference.toLowerCase():reference,status:"pending"}).select("*").single();
+      if(error)return json({error:error.code==="23505"?"DUPLICATE_TRANSACTION":error.message},409);
+      try {const result=await attemptWalletRecharge(recharge,customer,settings);return json({ok:true,rechargeId:recharge.id,...result});}
+      catch(e){await admin.from("wallet_recharge_requests").update({last_verification_at:new Date().toISOString(),review_note:"Provider temporarily unavailable. Retry verification.",updated_at:new Date().toISOString()}).eq("id",recharge.id);return json({ok:true,rechargeId:recharge.id,state:"pending",message:"Your transaction reference is saved. Automatic verification can be retried."});}
+    }
+    if (action === "refresh_wallet_recharge") {
+      const rechargeId=String(body.rechargeId||"");
+      const {data:recharge}=await admin.from("wallet_recharge_requests").select("*").eq("id",rechargeId).eq("telegram_customer_id",customer.id).maybeSingle();
+      if(!recharge)return json({error:"RECHARGE_NOT_FOUND"},404);
+      if(recharge.status==="verified")return json({ok:true,rechargeId,state:"verified",message:"This recharge has already been credited."});
+      if(recharge.status==="rejected")return json({ok:true,rechargeId,state:"rejected",message:recharge.review_note||"This recharge was rejected."});
+      const wait=recharge.provider==="binance_pay_api"?60000:15000;
+      if(recharge.last_verification_at&&Date.now()-new Date(recharge.last_verification_at).getTime()<wait)return json({ok:true,rechargeId,state:"pending",message:"Please wait before checking this transaction again."},429);
+      try {const result=await attemptWalletRecharge(recharge,customer,settings);return json({ok:true,rechargeId,...result});}
+      catch(e){await admin.from("wallet_recharge_requests").update({last_verification_at:new Date().toISOString(),review_note:"Provider temporarily unavailable. Retry verification.",updated_at:new Date().toISOString()}).eq("id",recharge.id);return json({ok:true,rechargeId,state:"pending",message:"The provider is temporarily unavailable. Your reference is saved; check again shortly."});}
+    }
     if (action === "wallet_balance") {
       const { data: rows, error } = await admin.from("wallet_transactions").select("amount,currency,direction").eq("telegram_customer_id", customer.id);
       if (error) return json({ error: "WALLET_READ_FAILED" }, 500);
@@ -346,11 +426,12 @@ Deno.serve(async (req: Request) => {
       return json({ok:true,provider:"google-web+mymemory",google:googleCount,mymemory:memoryCount,failed:failedCount,cached:unique.length-missing.length,translations:texts.map((t:string)=>cached.get(t)||t)});
     }
     if (action === "bootstrap") {
-      const [products, orders] = await Promise.all([
+      const [products, orders, recharges] = await Promise.all([
         admin.from("products").select("id,name,description,category,image_url,product_plans(id,name,description,price,currency,duration_days,stock,is_active,quantity_discount_tiers)").eq("is_active", true).eq("product_plans.is_active", true).order("sort_order"),
-        admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,product_id,paid_at,products(name,warranty_days)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(50),
+        admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,product_id,paid_at,payment_method,products(name,warranty_days)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(50),
+        admin.from("wallet_recharge_requests").select("id,amount,currency,provider,transaction_reference,status,review_note,last_verification_at,created_at").eq("telegram_customer_id",customer.id).order("created_at",{ascending:false}).limit(10),
       ]);
-      return json({ ok: true, profile: customer, channelJoined: await telegramChannelJoined(customer,settings), settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency, usdt_network: settings.usdt_network||'TRON', usdt_wallet_address: settings.usdt_wallet_address, support_url: settings.support_url, required_channel_url: settings.required_channel_url, tempsms_url: settings.tempsms_url||'https://tempsmslive.com', miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837' }, products: products.data || [], orders: orders.data || [] });
+      return json({ ok: true, profile: customer, channelJoined: await telegramChannelJoined(customer,settings), settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency, usdt_network: settings.usdt_network||'TRON', usdt_wallet_address: settings.usdt_wallet_address, support_url: settings.support_url, required_channel_url: settings.required_channel_url, tempsms_url: settings.tempsms_url||'https://tempsmslive.com', miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837' }, products: products.data || [], orders: orders.data || [], recharges: recharges.data || [] });
     }
     if (action === "save_binance_id") {
       const binanceId = String(body.binanceId || "").trim();
