@@ -41,8 +41,9 @@ This release records customer-submitted transaction references and routes them t
 - Public users can read active catalogue items only.
 - Customers can read their own orders and submit payment references.
 - Admin actions require `profiles.role = 'admin'`.
+- Digital delivery payloads are stored in an admin-only table protected by RLS.
 - The Supabase service-role key is never included in frontend code.
 - Add rate limiting / CAPTCHA to public signup and checkout before a high-volume public launch.
 
 ## Current scope and limitations
-The dashboard and schema are deployed separately from the Telegram bot credentials. Automatic fulfilment requires a secure inventory/delivery payload and a verified paid order; this project currently includes manual approval and tracking foundations. Do not advertise automatic payment verification until an authorized, independently verifiable transaction feed is configured and tested.
+The dashboard and schema are deployed separately from the Telegram bot credentials. Automatic digital fulfilment is supported for admin-configured delivery payloads after an administrator verifies the payment. Manual fulfilment is also supported. Payment verification itself remains manual for personal Binance Pay ID transfers; do not advertise automatic payment verification until an authorized, independently verifiable transaction feed is configured and tested.
