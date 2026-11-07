@@ -201,8 +201,8 @@ Deno.serve(async (req: Request) => {
     const action = String(body.action || "");
     if (action === "bootstrap") {
       const [products, orders] = await Promise.all([
-        admin.from("products").select("id,name,description,category,image_url,product_plans(id,name,description,price,currency,duration_days,stock)").eq("is_active", true).order("sort_order"),
-        admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,delivery_data,product_id,products(name)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(50),
+        admin.from("products").select("id,name,description,category,image_url,undefined").eq("is_active", true).eq("product_plans.is_active", true).order("sort_order"),
+        admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,product_id,products(name)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(50),
       ]);
       return json({ ok: true, profile: customer, settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency }, products: products.data || [], orders: orders.data || [] });
     }
@@ -221,27 +221,13 @@ Deno.serve(async (req: Request) => {
       if (!/^[0-9a-f-]{36}$/i.test(idempotencyKey)) return json({ error: "INVALID_IDEMPOTENCY_KEY" }, 400);
       if (!customer.binance_id) return json({ error: "SAVE_BINANCE_UID_FIRST" }, 400);
       if (!settings.binance_pay_id) return json({ error: "STORE_BINANCE_PAY_ID_NOT_CONFIGURED" }, 503);
-      await admin.from("orders").update({ status: "cancelled" }).eq("telegram_customer_id", customer.id).eq("status", "awaiting_payment").lte("expires_at", new Date().toISOString());
-      const { data: openOrder } = await admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at").eq("telegram_customer_id", customer.id).eq("status", "awaiting_payment").maybeSingle();
-      if (openOrder) return json({ ok: true, order: openOrder, reusedOpenOrder: true });
-      const { data: existing } = await admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at").eq("telegram_customer_id", customer.id).eq("telegram_idempotency_key", idempotencyKey).maybeSingle();
-      if (existing) return json({ ok: true, order: existing });
-      const { data: plan, error: planError } = await admin.from("product_plans").select("id,name,price,currency,product_id,duration_days,is_active").eq("id", planId).eq("is_active", true).maybeSingle();
-      if (planError || !plan) return json({ error: "PLAN_UNAVAILABLE" }, 404);
-      const { data: product } = await admin.from("products").select("id,is_active").eq("id", plan.product_id).eq("is_active", true).maybeSingle();
-      if (!product) return json({ error: "PRODUCT_UNAVAILABLE" }, 404);
-      const { data: order, error } = await admin.from("orders").insert({
-        customer_id: null, telegram_customer_id: customer.id, telegram_idempotency_key: idempotencyKey,
-        product_id: product.id, plan_id: plan.id, amount: plan.price, currency: plan.currency,
-      }).select("id,order_number,amount,currency,status,created_at,expires_at").single();
-      if (error) {
-        if (error.code === "23505") {
-          const { data: same } = await admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at").eq("telegram_customer_id", customer.id).eq("telegram_idempotency_key", idempotencyKey).maybeSingle();
-          if (same) return json({ ok: true, order: same });
-        }
-        return json({ error: error.message }, 400);
-      }
-      return json({ ok: true, order });
+      const { data: order, error } = await admin.rpc("create_telegram_order_service", {
+        p_telegram_customer_id: customer.id,
+        p_plan_id: planId,
+        p_idempotency_key: idempotencyKey,
+      });
+      if (error) return json({ error: error.message || "ORDER_CREATE_FAILED" }, 400);
+      return json({ ok: true, order, reusedOpenOrder: Boolean(order?.reusedOpenOrder) });
     }
     if (action === "verify_payment") {
       const orderId = String(body.orderId || "");
@@ -251,7 +237,7 @@ Deno.serve(async (req: Request) => {
       if (!order || order.status !== "awaiting_payment") return json({ error: "ORDER_NOT_PAYABLE" }, 409);
       if (new Date(order.expires_at).getTime() < Date.now() - 120000) return json({ error: "ORDER_EXPIRED" }, 409);
       const { data: prior } = await admin.from("payment_submissions").select("id").eq("provider", "binance_pay_api").eq("transaction_reference", transactionId).maybeSingle();
-      if (prior) return json({ error: "DUPLICATE_TRANSACTION", message: "This transaction ID has already been submitted. Use Check again on its existing verification." }, 409);
+      if (prior) return json({ error: "DUPLICATE_TRANSACTION", message: "This transaction ID has already been used and cannot be reused. Submit a different transaction ID." }, 409);
       const { data: pending } = await admin.from("payment_submissions").select("id").eq("order_id", order.id).eq("provider", "binance_pay_api").eq("status", "submitted").maybeSingle();
       if (pending) return json({ error: "PAYMENT_ALREADY_PENDING", message: "This order already has a payment reference awaiting verification." }, 409);
       const { data: submission, error } = await admin.from("payment_submissions").insert({
