@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Gold Feather',
     description: 'Private commerce operations dashboard',
     start_url: '/admin',
-    scope: '/admin/',
+    scope: '/admin',
     display: 'standalone',
     background_color: '#101116',
     theme_color: '#111318',
