@@ -1,2 +1,2 @@
 import {NextResponse} from 'next/server';
-export async function GET(){return NextResponse.json({ok:true,service:'nova-commerce-os',timestamp:new Date().toISOString(),telegramConfigured:Boolean(process.env.TELEGRAM_BOT_TOKEN),databaseConfigured:Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL&&process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)})}
+export async function GET(){return NextResponse.json({ok:true,service:'gold-feather-premium-commerce-os',timestamp:new Date().toISOString(),telegramConfigured:Boolean(process.env.TELEGRAM_BOT_TOKEN),databaseConfigured:Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL&&process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)})}
