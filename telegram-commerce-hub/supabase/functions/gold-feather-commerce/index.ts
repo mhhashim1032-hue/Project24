@@ -176,6 +176,7 @@ async function checkPayment(order: any, customer: any, submission: any, settings
     return { state: "pending", message: "Transaction not visible yet. Wait briefly and use Check again. Do not submit the same ID again." };
   }
   const receiver = tx.receiverInfo || {};
+  const payer = tx.payerInfo || {}; // Used only to validate the Binance account type; no UID is collected or matched.
   const configuredPayId = String(settings.binance_pay_id || "").trim();
   if (!configuredPayId) return { state: "rejected", message: "The store receiving Binance Pay ID is not configured." };
   const receiverIds = [receiver.accountId, receiver.binanceId, receiver.email, receiver.phoneNumber].filter(Boolean).map((v: any) => String(v).trim().toLowerCase());
