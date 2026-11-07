@@ -41,8 +41,7 @@ The Supabase Edge Function queries Binance's personal-account Pay Trade History 
 The integration is not Binance Merchant API. It accepts C2C Binance Pay ID transfers only and matches:
 
 - The transaction ID submitted by the customer
-- The receiving Pay ID configured in **Admin → Bot & Store**
-- The receiving Pay ID configured by the store; customers do not provide a Binance UID
+- The receiving Pay ID configured in **Admin → Bot & Store**; customers do not provide a Binance UID
 - Exact amount and currency
 - Successful incoming transfer type and order time window
 
