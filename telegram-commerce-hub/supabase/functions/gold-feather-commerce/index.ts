@@ -242,7 +242,10 @@ Deno.serve(async (req: Request) => {
     if (customer.is_blocked) return json({ error: "ACCOUNT_BLOCKED" }, 403);
 
     const body = await req.json();
-    const action = String(body.action || "");\n    const needsChannel = ["create_order","pay_with_wallet","verify_usdt_onchain","refresh_onchain_payment","verify_payment","refresh_payment"].includes(action);\n    const channelJoined = await telegramChannelJoined(customer,settings);\n    if (needsChannel && !channelJoined) return json({error:"CHANNEL_JOIN_REQUIRED",message:"Join our Telegram channel before purchasing.",joinUrl:settings.required_channel_url||null},403);
+    const action = String(body.action || "");
+    const needsChannel = ["create_order","pay_with_wallet","verify_usdt_onchain","refresh_onchain_payment","verify_payment","refresh_payment"].includes(action);
+    const channelJoined = await telegramChannelJoined(customer,settings);
+    if (needsChannel && !channelJoined) return json({error:"CHANNEL_JOIN_REQUIRED",message:"Join our Telegram channel before purchasing.",joinUrl:settings.required_channel_url||null},403);
     if (action === "wallet_balance") {
       const { data: rows, error } = await admin.from("wallet_transactions").select("amount,currency,direction").eq("telegram_customer_id", customer.id);
       if (error) return json({ error: "WALLET_READ_FAILED" }, 500);
