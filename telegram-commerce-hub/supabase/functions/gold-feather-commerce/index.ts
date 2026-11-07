@@ -178,10 +178,12 @@ async function checkPayment(order: any, customer: any, submission: any, settings
   const receiver = tx.receiverInfo || {};
   const payer = tx.payerInfo || {};
   const configuredPayId = String(settings.binance_pay_id || "").trim();
-  if (!configuredPayId || !customer.binance_id) return { state: "rejected", message: "Store Binance Pay ID or your Binance UID is missing from the profile." };
+  if (!configuredPayId) return { state: "rejected", message: "The store receiving Binance Pay ID is not configured." };
   const receiverIds = [receiver.accountId, receiver.binanceId, receiver.email, receiver.phoneNumber].filter(Boolean).map((v: any) => String(v).trim().toLowerCase());
   const receiverMatches = configuredPayId && receiverIds.includes(configuredPayId.toLowerCase());
-  const payerMatches = String(payer.binanceId || "") === String(customer.binance_id || "");
+  // Customers are not asked for a Binance UID. The transaction ID, configured receiver,
+  // exact amount/currency, successful status and order time are the payment proof.
+  const payerMatches = true;
   const time = Number(tx.transactionTime || 0);
   const timeMatches = time >= new Date(order.created_at).getTime() - 120000 && time <= new Date(order.expires_at).getTime() + 120000;
   const typeMatches = String(tx.orderType || "").toUpperCase() === "C2C" && String(payer.type || "").toUpperCase() === "USER" && String(receiver.type || "").toUpperCase() === "USER";
@@ -193,7 +195,6 @@ async function checkPayment(order: any, customer: any, submission: any, settings
   if (!receiverMatches || !payerMatches || !timeMatches || !typeMatches || !amountCurrencyMatches || !transactionSucceeded) {
     const reasons = [
       !receiverMatches && "recipient mismatch",
-      !payerMatches && "payer Binance UID mismatch",
       !timeMatches && "transaction time outside order window",
       !typeMatches && "unsupported transaction type",
       !amountCurrencyMatches && "amount/currency mismatch",
