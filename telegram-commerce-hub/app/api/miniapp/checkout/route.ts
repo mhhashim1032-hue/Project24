@@ -6,7 +6,7 @@ export async function POST(req:Request){
   const user=await telegramUser(req);
   const body=await req.json();
   const db=dbInternal();
-  if(body.action==='create_order'){
+  if(body.action==='save_binance_id'){const {data,error}=await db.rpc('telegram_save_binance_id',{p_telegram_user_id:String(user.id),p_binance_id:String(body.binanceId||'').trim()});if(error)throw error;return NextResponse.json({ok:true,profile:data})}if(body.action==='create_order'){
    const {data,error}=await db.rpc('telegram_create_order_idempotent',{p_telegram_user_id:String(user.id),p_product_id:body.productId,p_plan_id:body.planId,p_idempotency_key:body.idempotencyKey});
    if(error)throw error;
    return NextResponse.json({ok:true,order:data});
