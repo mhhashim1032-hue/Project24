@@ -39,13 +39,16 @@ async function verifyTelegramInitData(raw: string, botId: string) {
   const signatureCheckString = signaturePairs.join("\n");
   let valid = false;
   if (signature && botId) {
-    const checkString = `${botId}:WebAppData\n${signatureCheckString}`;
-    const publicKey = await crypto.subtle.importKey(
-      "raw", fromHex("e7bf03a2fa4602af4580703d88dda5bb59f32ed8b02a56c187fe7d34caed242d"),
-      { name: "Ed25519" }, false, ["verify"]
-    );
-    valid = await crypto.subtle.verify({ name: "Ed25519" }, publicKey, fromBase64Url(signature), new TextEncoder().encode(checkString));
-  } else {
+    try {
+      const checkString = `${botId}:WebAppData\n${signatureCheckString}`;
+      const publicKey = await crypto.subtle.importKey(
+        "raw", fromHex("e7bf03a2fa4602af4580703d88dda5bb59f32ed8b02a56c187fe7d34caed242d"),
+        { name: "Ed25519" }, false, ["verify"]
+      );
+      valid = await crypto.subtle.verify({ name: "Ed25519" }, publicKey, fromBase64Url(signature), new TextEncoder().encode(checkString));
+    } catch { valid = false; }
+  }
+  if (!valid) {
     const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
     if (!botToken) throw new Error("TELEGRAM_BOT_TOKEN_NOT_CONFIGURED");
     const encoder = new TextEncoder();
