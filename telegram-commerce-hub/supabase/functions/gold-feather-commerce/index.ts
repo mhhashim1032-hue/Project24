@@ -88,7 +88,7 @@ async function checkPayment(order: any, customer: any, submission: any, settings
     await admin.from("payment_submissions").update({ last_verification_at: new Date().toISOString(), verification_attempts: (submission.verification_attempts || 0) + 1, review_note: "Binance returned the maximum 100 records for this time window. Verification is paused to avoid an incomplete match; contact support." }).eq("id", submission.id);
     return { state: "pending", message: "Too many transactions in the search window. Verification is paused safely; contact support." };
   }
-  const tx = rows.find((x: any) => String(x.transactionId || "") === String(submission.transaction_reference));
+  const tx = rows.find((x: any) => String(x.transactionId || "").toUpperCase() === String(submission.transaction_reference).toUpperCase());
   if (!tx) {
     await admin.from("payment_submissions").update({ last_verification_at: new Date().toISOString(), verification_attempts: (submission.verification_attempts || 0) + 1, review_note: "Transaction ID not visible in Binance Pay history yet. Use Check again after a short wait." }).eq("id", submission.id);
     return { state: "pending", message: "Transaction not visible yet. Wait briefly and use Check again. Do not submit the same ID again." };
@@ -96,6 +96,7 @@ async function checkPayment(order: any, customer: any, submission: any, settings
   const receiver = tx.receiverInfo || {};
   const payer = tx.payerInfo || {};
   const configuredPayId = String(settings.binance_pay_id || "").trim();
+  if (!configuredPayId || !customer.binance_id) return { state: "rejected", message: "Store Binance Pay ID or your Binance UID is missing from the profile." };
   const receiverIds = [receiver.accountId, receiver.binanceId, receiver.email, receiver.phoneNumber].filter(Boolean).map((v: any) => String(v).trim().toLowerCase());
   const receiverMatches = configuredPayId && receiverIds.includes(configuredPayId.toLowerCase());
   const payerMatches = String(payer.binanceId || "") === String(customer.binance_id || "");
@@ -178,6 +179,10 @@ Deno.serve(async (req: Request) => {
       const idempotencyKey = String(body.idempotencyKey || "");
       if (!/^[0-9a-f-]{36}$/i.test(idempotencyKey)) return json({ error: "INVALID_IDEMPOTENCY_KEY" }, 400);
       if (!customer.binance_id) return json({ error: "SAVE_BINANCE_UID_FIRST" }, 400);
+      if (!settings.binance_pay_id) return json({ error: "STORE_BINANCE_PAY_ID_NOT_CONFIGURED" }, 503);
+      await admin.from("orders").update({ status: "cancelled" }).eq("telegram_customer_id", customer.id).eq("status", "awaiting_payment").lte("expires_at", new Date().toISOString());
+      const { data: openOrder } = await admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at").eq("telegram_customer_id", customer.id).eq("status", "awaiting_payment").maybeSingle();
+      if (openOrder) return json({ ok: true, order: openOrder, reusedOpenOrder: true });
       const { data: existing } = await admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at").eq("telegram_customer_id", customer.id).eq("telegram_idempotency_key", idempotencyKey).maybeSingle();
       if (existing) return json({ ok: true, order: existing });
       const { data: plan, error: planError } = await admin.from("product_plans").select("id,name,price,currency,product_id,duration_days,is_active").eq("id", planId).eq("is_active", true).maybeSingle();
@@ -199,7 +204,7 @@ Deno.serve(async (req: Request) => {
     }
     if (action === "verify_payment") {
       const orderId = String(body.orderId || "");
-      const transactionId = String(body.transactionId || "").trim();
+      const transactionId = String(body.transactionId || "").trim().toUpperCase();
       if (!orderId || transactionId.length < 5 || transactionId.length > 128) return json({ error: "INVALID_PAYMENT_REFERENCE" }, 400);
       const { data: order } = await admin.from("orders").select("*").eq("id", orderId).eq("telegram_customer_id", customer.id).maybeSingle();
       if (!order || order.status !== "awaiting_payment") return json({ error: "ORDER_NOT_PAYABLE" }, 409);
