@@ -243,6 +243,8 @@ Deno.serve(async (req: Request) => {
 
     const body = await req.json();
     const action = String(body.action || "");
+    const { error: expiryError } = await admin.rpc("expire_telegram_orders");
+    if (expiryError) console.error("Expired order cleanup failed", expiryError);
     const needsChannel = ["create_order","pay_with_wallet","verify_usdt_onchain","refresh_onchain_payment","verify_payment","refresh_payment"].includes(action);
     const channelJoined = await telegramChannelJoined(customer,settings);
     if (needsChannel && !channelJoined) return json({error:"CHANNEL_JOIN_REQUIRED",message:"Join our Telegram channel before purchasing.",joinUrl:settings.required_channel_url||null},403);
