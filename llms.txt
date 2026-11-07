@@ -1,0 +1,17 @@
+# SiteShiftKit
+
+SiteShiftKit is an independent collection of free browser-based website migration QA utilities and practical technical SEO guides. It is not affiliated with Google. The current utilities process user-provided text locally in the browser and do not crawl arbitrary websites or verify live HTTP status codes.
+
+## Tools
+- [URL List Comparator](https://siteshiftkit-site.onrender.com/url-list-comparator.html): Compare old and new URL inventories.
+- [Redirect Map Validator](https://siteshiftkit-site.onrender.com/redirect-map-validator.html): Find duplicate redirect sources and potential chains.
+- [Robots.txt Analyzer](https://siteshiftkit-site.onrender.com/robots-txt-analyzer.html): Review robots directives.
+- [XML Sitemap Analyzer](https://siteshiftkit-site.onrender.com/xml-sitemap-analyzer.html): Parse XML sitemap content.
+- [Canonical Tag Checker](https://siteshiftkit-site.onrender.com/canonical-tag-checker.html): Inspect canonical declarations.
+- [llms.txt Generator](https://siteshiftkit-site.onrender.com/llms-txt-generator.html): Generate a Markdown page index.
+
+## Guides
+- [Website Migration Checklist](https://siteshiftkit-site.onrender.com/website-migration-checklist.html)
+- [Redirect Mapping Guide](https://siteshiftkit-site.onrender.com/redirect-mapping-guide.html)
+- [Robots.txt During a Redesign](https://siteshiftkit-site.onrender.com/robots-txt-redesign-guide.html)
+- [AI Search Readiness Guide](https://siteshiftkit-site.onrender.com/ai-search-readiness-guide.html)
