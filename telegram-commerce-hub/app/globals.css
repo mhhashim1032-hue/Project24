@@ -54,7 +54,7 @@
 .mini-payment-methods button.active{border:2px solid var(--mini-accent);background:color-mix(in srgb,var(--mini-accent) 9%,white)}
 .mini-payment-methods button small{font-size:9px;font-weight:500;opacity:.7}
 .mini-deadline{display:flex;align-items:center;gap:6px;padding:10px 12px;border-radius:9px;background:rgba(185,125,30,.1);font-size:11px;flex-wrap:wrap}
-.mini-promo{margin:16px 0 8px}.mini-promo a{display:flex;justify-content:center;align-items:center;gap:7px;padding:13px;border-radius:12px;background:#173d35;color:#fff;text-decoration:none;font-weight:700;font-size:12px}
+.mini-promo{margin:10px 0 5px}.mini-promo a{display:flex;justify-content:flex-start;align-items:center;gap:9px;max-width:100%;padding:8px 11px;border:1px solid var(--mini-line,rgba(100,110,100,.18));border-radius:9px;background:rgba(100,120,110,.055);color:inherit;text-decoration:none;font-weight:600;font-size:11px;transition:background .18s,border-color .18s}.mini-promo a:hover{background:rgba(100,120,110,.1);border-color:var(--mini-accent)}.mini-promo-icon{display:grid;place-items:center;width:29px;height:25px;flex:0 0 29px;border-radius:6px;background:#173d3512;color:#286b55;font-size:9px;font-weight:800;letter-spacing:.3px}.mini-promo-copy{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}.mini-promo-copy b{font-size:11px;line-height:1.2}.mini-promo-copy small{font-size:9px;line-height:1.3;opacity:.65;font-weight:500}.mini-promo a>svg{flex:0 0 auto;opacity:.65}
 .mini-support{text-align:center;margin:10px}.mini-support a{color:var(--mini-accent);font-size:12px;font-weight:700}
 .mini-payment-methods button span{font-size:18px}
 @media(max-width:390px){.mini-payment-methods{gap:5px}.mini-payment-methods button{padding:10px 7px;font-size:10px}}
