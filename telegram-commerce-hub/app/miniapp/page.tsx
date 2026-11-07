@@ -1,6 +1,5 @@
 'use client';
 import {useCallback,useEffect,useState} from 'react';
-import Script from 'next/script';
 import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,Copy,Package,ShieldCheck,ShoppingBag,UserRound} from 'lucide-react';
 declare global{interface Window{Telegram?:{WebApp:{initData:string;ready:()=>void;expand:()=>void;HapticFeedback?:{notificationOccurred:(s:string)=>void}}}}}
 type Plan={id:string;name:string;price:number;currency:string;duration_days:number|null;stock:number|null};
@@ -17,7 +16,7 @@ export default function MiniApp(){
  const copy=async(t:string)=>{try{await navigator.clipboard.writeText(t);setError('Copied to clipboard.')}catch{setError('Copy is unavailable on this device.')}};
  const back=()=>{setOrder(null);setPaymentId('');setStatus('');setSelected(null);setPlan(null);setError('')};
  const statusLabel=(s:string)=>s?.replaceAll('_',' ')||'unknown';
- return <><Script src="https://telegram.org/js/telegram-web-app.js?64" strategy="beforeInteractive"/><main className="mini-shell"><header className="mini-header"><div className="mini-logo"><span className="mini-emblem">GF</span><div><b>GOLD FEATHER</b><small>PREMIUM</small></div></div><span className="mini-secure"><ShieldCheck size={14}/> SECURE STORE</span></header><div className="mini-content">
+ return <><main className="mini-shell"><header className="mini-header"><div className="mini-logo"><span className="mini-emblem">GF</span><div><b>GOLD FEATHER</b><small>PREMIUM</small></div></div><span className="mini-secure"><ShieldCheck size={14}/> SECURE STORE</span></header><div className="mini-content">
  {!initData&&<section className="mini-panel mini-center"><div className="mini-icon"><ShoppingBag/></div><h2>Open in Telegram</h2><p>This store uses Telegram's secure Mini App sign-in. Open it from the Gold Feather Premium bot.</p></section>}
  {initData&&!profile&&!error&&<section className="mini-panel mini-center"><div className="mini-spinner"/><h2>Connecting your account</h2><p>Verifying your Telegram profile securely…</p></section>}
  {error&&<div className="mini-notice">{error}</div>}
