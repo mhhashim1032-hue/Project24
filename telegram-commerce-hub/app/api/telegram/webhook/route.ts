@@ -4,7 +4,7 @@ export const runtime = 'nodejs';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
-const APP_URL = (process.env.APP_URL || '').replace(/\\/$/, '');
+const APP_URL = (process.env.APP_URL || '').replace(/\/$/, '');
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ckresrujdienuqczzyki.supabase.co';
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -94,8 +94,8 @@ export async function POST(req: NextRequest) {
 
       const storeName = process.env.STORE_NAME || 'GOLD FEATHER PREMIUM';
       const text = registered
-        ? `<b>${storeName}</b>\\nWelcome, ${String(user.first_name || 'there').replace(/[&<>"]/g, '')}! Your Telegram account is now registered. Open the store to browse products, place orders and manage your purchases.`
-        : `<b>${storeName}</b>\\nWelcome! The store is temporarily unable to finish your profile registration. Please open the Mini App or try again shortly.`;
+        ? `<b>${storeName}</b>\nWelcome, ${String(user.first_name || 'there').replace(/[&<>"]/g, '')}! Your Telegram account is now registered. Open the store to browse products, place orders and manage your purchases.`
+        : `<b>${storeName}</b>\nWelcome! The store is temporarily unable to finish your profile registration. Please open the Mini App or try again shortly.`;
 
       await telegram('sendMessage', {
         chat_id: chatId,
