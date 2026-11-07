@@ -129,6 +129,9 @@ end; $$;
 revoke all on function public.reserve_binance_pay_history_slot() from public,anon,authenticated;
 grant execute on function public.reserve_binance_pay_history_slot() to service_role;
 
+drop function if exists public.record_verified_binance_payment(uuid,uuid,text,numeric,text,text,text,timestamptz,jsonb);
+drop function if exists public.record_verified_binance_payment(uuid,uuid,uuid,text,text,text,text,text,timestamptz,jsonb);
+
 create or replace function public.record_verified_binance_payment(
  p_order_id uuid,p_telegram_customer_id uuid,p_payment_submission_id uuid,p_transaction_id text,
  p_amount numeric,p_currency text,p_payer_binance_id text,p_receiver_pay_id text,
