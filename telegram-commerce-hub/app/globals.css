@@ -399,3 +399,6 @@
 .mini-shell.design-graphite .mini-catalog-search{border-radius:5px;box-shadow:none}
 .mini-shell.design-lavender .mini-catalog-search{border-radius:25px;box-shadow:0 10px 24px #7961a51b}
 .mini-shell.design-arctic .mini-catalog-search{backdrop-filter:blur(20px);background:#ffffffa8}
+
+.mini-preview-banner{margin:0 0 15px;padding:10px 13px;border:1px dashed #b18b42;border-radius:10px;background:#fff9e9;color:#7d612e;font:800 9px 'DM Mono';letter-spacing:1px;text-align:center}
+.mini-shell.design-midnight .mini-preview-banner,.mini-shell.design-cyber .mini-preview-banner{background:#211a31;color:#e2c0ff;border-color:#8f5ac0}
