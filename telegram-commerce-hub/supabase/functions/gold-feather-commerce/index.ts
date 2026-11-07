@@ -24,10 +24,9 @@ async function verifyTelegramInitData(raw: string, botId: string) {
   const signature = params.get("signature");
   const hash = params.get("hash");
   const authDate = Number(params.get("auth_date") || 0);
-  if (!authDate || !hash) throw new Error("TELEGRAM_SIGNATURE_MISSING");
+  if (!authDate || !hash || !/^[0-9a-f]{64}$/i.test(hash)) throw new Error("TELEGRAM_SIGNATURE_MISSING");
   const now = Math.floor(Date.now() / 1000);
   if (authDate > now + 60 || now - authDate > 3600) throw new Error("TELEGRAM_SESSION_EXPIRED");
-  if (!/^[0-9a-f]{64}$/i.test(hash)) throw new Error("TELEGRAM_HASH_INVALID");
   const hmacPairs: string[] = [];
   const signaturePairs: string[] = [];
   for (const [key, value] of params.entries()) {
@@ -143,7 +142,7 @@ async function checkPayment(order: any, customer: any, submission: any, settings
   const payerMatches = String(payer.binanceId || "") === String(customer.binance_id || "");
   const time = Number(tx.transactionTime || 0);
   const timeMatches = time >= new Date(order.created_at).getTime() - 120000 && time <= new Date(order.expires_at).getTime() + 120000;
-  const typeMatches = String(tx.orderType || "").toUpperCase() === "C2C";
+  const typeMatches = String(tx.orderType || "").toUpperCase() === "C2C" && String(payer.type || "").toUpperCase() === "USER" && String(receiver.type || "").toUpperCase() === "USER";
   const currency = String(order.currency || "").toUpperCase();
   const directValueMatches = decimalEqual(tx.amount, order.amount) && String(tx.currency || "").toUpperCase() === currency;
   const fundsValueMatches = fundsDetailMatches(tx, order.amount, currency);
