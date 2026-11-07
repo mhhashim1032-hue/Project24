@@ -18,5 +18,6 @@ ENV HOSTNAME=0.0.0.0
 RUN mkdir -p /app/public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 EXPOSE 10000
 CMD ["node","server.js"]
