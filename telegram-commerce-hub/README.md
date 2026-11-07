@@ -5,7 +5,7 @@ Gold Feather Premium is a Telegram-first digital commerce platform with a privat
 ## Production architecture
 
 - Next.js 15 / React 19 app on Render (Singapore)
-- Supabase PostgreSQL, RLS and server-side Edge Function
+- Supabase PostgreSQL, RLS and private server-side RPCs
 - Telegram Bot API webhook and Telegram Mini App
 - Binance Pay personal-account transaction history API (read-only)
 - Atomic payment claims, duplicate transaction protection and idempotent orders
@@ -16,13 +16,13 @@ Gold Feather Premium is a Telegram-first digital commerce platform with a privat
 - Telegram Mini App: https://nova-telegram-commerce.onrender.com/miniapp
 - Health: https://nova-telegram-commerce.onrender.com/api/health
 
-The custom domain can be connected later; update `APP_URL` when it is ready.
+The custom domain can be connected later; update `APP_URL` when it is ready. Active Mini App server endpoints are Next.js API routes on Render; the Supabase Edge Function source folder is not deployed or required.
 
 ## Telegram setup
 
 1. Create the bot using @BotFather.
 2. Add `TELEGRAM_BOT_TOKEN` to the Render service environment.
-3. In the admin dashboard, enter the numeric Telegram Bot ID (the digits before the colon in the bot token) under Store identity and save.
+3. The server calls Telegram `getMe` on startup and synchronizes the numeric Bot ID into Store identity automatically.
 4. On server startup the app sets the bot display name to **Gold Feather Premium**, configures the webhook and installs the persistent **Open Store** Mini App menu button.
 5. Send `/start` to the bot.
 
@@ -40,13 +40,13 @@ This implementation uses Binance's personal-account Pay Trade History endpoint:
 
 ### Configure credentials
 
-In Supabase Dashboard → Edge Functions → Secrets, add:
+In the Render service → Environment, add:
 
 - `BINANCE_API_KEY`
 - `BINANCE_API_SECRET`
-- `TELEGRAM_BOT_TOKEN` (same bot token also configured in Render; required for standard Telegram HMAC validation when the client does not provide an Ed25519 signature)
+- `TELEGRAM_BOT_TOKEN` is already the Render bot credential; do not store a duplicate in the browser or Supabase database.
 
-Create a personal Binance API key with **Read-only / USER_DATA** permission only. Do not enable trading or withdrawals. Never put the API secret in GitHub, Render frontend variables, browser code, Telegram messages or the admin form.
+Create a personal Binance API key with **Read-only / USER_DATA** permission only. Do not enable trading or withdrawals. Never put the API secret in GitHub, `NEXT_PUBLIC_` variables, browser code, Telegram messages or the admin form. The app's `INTERNAL_API_SECRET` and `PAYMENT_VERIFY_SECRET` are already provisioned server-side.
 
 In the admin dashboard:
 - Set the receiving **Binance Pay ID** under Bot & Store.
@@ -76,7 +76,7 @@ A submitted transaction ID is not accepted as proof by itself. If Binance has no
 - Idempotency key protects order creation from repeat taps/network retries.
 - Expired unpaid orders are cancelled before a new order is created.
 
-Binance Pay transaction history has a high UID request weight. The app only calls the API when a customer submits a transaction or explicitly rechecks a pending submission, and enforces a 60-second per-submission cooldown plus a 31-second account-wide request gate. If the API returns the maximum 100 records in the search window, verification fails closed rather than accepting an incomplete match.
+Binance Pay transaction history has a high UID request weight. The active Next.js API routes only call the API when a customer submits a transaction or explicitly rechecks a pending submission, and enforce a 65-second account-wide request gate because the endpoint carries a high request weight. If the API returns the maximum 100 records in the search window, verification fails closed rather than accepting an incomplete match.
 
 ## Customer Mini App
 
@@ -117,12 +117,12 @@ where p.id = u.id
 ## Security model
 
 - Telegram Mini App identity is verified server-side using Telegram's signed data.
-- The Supabase Edge Function uses the platform-provided server secret key; no service-role key is shipped to the browser.
+- Telegram Mini App API routes use an internal server-only secret and private PostgreSQL RPCs; no service-role key is shipped to the browser.
 - Telegram customer profiles and delivery payloads are protected by RLS.
 - Customers can access only their own orders through the authenticated Telegram Mini App flow.
 - Payment state transitions and duplicate claims are enforced in PostgreSQL.
-- Binance credentials are stored only as Supabase Edge Function secrets.
-- Manual admin payment approval is not offered for Binance API submissions.
+- Binance credentials are stored only as server-side Render environment variables.
+- Admin manual payment review remains available as a fallback when Binance API credentials are not configured or a transfer cannot be matched.
 
 ## Important operational notes
 
