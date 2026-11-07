@@ -44,6 +44,19 @@ async function verifyTelegramInitData(raw: string, botId: string) {
   if (!user?.id || !Number.isSafeInteger(Number(user.id))) throw new Error("TELEGRAM_USER_INVALID");
   return user;
 }
+function decimalToUnits(value: unknown): bigint | null {
+  const s=String(value ?? "").trim();
+  if(!/^\\d+(\\.\\d+)?$/.test(s)) return null;
+  const [whole,frac=""]=s.split(".");
+  return BigInt(whole)*100000000n+BigInt((frac+"00000000").slice(0,8));
+}
+function fundsDetailMatches(tx: any, expectedAmount: unknown, expectedCurrency: string) {
+  const target=decimalToUnits(expectedAmount);
+  if(target===null||!Array.isArray(tx.fundsDetail))return false;
+  const total=tx.fundsDetail.filter((f:any)=>String(f.currency||"").toUpperCase()===expectedCurrency.toUpperCase())
+    .reduce((sum:bigint,f:any)=>sum+(decimalToUnits(f.amount)??0n),0n);
+  return total===target;
+}
 function decimalEqual(a: unknown, b: unknown) {
   const norm = (v: unknown) => {
     const s = String(v ?? "").trim();
@@ -103,16 +116,19 @@ async function checkPayment(order: any, customer: any, submission: any, settings
   const time = Number(tx.transactionTime || 0);
   const timeMatches = time >= new Date(order.created_at).getTime() - 120000 && time <= new Date(order.expires_at).getTime() + 120000;
   const typeMatches = ["PAY", "C2C"].includes(String(tx.orderType || "").toUpperCase());
-  const amountMatches = decimalEqual(tx.amount, order.amount);
-  const currencyMatches = String(tx.currency || "").toUpperCase() === String(order.currency || "").toUpperCase();
-  if (!receiverMatches || !payerMatches || !timeMatches || !typeMatches || !amountMatches || !currencyMatches) {
+  const currency = String(order.currency || "").toUpperCase();
+  const directValueMatches = decimalEqual(tx.amount, order.amount) && String(tx.currency || "").toUpperCase() === currency;
+  const fundsValueMatches = fundsDetailMatches(tx, order.amount, currency);
+  const amountCurrencyMatches = directValueMatches || fundsValueMatches;
+  const transactionSucceeded = tx.success !== false;
+  if (!receiverMatches || !payerMatches || !timeMatches || !typeMatches || !amountCurrencyMatches || !transactionSucceeded) {
     const reasons = [
       !receiverMatches && "recipient mismatch",
       !payerMatches && "payer Binance UID mismatch",
       !timeMatches && "transaction time outside order window",
       !typeMatches && "unsupported transaction type",
-      !amountMatches && "amount mismatch",
-      !currencyMatches && "currency mismatch",
+      !amountCurrencyMatches && "amount/currency mismatch",
+      !transactionSucceeded && "transaction not successful",
     ].filter(Boolean).join(", ");
     await admin.from("payment_submissions").update({ status: "rejected", last_verification_at: new Date().toISOString(), verification_attempts: (submission.verification_attempts || 0) + 1, verification_source: "binance_pay_api", verification_payload: { transactionId: tx.transactionId, orderType: tx.orderType, amount: tx.amount, currency: tx.currency }, review_note: `Automatic verification rejected: ${reasons}.` }).eq("id", submission.id);
     return { state: "rejected", message: `Payment verification rejected: ${reasons}.` };
