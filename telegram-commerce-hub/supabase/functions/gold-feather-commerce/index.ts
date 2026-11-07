@@ -283,6 +283,68 @@ Deno.serve(async (req: Request) => {
       if (error) return json({ error: error.message || "WARRANTY_CLAIM_FAILED" }, 400);
       return json({ ok: true, claimId });
     }
+    if (action === "save_language") {
+      const language = String(body.language || "").toLowerCase();
+      if (!["en","ar","zh","ru","es","fr"].includes(language)) return json({ error: "UNSUPPORTED_LANGUAGE" }, 400);
+      const { data, error } = await admin.from("telegram_customers").update({ preferred_language: language, updated_at: new Date().toISOString() }).eq("id", customer.id).select("*").single();
+      if (error || !data) return json({ error: "LANGUAGE_SAVE_FAILED" }, 500);
+      return json({ ok: true, preferred_language: data.preferred_language });
+    }
+    if (action === "translate_batch") {
+      const target = String(body.target || body.targetLanguage || customer.preferred_language || "en").toLowerCase();
+      const supported = ["en","ar","zh","ru","es","fr"];
+      if (!supported.includes(target)) return json({ error: "UNSUPPORTED_LANGUAGE" }, 400);
+      const texts = Array.isArray(body.texts) ? body.texts.slice(0, 100).map((v: unknown) => String(v ?? "").slice(0, 1500)) : [];
+      if (!texts.length || target === "en") return json({ ok: true, provider: "built-in", translations: texts });
+      const unique = [...new Set(texts.filter((t: string) => t.trim().length > 0))] as string[];
+      const cached = new Map<string,string>();
+      if (unique.length) {
+        const { data: rows } = await admin.from("marketplace_translation_cache").select("source_text,translated_text").eq("target_language", target).in("source_text", unique);
+        for (const row of rows || []) cached.set(row.source_text, row.translated_text);
+      }
+      const missing = unique.filter((t: string) => !cached.has(t));
+      const targetCode = target === "zh" ? "zh-CN" : target;
+      const translateOne = async (original: string): Promise<{text:string;provider:string}> => {
+        // First fallback: Google's public web translation endpoint (no API key).
+        try {
+          const params = new URLSearchParams({ client: "gtx", sl: "en", tl: targetCode, dt: "t", q: original });
+          const response = await fetch("https://translate.googleapis.com/translate_a/single?" + params.toString(), { headers: { "Accept": "application/json" }, signal: AbortSignal.timeout(7000) });
+          if (response.ok) {
+            const payload = await response.json();
+            const translated = Array.isArray(payload?.[0]) ? payload[0].map((part: any) => String(part?.[0] || "")).join("").trim() : "";
+            if (translated && translated !== original) return {text:translated,provider:"google-web"};
+          }
+        } catch {}
+        // Second fallback: MyMemory's anonymous endpoint.
+        try {
+          const params = new URLSearchParams({ q: original, langpair: "en|" + targetCode });
+          const response = await fetch("https://api.mymemory.translated.net/get?" + params.toString(), { headers: { "Accept": "application/json" }, signal: AbortSignal.timeout(10000) });
+          if (response.ok) {
+            const result = await response.json();
+            const translated = String(result?.responseData?.translatedText || "").replace(/&amp;/g,"&").replace(/&#39;/g,"'").replace(/&quot;/g,'"').trim();
+            if (translated && Number(result?.responseStatus || 0) === 200 && translated !== original) return {text:translated,provider:"mymemory"};
+          }
+        } catch {}
+        return {text:original,provider:"original"};
+      };
+      let googleCount=0, memoryCount=0, failedCount=0;
+      for (let i=0;i<missing.length;i+=4) {
+        const batch=missing.slice(i,i+4);
+        const results=await Promise.all(batch.map(translateOne));
+        for (let j=0;j<batch.length;j++) {
+          const original=batch[j], result=results[j];
+          cached.set(original,result.text);
+          if(result.provider==="google-web") googleCount++;
+          else if(result.provider==="mymemory") memoryCount++;
+          else failedCount++;
+          if(result.text!==original) await admin.from("marketplace_translation_cache").upsert(
+            {target_language:target,source_text:original,translated_text:result.text,provider:result.provider,updated_at:new Date().toISOString()},
+            {onConflict:"target_language,source_text",ignoreDuplicates:false}
+          );
+        }
+      }
+      return json({ok:true,provider:"google-web+mymemory",google:googleCount,mymemory:memoryCount,failed:failedCount,cached:unique.length-missing.length,translations:texts.map((t:string)=>cached.get(t)||t)});
+    }
     if (action === "bootstrap") {
       const [products, orders] = await Promise.all([
         admin.from("products").select("id,name,description,category,image_url,product_plans(id,name,description,price,currency,duration_days,stock,is_active,quantity_discount_tiers)").eq("is_active", true).eq("product_plans.is_active", true).order("sort_order"),
