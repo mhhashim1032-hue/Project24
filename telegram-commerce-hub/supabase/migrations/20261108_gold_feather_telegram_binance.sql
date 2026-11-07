@@ -177,3 +177,5 @@ create policy "admins delete subscriptions" on public.subscriptions for delete t
 create index if not exists subscriptions_customer_id_idx on public.subscriptions(customer_id);
 create index if not exists subscriptions_plan_id_idx on public.subscriptions(plan_id);
 create index if not exists subscriptions_product_id_idx on public.subscriptions(product_id);
+
+create unique index if not exists payment_submissions_binance_reference_global_ci on public.payment_submissions(lower(transaction_reference)) where provider in ('binance_pay_id','binance_pay_api');
