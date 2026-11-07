@@ -117,6 +117,16 @@ async function binancePayHistory(startTime: number, endTime: number) {
   }
   return Array.isArray(result.data) ? result.data : [];
 }
+async function notifyCommerceEvent(settings: any, message: string) {
+  const token = Deno.env.get("NOTIFICATION_BOT_TOKEN"); const chatId = String(settings.notification_chat_id || "").trim();
+  if (!token || !chatId) return;
+  try { await fetch("https://api.telegram.org/bot"+token+"/sendMessage",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:chatId,text:message,disable_web_page_preview:true}),signal:AbortSignal.timeout(8000)}); } catch (err) { console.error("Notification bot delivery failed",err); }
+}
+async function telegramChannelJoined(customer: any, settings: any) {
+  const channelId=String(settings.required_channel_id||"").trim(); if(!channelId)return true;
+  const token=Deno.env.get("TELEGRAM_BOT_TOKEN"); if(!token)return false;
+  try { const r=await fetch("https://api.telegram.org/bot"+token+"/getChatMember",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:channelId,user_id:Number(customer.telegram_user_id)}),signal:AbortSignal.timeout(8000)}); const d=await r.json(); const s=d?.result?.status; return Boolean(d?.ok&&(["creator","administrator","member"].includes(s)||(s==="restricted"&&d.result?.is_member===true))); } catch { return false; }
+}
 async function verifyTronPayment(order: any, customer: any, submission: any, settings: any) {
   const hash = String(submission.transaction_reference || '').trim();
   const response = await fetch('https://apilist.tronscanapi.com/api/transaction-info?hash=' + encodeURIComponent(hash), {
@@ -137,7 +147,7 @@ async function verifyTronPayment(order: any, customer: any, submission: any, set
   if (!valid) { await admin.from('payment_submissions').update({ status:'rejected',verification_source:'onchain_explorer',verification_payload:tx,review_note:'On-chain transfer rejected: token contract, recipient, exact amount or payment time did not match.',last_verification_at:new Date().toISOString(),verification_attempts:(submission.verification_attempts||0)+1 }).eq('id',submission.id); return { state:'rejected',message:'This transaction does not match the required USDT token, receiving address, exact amount or 30-minute order window.' }; }
   const { data, error } = await admin.rpc('record_verified_onchain_payment',{p_order_id:order.id,p_customer_id:customer.id,p_submission_id:submission.id,p_tx_hash:hash,p_network:'TRON',p_amount:String(amount),p_token_contract:contract,p_sender:sender,p_receiver:receiver,p_block_time:new Date(timestamp).toISOString(),p_raw:tx});
   if (error) { if (error.code==='23505'||error.message?.includes('duplicate key')) return {state:'duplicate',message:'This transaction hash has already been used.'}; if(error.message?.includes('ORDER_NOT_PAYABLE')) return {state:'rejected',message:'The order has expired or is no longer payable.'}; throw error; }
-  return {state:data.status,message:'USDT transfer confirmed on TRON. Payment verified successfully.',order:data};
+  await notifyCommerceEvent(settings,'USDT order paid\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\nOrder: '+order.order_number+'\nAmount: '+order.amount+' USDT\nNetwork: TRON TRC20\nTX: '+hash);\n  return {state:data.status,message:'USDT transfer confirmed on TRON. Payment verified successfully.',order:data};
 }
 async function checkPayment(order: any, customer: any, submission: any, settings: any) {
   const now = Date.now();
@@ -230,7 +240,7 @@ Deno.serve(async (req: Request) => {
     if (customer.is_blocked) return json({ error: "ACCOUNT_BLOCKED" }, 403);
 
     const body = await req.json();
-    const action = String(body.action || "");
+    const action = String(body.action || "");\n    const needsChannel = ["create_order","pay_with_wallet","verify_usdt_onchain","refresh_onchain_payment","verify_payment","refresh_payment"].includes(action);\n    const channelJoined = await telegramChannelJoined(customer,settings);\n    if (needsChannel && !channelJoined) return json({error:"CHANNEL_JOIN_REQUIRED",message:"Join our Telegram channel before purchasing.",joinUrl:settings.required_channel_url||null},403);
     if (action === "wallet_balance") {
       const { data: rows, error } = await admin.from("wallet_transactions").select("amount,currency,direction").eq("telegram_customer_id", customer.id);
       if (error) return json({ error: "WALLET_READ_FAILED" }, 500);
@@ -266,7 +276,7 @@ Deno.serve(async (req: Request) => {
         admin.from("products").select("id,name,description,category,image_url,product_plans(id,name,description,price,currency,duration_days,stock,is_active,quantity_discount_tiers)").eq("is_active", true).eq("product_plans.is_active", true).order("sort_order"),
         admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,product_id,paid_at,products(name,warranty_days)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(50),
       ]);
-      return json({ ok: true, profile: customer, settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency, usdt_network: settings.usdt_network||'TRON', usdt_wallet_address: settings.usdt_wallet_address, support_url: settings.support_url, required_channel_url: settings.required_channel_url, tempsms_url: settings.tempsms_url||'https://tempsmslive.com', miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837' }, products: products.data || [], orders: orders.data || [] });
+      return json({ ok: true, profile: customer, channelJoined: await telegramChannelJoined(customer,settings), settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency, usdt_network: settings.usdt_network||'TRON', usdt_wallet_address: settings.usdt_wallet_address, support_url: settings.support_url, required_channel_url: settings.required_channel_url, tempsms_url: settings.tempsms_url||'https://tempsmslive.com', miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837' }, products: products.data || [], orders: orders.data || [] });
     }
     if (action === "save_binance_id") {
       const binanceId = String(body.binanceId || "").trim();
@@ -294,7 +304,7 @@ Deno.serve(async (req: Request) => {
     if (action === 'pay_with_wallet') {
       const orderId=String(body.orderId||''); if(!orderId)return json({error:'ORDER_ID_REQUIRED'},400);
       const {data,error}=await admin.rpc('pay_telegram_order_from_wallet',{p_order_id:orderId,p_customer_id:customer.id});
-      if(error)return json({error:error.message||'WALLET_PAYMENT_FAILED'},400); return json({ok:true,...data});
+      if(error)return json({error:error.message||'WALLET_PAYMENT_FAILED'},400); await notifyCommerceEvent(settings,'Wallet order paid\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\nOrder: '+(data.order_number||orderId)); return json({ok:true,...data});
     }
     if (action === 'verify_usdt_onchain') {
       const orderId=String(body.orderId||''); const txHash=String(body.transactionHash||'').trim().toLowerCase();
