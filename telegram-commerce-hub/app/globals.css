@@ -206,3 +206,127 @@
 .mini-shell.design-cyber .mini-product{border-radius:7px;background:linear-gradient(145deg,#211a31,#11111b);border:1px solid #7952a6;box-shadow:0 0 22px #a65aff18}
 @media(max-width:420px){.mini-shell.design-gold .mini-products,.mini-shell.design-ocean .mini-products,.mini-shell.design-lavender .mini-products,.mini-shell.design-arctic .mini-products,.mini-shell.design-cyber .mini-products{gap:8px}.mini-shell.design-gold .mini-product,.mini-shell.design-ocean .mini-product,.mini-shell.design-lavender .mini-product,.mini-shell.design-arctic .mini-product,.mini-shell.design-cyber .mini-product{padding:10px}.mini-secure{display:none}}
 @media(prefers-reduced-motion:reduce){.mini-design-ribbon:after,.mini-product{animation:none;transition:none}}
+
+
+/* Gold Feather v2 — immersive storefront compositions */
+.mini-shell{padding-bottom:100px;overflow:hidden}
+.mini-header{height:76px;padding:0 max(18px,calc((100vw - 760px)/2));background:rgba(18,20,18,.94);backdrop-filter:blur(22px);border-bottom:1px solid #ffffff12}
+.mini-header-actions{display:flex;align-items:center;gap:10px}
+.mini-language-chip{border:1px solid #ffffff26;background:#ffffff0c;color:#fff;border-radius:30px;padding:8px 11px;font:700 10px 'DM Mono';letter-spacing:.5px}
+.mini-corner-profile{width:38px;height:38px;border-radius:50%;border:1px solid #d5bd7a;background:linear-gradient(145deg,#e9d7a6,#92703a);color:#171914;display:grid;place-items:center;overflow:hidden;box-shadow:0 4px 18px #d2ad5940}
+.mini-corner-profile img{width:100%;height:100%;object-fit:cover}
+.mini-secure{display:none}
+.mini-content{max-width:760px;padding:22px 18px 30px}
+.mini-profile{display:none}
+.mini-hero{position:relative;isolation:isolate;display:flex;align-items:center;min-height:260px;margin:2px 0 28px;padding:28px 24px;border-radius:24px;overflow:hidden;background:radial-gradient(circle at 83% 42%,#7b633d 0,transparent 31%),linear-gradient(120deg,#171a16,#25251e 62%,#403321);color:#fff;box-shadow:0 24px 55px #17191435}
+.mini-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 40%,#fff0 55%,#ffffff12 100%);z-index:-1}
+.mini-hero-copy{position:relative;z-index:2;max-width:68%}
+.mini-hero-kicker{font:9px 'DM Mono';letter-spacing:1.7px;color:#d7c18b}
+.mini-hero h1{font:800 clamp(26px,6vw,42px)/1.06 Manrope;letter-spacing:-1.8px;margin:18px 0 12px}
+.mini-hero h1 em{font-style:normal;color:#dfc98e}
+.mini-hero p{font-size:11px;line-height:1.65;color:#c9c3b4;max-width:310px}
+.mini-hero-meta{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px;font:8px 'DM Mono';letter-spacing:1px;color:#d4c18f}
+.mini-hero-meta span{display:flex;align-items:center;gap:5px}
+.mini-hero-art{position:absolute;right:3%;top:0;width:45%;height:100%;display:grid;place-items:center;perspective:700px}
+.hero-orbit{position:absolute;width:190px;height:190px;border:1px solid #d7bd7950;border-radius:50%;transform:rotateX(67deg) rotateZ(-22deg);box-shadow:0 0 35px #d7bd7915}
+.orbit-two{width:145px;height:145px;transform:rotateX(67deg) rotateZ(48deg);border-color:#fff4d02b}
+.hero-crystal{width:112px;height:132px;position:relative;display:grid;place-items:center;transform:rotateY(-22deg) rotateX(12deg);border:1px solid #e8d39b99;border-radius:28px 28px 38px 38px;background:linear-gradient(135deg,#fff7d966,#9a793b55 45%,#191a15);box-shadow:inset 8px 8px 24px #fff4d033,inset -12px -12px 22px #0008,0 30px 45px #0009;backdrop-filter:blur(5px);animation:crystal-float 5s ease-in-out infinite}
+.hero-crystal:before{content:"";position:absolute;inset:9px;border:1px solid #f1dda34d;border-radius:21px 21px 30px 30px}
+.hero-crystal b{font:900 31px Manrope;color:#f1dda5;text-shadow:0 5px 16px #000}
+.hero-crystal i{position:absolute;width:60px;height:60px;top:-15px;right:-18px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff,#d4b86b 22%,#76572d 65%,transparent 70%);filter:drop-shadow(0 10px 15px #0008)}
+.hero-float{position:absolute;color:#f0d89a;font-size:23px;animation:crystal-float 4s ease-in-out infinite}
+.hero-float-a{top:18%;right:20%}.hero-float-b{bottom:20%;left:12%;animation-delay:-2s}
+@keyframes crystal-float{0%,100%{transform:translateY(0) rotateY(-22deg) rotateX(12deg)}50%{transform:translateY(-10px) rotateY(8deg) rotateX(18deg)}}
+.mini-section-title{margin:26px 2px 15px;font-size:13px}
+.mini-section-title b{font-size:15px;letter-spacing:-.3px}
+.mini-section-title>span{font-size:9px}
+.mini-products{gap:16px}
+.design-product{padding:0!important;overflow:hidden;position:relative;display:flex;flex-direction:column;min-width:0;border:1px solid #ffffff80!important;border-radius:20px!important;background:#fff!important;box-shadow:0 15px 35px #17191412!important;transition:transform .28s ease,box-shadow .28s ease}
+.design-product:active{transform:scale(.985)}
+.design-product-stage{height:150px;position:relative;isolation:isolate;overflow:hidden;display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,#fff 0,#f0e8d6 55%,#e3d6bd 100%)}
+.design-product-stage:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,#ffffffa0,transparent 48%,#8b70401a)}
+.design-product-glow{position:absolute;width:110px;height:110px;border-radius:50%;background:#d9bd7b80;filter:blur(24px)}
+.design-product-orbit{position:absolute;width:118px;height:118px;border:1px solid #9d7c454f;border-radius:50%;transform:rotateX(67deg) rotateZ(25deg);box-shadow:0 0 20px #d2b36b38}
+.design-product-object{position:relative;width:74px;height:88px;display:grid;place-items:center;border:1px solid #d5bd7b;border-radius:20px 20px 26px 26px;background:linear-gradient(140deg,#fff8d9,#b69756 48%,#49381e);box-shadow:inset 7px 7px 16px #fff9,inset -8px -8px 16px #3c2b2059,0 17px 25px #58432155;transform:rotateY(-22deg) rotateX(12deg);animation:product-float 5s ease-in-out infinite}
+.design-product-object span{font:900 19px Manrope;color:#fff1c5;text-shadow:0 3px 8px #463216}
+.design-product-object i{position:absolute;top:-9px;right:-9px;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff,#dfc578 45%,#80602f);box-shadow:0 5px 10px #604a2d66}
+.design-product-object b{position:absolute;bottom:7px;right:9px;color:#fff2c6;font-size:11px}
+@keyframes product-float{0%,100%{transform:translateY(0) rotateY(-22deg) rotateX(12deg)}50%{transform:translateY(-6px) rotateY(12deg) rotateX(18deg)}}
+.design-product-image{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;z-index:1}
+.design-product-index{position:absolute;left:12px;top:11px;z-index:2;font:9px 'DM Mono';color:#75603a}
+.design-product-stage .mini-category{position:absolute;right:10px;top:10px;z-index:2;background:#fffdf0d9;color:#65512d;backdrop-filter:blur(8px)}
+.design-product-body{padding:14px;display:flex;flex-direction:column;flex:1}
+.design-product-eyebrow{font:8px 'DM Mono';letter-spacing:1.2px;color:#a18a5c}
+.design-product h3{font:750 14px/1.3 Manrope;margin:7px 0 5px;color:#24231e}
+.design-product>div>p,.design-product-body>p{font-size:10px;line-height:1.55;color:#898274;min-height:31px;margin:0}
+.design-product-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:12px}
+.design-product-foot .mini-price{font-size:11px;margin:0;color:#81632e}
+.design-product-foot .mini-primary{width:auto;white-space:nowrap;padding:10px 11px;font-size:9px}
+.mini-bottom-nav{position:fixed;z-index:30;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:0;padding:9px max(22px,calc((100vw - 520px)/2)) calc(9px + env(safe-area-inset-bottom));background:#141711ed;backdrop-filter:blur(20px);border-top:1px solid #ffffff19}
+.mini-bottom-nav button{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;border:0;background:none;color:#aaa99e;padding:8px 10px;font:600 10px Manrope}
+.mini-bottom-nav button.active{color:#e7cb84}
+.mini-bottom-nav button.active:before{content:"";position:absolute;top:0;width:28px;height:2px;background:#d7bd79}
+.mini-promo{margin:22px auto 10px;max-width:720px}
+.mini-support,.mini-footer{max-width:720px;margin-left:auto;margin-right:auto}
+.mini-language-overlay{position:fixed;z-index:100;inset:0;background:#090b0beF;backdrop-filter:blur(18px);display:grid;place-items:center;padding:20px}
+.mini-language-dialog{width:min(100%,420px);max-height:88vh;overflow:auto;border:1px solid #d7bd7955;border-radius:24px;padding:25px;background:linear-gradient(145deg,#24251f,#12140f);color:#fff;box-shadow:0 35px 100px #000b}
+.mini-language-dialog>small{font:9px 'DM Mono';letter-spacing:2px;color:#d7bd79}
+.mini-language-dialog h2{font:800 27px Manrope;margin:14px 0 6px}
+.mini-language-dialog p{font-size:11px;color:#c2bba9;margin-bottom:18px}
+.mini-language-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
+.mini-language-options button{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:12px 10px;border:1px solid #ffffff1b;border-radius:12px;background:#ffffff0a;color:#fff;font-size:11px;text-align:left}
+.mini-language-options button b{font:9px 'DM Mono';color:#d7bd79}
+.mini-profile-page{overflow:hidden}
+.mini-profile-cover{background:linear-gradient(135deg,#24271f,#65502d);margin:-19px -19px 22px;padding:24px;color:#e9d49b;min-height:125px}
+.mini-profile-cover>span{font:9px 'DM Mono';letter-spacing:1.5px}
+.mini-avatar.large{width:66px;height:66px;border:3px solid #fff;margin-top:18px}
+.mini-profile-stat{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #eee8dc;font-size:11px}
+.mini-profile-stat span{color:#8d8678}
+.mini-profile-page .mini-secondary{margin-top:12px}
+.mini-shell.design-midnight .mini-hero{background:radial-gradient(circle at 80% 40%,#335078,transparent 35%),linear-gradient(125deg,#070d18,#1d2a40);border:1px solid #58759c}
+.mini-shell.design-midnight .hero-crystal,.mini-shell.design-midnight .design-product-object{background:linear-gradient(140deg,#d8e9ff,#5b79a4 48%,#142239);border-color:#92b8e7}
+.mini-shell.design-ocean .mini-hero{background:linear-gradient(120deg,#073b50,#14758a 60%,#b2e5e9);color:#fff}
+.mini-shell.design-ocean .hero-crystal{background:linear-gradient(140deg,#e6ffff,#64b7c6 50%,#14556b);border-color:#d4ffff}
+.mini-shell.design-rose .mini-hero{background:linear-gradient(110deg,#f3dce1,#f8edf0 55%,#b97989);color:#422a31}
+.mini-shell.design-rose .mini-hero p,.mini-shell.design-rose .mini-hero-kicker,.mini-shell.design-rose .mini-hero-meta{color:#76535d}
+.mini-shell.design-rose .mini-hero h1 em{color:#8f455a}
+.mini-shell.design-rose .hero-crystal{background:linear-gradient(140deg,#fff0f2,#d49aaa 50%,#754452)}
+.mini-shell.design-emerald .mini-hero{background:linear-gradient(120deg,#102c21,#2e6749 65%,#a9c9a6)}
+.mini-shell.design-emerald .hero-crystal{background:linear-gradient(140deg,#e5f7d9,#70a77b 50%,#173b2c)}
+.mini-shell.design-graphite .mini-hero{background:linear-gradient(115deg,#101316,#343c42);border-radius:5px}
+.mini-shell.design-graphite .hero-crystal{border-radius:5px;background:linear-gradient(140deg,#f1f2f3,#8a9298 50%,#22282d)}
+.mini-shell.design-lavender .mini-hero{background:radial-gradient(circle at 80% 40%,#c7aaf0,transparent 34%),linear-gradient(120deg,#382b52,#75629a)}
+.mini-shell.design-lavender .hero-crystal{border-radius:38px;background:linear-gradient(140deg,#fff,#c6a7ed 50%,#5d467f)}
+.mini-shell.design-crimson .mini-hero{background:linear-gradient(110deg,#280b15,#6b2035 70%,#c58b72);border-radius:5px}
+.mini-shell.design-crimson .hero-crystal{background:linear-gradient(140deg,#fff0d0,#b77a57 50%,#4a1528)}
+.mini-shell.design-arctic .mini-hero{background:linear-gradient(120deg,#d8edf4,#b1d0dd 55%,#426c7e);color:#153241;border:1px solid #fff}
+.mini-shell.design-arctic .mini-hero p,.mini-shell.design-arctic .mini-hero-kicker,.mini-shell.design-arctic .mini-hero-meta{color:#34586a}
+.mini-shell.design-arctic .mini-hero h1 em{color:#315c70}
+.mini-shell.design-arctic .hero-crystal{background:linear-gradient(140deg,#fff,#9bd1e1 50%,#315a70);border-color:#fff}
+.mini-shell.design-cyber .mini-hero{background:radial-gradient(circle at 80% 45%,#6f32a3,transparent 32%),linear-gradient(120deg,#100c19,#251637);border:1px solid #8654b9;border-radius:8px}
+.mini-shell.design-cyber .mini-hero h1 em,.mini-shell.design-cyber .mini-hero-kicker,.mini-shell.design-cyber .mini-hero-meta{color:#d49aff}
+.mini-shell.design-cyber .hero-crystal{background:linear-gradient(140deg,#f4d7ff,#a65add 50%,#241334);border-color:#d49aff;box-shadow:0 0 35px #b85cff66}
+.mini-shell.design-gold .design-product-stage{background:linear-gradient(145deg,#f9f2e1,#dfd0ae)}
+.mini-shell.design-midnight .design-product-stage{background:radial-gradient(circle,#314866,#101927)}
+.mini-shell.design-ocean .design-product-stage{background:linear-gradient(145deg,#d7f6f6,#77c4d2)}
+.mini-shell.design-rose .design-product-stage{background:linear-gradient(145deg,#fae9ed,#e7bdc8)}
+.mini-shell.design-emerald .design-product-stage{background:linear-gradient(145deg,#e8f2e6,#a8c9ae)}
+.mini-shell.design-graphite .design-product-stage{background:linear-gradient(145deg,#edf0f1,#bfc7cb)}
+.mini-shell.design-lavender .design-product-stage{background:linear-gradient(145deg,#f7efff,#c9b4e8)}
+.mini-shell.design-crimson .design-product-stage{background:linear-gradient(145deg,#fae9e6,#d6a9a9)}
+.mini-shell.design-arctic .design-product-stage{background:linear-gradient(145deg,#f2fbff,#a9d4e2)}
+.mini-shell.design-cyber .design-product-stage{background:radial-gradient(circle,#39204f,#11101b);border-bottom:1px solid #8e51bc}
+.mini-shell.design-midnight .design-product h3,.mini-shell.design-cyber .design-product h3{color:#fff}
+.mini-shell.design-midnight .design-product-body,.mini-shell.design-cyber .design-product-body{background:#141e2c}
+.mini-shell.design-cyber .design-product-body{background:#171020}
+.mini-shell.design-midnight .design-product-body>p,.mini-shell.design-cyber .design-product-body>p{color:#b6b8c7}
+.mini-shell.design-midnight .design-product-eyebrow,.mini-shell.design-cyber .design-product-eyebrow{color:#c6a8e8}
+.mini-shell.design-rose .design-product{border-radius:3px!important;box-shadow:none!important}
+.mini-shell.design-graphite .design-product{border-radius:6px!important;box-shadow:none!important}
+.mini-shell.design-lavender .design-product{border-radius:28px!important}
+.mini-shell.design-cyber .design-product{border-color:#7548a2!important;box-shadow:0 0 22px #a65aff1a!important}
+.mini-shell.design-emerald .mini-hero{border-radius:8px 26px 8px 26px}
+.mini-shell.design-arctic .design-product{backdrop-filter:blur(16px);background:#ffffffc9!important}
+@media(max-width:520px){.mini-hero{min-height:235px;padding:22px 17px;border-radius:20px}.mini-hero-copy{max-width:73%}.mini-hero h1{font-size:27px}.mini-hero-art{right:-7%;width:48%}.hero-crystal{width:82px;height:102px}.hero-orbit{width:145px;height:145px}.design-product-stage{height:126px}.design-product-body{padding:11px}.design-product h3{font-size:12px}.design-product-foot{align-items:flex-start;flex-direction:column}.design-product-foot .mini-primary{width:100%}.mini-content{padding:16px 12px 25px}}
+@media(min-width:650px){.mini-products{grid-template-columns:repeat(3,minmax(0,1fr))}.mini-hero{min-height:300px}}
+@media(prefers-reduced-motion:reduce){.hero-crystal,.design-product-object,.hero-float{animation:none}}
