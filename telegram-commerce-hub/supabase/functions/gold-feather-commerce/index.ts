@@ -22,8 +22,9 @@ function fromBase64Url(value: string) {
 async function verifyTelegramInitData(raw: string, botId: string) {
   const params = new URLSearchParams(raw);
   const signature = params.get("signature");
+  const hash = params.get("hash");
   const authDate = Number(params.get("auth_date") || 0);
-  if (!signature || !authDate) throw new Error("TELEGRAM_SIGNATURE_MISSING");
+  if (!authDate || !hash) throw new Error("TELEGRAM_SIGNATURE_MISSING");
   const now = Math.floor(Date.now() / 1000);
   if (authDate > now + 60 || now - authDate > 3600) throw new Error("TELEGRAM_SESSION_EXPIRED");
   const pairs: string[] = [];
@@ -31,12 +32,28 @@ async function verifyTelegramInitData(raw: string, botId: string) {
     if (key !== "hash" && key !== "signature") pairs.push([key, value].join("="));
   }
   pairs.sort((a, b) => a.localeCompare(b));
-  const checkString = `${botId}:WebAppData\n${pairs.join("\n")}`;
-  const publicKey = await crypto.subtle.importKey(
-    "raw", fromHex("e7bf03a2fa4602af4580703d88dda5bb59f32ed8b02a56c187fe7d34caed242d"),
-    { name: "Ed25519" }, false, ["verify"]
-  );
-  const valid = await crypto.subtle.verify({ name: "Ed25519" }, publicKey, fromBase64Url(signature), new TextEncoder().encode(checkString));
+  const dataCheckString = pairs.join("\n");
+  let valid = false;
+  if (signature && botId) {
+    const checkString = `${botId}:WebAppData\n${dataCheckString}`;
+    const publicKey = await crypto.subtle.importKey(
+      "raw", fromHex("e7bf03a2fa4602af4580703d88dda5bb59f32ed8b02a56c187fe7d34caed242d"),
+      { name: "Ed25519" }, false, ["verify"]
+    );
+    valid = await crypto.subtle.verify({ name: "Ed25519" }, publicKey, fromBase64Url(signature), new TextEncoder().encode(checkString));
+  } else {
+    const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
+    if (!botToken) throw new Error("TELEGRAM_BOT_TOKEN_NOT_CONFIGURED");
+    const encoder = new TextEncoder();
+    const secretKey = await crypto.subtle.importKey("raw", encoder.encode("WebAppData"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const secret = await crypto.subtle.sign("HMAC", secretKey, encoder.encode(botToken));
+    const hmacKey = await crypto.subtle.importKey("raw", secret, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const expected = new Uint8Array(await crypto.subtle.sign("HMAC", hmacKey, encoder.encode(dataCheckString)));
+    const supplied = fromHex(hash);
+    let diff = expected.length ^ supplied.length;
+    for (let i = 0; i < Math.min(expected.length, supplied.length); i++) diff |= expected[i] ^ supplied[i];
+    valid = diff === 0;
+  }
   if (!valid) throw new Error("TELEGRAM_SIGNATURE_INVALID");
   const userRaw = params.get("user");
   if (!userRaw) throw new Error("TELEGRAM_USER_MISSING");
@@ -121,7 +138,7 @@ async function checkPayment(order: any, customer: any, submission: any, settings
   const payerMatches = String(payer.binanceId || "") === String(customer.binance_id || "");
   const time = Number(tx.transactionTime || 0);
   const timeMatches = time >= new Date(order.created_at).getTime() - 120000 && time <= new Date(order.expires_at).getTime() + 120000;
-  const typeMatches = ["PAY", "C2C"].includes(String(tx.orderType || "").toUpperCase());
+  const typeMatches = String(tx.orderType || "").toUpperCase() === "C2C";
   const currency = String(order.currency || "").toUpperCase();
   const directValueMatches = decimalEqual(tx.amount, order.amount) && String(tx.currency || "").toUpperCase() === currency;
   const fundsValueMatches = fundsDetailMatches(tx, order.amount, currency);
@@ -166,8 +183,8 @@ Deno.serve(async (req: Request) => {
     const rawInitData = req.headers.get("x-telegram-init-data") || "";
     if (!rawInitData) return json({ error: "TELEGRAM_INIT_DATA_REQUIRED" }, 401);
     const { data: settings, error: settingsError } = await admin.from("bot_settings").select("*").eq("id", 1).single();
-    if (settingsError || !settings?.telegram_bot_id) return json({ error: "TELEGRAM_BOT_ID_NOT_CONFIGURED" }, 503);
-    const tg = await verifyTelegramInitData(rawInitData, String(settings.telegram_bot_id));
+    if (settingsError || !settings) return json({ error: "STORE_SETTINGS_NOT_CONFIGURED" }, 503);
+    const tg = await verifyTelegramInitData(rawInitData, String(settings.telegram_bot_id || ""));
     const { data: customer, error: customerError } = await admin.from("telegram_customers").upsert({
       telegram_user_id: String(tg.id),
       first_name: String(tg.first_name || "Telegram user").slice(0, 128),
@@ -192,6 +209,8 @@ Deno.serve(async (req: Request) => {
     if (action === "save_binance_id") {
       const binanceId = String(body.binanceId || "").trim();
       if (!/^\d{5,20}$/.test(binanceId)) return json({ error: "Enter a valid numeric Binance UID." }, 400);
+      const { data: customerOrders } = await admin.from("orders").select("id").eq("telegram_customer_id", customer.id).limit(1);
+      if (customer.binance_id && customer.binance_id !== binanceId && (customerOrders || []).length > 0) return json({ error: "BINANCE_UID_LOCKED", message: "Your Binance UID is locked after your first order. Contact support to change it." }, 409);
       const { data, error } = await admin.from("telegram_customers").update({ binance_id: binanceId, updated_at: new Date().toISOString() }).eq("id", customer.id).select("*").single();
       if (error) return json({ error: "PROFILE_UPDATE_FAILED" }, 500);
       return json({ ok: true, profile: data });
@@ -250,7 +269,7 @@ Deno.serve(async (req: Request) => {
         return json({ ok: true, submissionId: submission.id, ...result });
       } catch (e) {
         await admin.from("payment_submissions").update({ review_note: "Binance API temporarily unavailable. Use Check again later.", last_verification_at: new Date().toISOString() }).eq("id", submission.id);
-        return json({ ok: false, state: "pending", submissionId: submission.id, message: "Binance could not be reached. Your transaction reference is saved; use Check again later.", error: String((e as any)?.message || e) }, 503);
+        return json({ ok: true, state: "pending", submissionId: submission.id, message: "Binance could not be reached. Your transaction reference is saved; use Check again later." });
       }
     }
     if (action === "refresh_payment") {
@@ -264,8 +283,13 @@ Deno.serve(async (req: Request) => {
       }
       const { data: order } = await admin.from("orders").select("*").eq("id", submission.order_id).eq("telegram_customer_id", customer.id).maybeSingle();
       if (!order || order.status !== "awaiting_payment") return json({ error: "ORDER_NOT_PAYABLE" }, 409);
-      const result = await checkPayment(order, customer, submission, settings);
-      return json({ ok: true, submissionId: submission.id, ...result });
+      try {
+        const result = await checkPayment(order, customer, submission, settings);
+        return json({ ok: true, submissionId: submission.id, ...result });
+      } catch (e) {
+        await admin.from("payment_submissions").update({ review_note: "Binance API temporarily unavailable. Use Check again later.", last_verification_at: new Date().toISOString() }).eq("id", submission.id);
+        return json({ ok: true, state: "pending", submissionId: submission.id, message: "Binance could not be reached. Your transaction reference is saved; use Check again later." });
+      }
     }
     return json({ error: "UNKNOWN_ACTION" }, 400);
   } catch (e) {
