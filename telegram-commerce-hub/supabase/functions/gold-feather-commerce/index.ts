@@ -133,6 +133,62 @@ async function telegramChannelJoined(customer: any, settings: any) {
   const token=Deno.env.get("TELEGRAM_BOT_TOKEN"); if(!token)return false;
   try { const r=await fetch("https://api.telegram.org/bot"+token+"/getChatMember",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:channelId,user_id:Number(customer.telegram_user_id)}),signal:AbortSignal.timeout(8000)}); const d=await r.json(); const s=d?.result?.status; return Boolean(d?.ok&&(["creator","administrator","member"].includes(s)||(s==="restricted"&&d.result?.is_member===true))); } catch { return false; }
 }
+
+const BSC_USDT_CONTRACT='0x55d398326f99059ff775485246999027b3197955';
+const BSC_TRANSFER_TOPIC='0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+function decimalToUnits(value: unknown, decimals: number): bigint {
+  const s=String(value??'').trim(); if(!/^\d+(?:\.\d+)?$/.test(s))throw new Error('INVALID_TOKEN_AMOUNT');
+  const [whole,fraction='']=s.split('.'); if(fraction.length>decimals)throw new Error('TOKEN_AMOUNT_PRECISION');
+  return BigInt(whole)*10n**BigInt(decimals)+BigInt((fraction+'0'.repeat(decimals)).slice(0,decimals)||'0');
+}
+async function bscRpc(method:string,params:any[]) {
+  let lastError:any;
+  for(const url of ['https://bsc-dataseed.binance.org/','https://1rpc.io/bnb']) {
+    try { const r=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params}),signal:AbortSignal.timeout(10000)}); if(!r.ok)throw new Error('BSC_RPC_HTTP_'+r.status); const d=await r.json(); if(d.error)throw new Error(d.error.message||'BSC_RPC_ERROR'); return d.result; } catch(e){lastError=e;}
+  }
+  throw lastError||new Error('BSC_RPC_UNAVAILABLE');
+}
+async function readBep20Transfer(hash:string,receiverAddress:string,expectedAmount:any,createdAt:string,expiresAt?:string) {
+  const chainId=await bscRpc('eth_chainId',[]); if(String(chainId).toLowerCase()!=='0x38')throw new Error('BSC_WRONG_CHAIN');
+  const receipt=await bscRpc('eth_getTransactionReceipt',[hash]); if(!receipt)return {state:'pending',message:'Transaction is not indexed on BNB Smart Chain yet. Check again shortly.'};
+  if(String(receipt.status).toLowerCase()!=='0x1')return {state:'rejected',message:'The BNB Smart Chain transaction failed.'};
+  const tx=await bscRpc('eth_getTransactionByHash',[hash]); if(!tx||String(tx.hash).toLowerCase()!==hash.toLowerCase())return {state:'pending',message:'Transaction details are not available yet.'};
+  if(String(tx.to||'').toLowerCase()!==BSC_USDT_CONTRACT)return {state:'rejected',message:'Transaction is not a direct USDT BEP20 token contract call.'};
+  const current=BigInt(await bscRpc('eth_blockNumber',[])), blockNo=BigInt(receipt.blockNumber);
+  if(current-blockNo+1n<12n)return {state:'pending',message:'Waiting for 12 BNB Smart Chain confirmations.'};
+  const recipient='0x'+String(receiverAddress).replace(/^0x/i,'').toLowerCase();
+  const recipientTopic='0x'+'0'.repeat(24)+recipient.slice(2);
+  const logs=(receipt.logs||[]).filter((l:any)=>String(l.address||'').toLowerCase()===BSC_USDT_CONTRACT&&String(l.topics?.[0]||'').toLowerCase()===BSC_TRANSFER_TOPIC&&String(l.topics?.[2]||'').toLowerCase()===recipientTopic);
+  if(!logs.length)return {state:'rejected',message:'No USDT BEP20 transfer to the configured receiving wallet was found.'};
+  const total=logs.reduce((sum:bigint,l:any)=>sum+BigInt(l.data||'0x0'),0n);
+  if(total!==decimalToUnits(expectedAmount,18))return {state:'rejected',message:'The BEP20 transfer amount does not exactly match the required amount.'};
+  const block=await bscRpc('eth_getBlockByNumber',[receipt.blockNumber,false]);
+  const timestamp=Number(BigInt(block?.timestamp||'0x0'))*1000;
+  if(!timestamp||timestamp<new Date(createdAt).getTime()-120000||(expiresAt&&timestamp>new Date(expiresAt).getTime()+120000)||timestamp>Date.now()+120000)return {state:'rejected',message:'The transaction timestamp is outside the permitted payment window.'};
+  const sender='0x'+String(logs[0].topics?.[1]||'').slice(-40);
+  return {state:'verified',sender,receiver:recipient,blockTimestamp:new Date(timestamp).toISOString(),receipt,transaction:tx,confirmations:Number(current-blockNo+1n)};
+}
+async function verifyBep20Payment(order:any,customer:any,submission:any,settings:any) {
+  const hash=String(submission.transaction_reference||'').trim().toLowerCase();
+  const result=await readBep20Transfer(hash,String(settings.usdt_bep20_wallet_address||''),order.amount,order.created_at,order.expires_at);
+  if(result.state==='pending'){await admin.from('payment_submissions').update({last_verification_at:new Date().toISOString(),verification_attempts:(submission.verification_attempts||0)+1,review_note:result.message}).eq('id',submission.id);return result;}
+  if(result.state==='rejected'){await admin.from('payment_submissions').update({status:'rejected',verification_source:'bsc_rpc',verification_payload:result,review_note:result.message,last_verification_at:new Date().toISOString(),verification_attempts:(submission.verification_attempts||0)+1}).eq('id',submission.id);return result;}
+  const {data,error}=await admin.rpc('record_verified_onchain_payment',{p_order_id:order.id,p_customer_id:customer.id,p_submission_id:submission.id,p_tx_hash:hash,p_network:'BEP20',p_amount:String(order.amount),p_token_contract:BSC_USDT_CONTRACT,p_sender:result.sender,p_receiver:result.receiver,p_block_time:result.blockTimestamp,p_raw:{receipt:result.receipt,transaction:result.transaction,confirmations:result.confirmations}});
+  if(error){if(error.code==='23505'||error.message?.includes('duplicate key'))return {state:'duplicate',message:'This transaction hash has already been used.'};throw error;}
+  await notifyCommerceEvent(settings,'USDT order paid\\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\\nOrder: '+order.order_number+'\\nAmount: '+order.amount+' USDT\\nNetwork: BNB Smart Chain BEP20\\nTX: '+hash);
+  return {state:data.status,message:'USDT BEP20 transfer confirmed on BNB Smart Chain.',order:data};
+}
+async function verifyBep20Recharge(recharge:any,customer:any,settings:any) {
+  const hash=String(recharge.transaction_reference||'').trim().toLowerCase();
+  const result=await readBep20Transfer(hash,String(settings.usdt_bep20_wallet_address||''),recharge.amount,recharge.created_at);
+  if(result.state==='pending'){await admin.from('wallet_recharge_requests').update({last_verification_at:new Date().toISOString(),review_note:result.message,verification_attempts:(recharge.verification_attempts||0)+1,updated_at:new Date().toISOString()}).eq('id',recharge.id);return result;}
+  if(result.state==='rejected'){await admin.from('wallet_recharge_requests').update({status:'rejected',verification_source:'bsc_rpc',verification_payload:{receipt:result.receipt||null,message:result.message},review_note:result.message,last_verification_at:new Date().toISOString(),verification_attempts:(recharge.verification_attempts||0)+1,updated_at:new Date().toISOString()}).eq('id',recharge.id);return result;}
+  const {data,error}=await admin.rpc('credit_verified_wallet_recharge',{p_recharge_id:recharge.id,p_provider:'usdt_bep20',p_transaction_reference:hash,p_amount:String(recharge.amount),p_currency:'USDT',p_payload:{receipt:result.receipt,transaction:result.transaction,confirmations:result.confirmations,blockTimestamp:result.blockTimestamp}});
+  if(error)throw error;
+  await notifyCommerceEvent(settings,'USDT wallet recharge verified\\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\\nAmount: '+recharge.amount+' USDT\\nNetwork: BNB Smart Chain BEP20\\nTX: '+hash);
+  return {state:'verified',message:'USDT BEP20 recharge verified. Your wallet has been credited.',credit:data};
+}
+
 async function verifyTronPayment(order: any, customer: any, submission: any, settings: any) {
   const hash = String(submission.transaction_reference || '').trim();
   const response = await fetch('https://apilist.tronscanapi.com/api/transaction-info?hash=' + encodeURIComponent(hash), {
@@ -199,6 +255,7 @@ async function attemptWalletRecharge(recharge: any, customer: any, settings: any
   if(recharge.status==='verified')return {state:'verified',message:'This recharge has already been credited.'};
   if(recharge.status==='rejected')return {state:'rejected',message:recharge.review_note||'This recharge was rejected.'};
   if(recharge.provider==='usdt_tron')return await verifyTronRecharge(recharge,customer,settings);
+  if(recharge.provider==='usdt_bep20')return await verifyBep20Recharge(recharge,customer,settings);
   if(recharge.provider==='binance_pay_api')return await verifyBinanceRecharge(recharge,customer,settings);
   throw new Error('UNSUPPORTED_RECHARGE_PROVIDER');
 }
@@ -311,11 +368,12 @@ Deno.serve(async (req: Request) => {
     }
     if (action === "submit_wallet_recharge") {
       const provider=String(body.provider||""), amountText=String(body.amount||"").trim(), amount=Number(amountText), reference=String(body.transactionReference||"").trim();
-      if(!["usdt_tron","binance_pay_api"].includes(provider))return json({error:"UNSUPPORTED_RECHARGE_PROVIDER"},400);
+      if(!["usdt_tron","usdt_bep20","binance_pay_api"].includes(provider))return json({error:"UNSUPPORTED_RECHARGE_PROVIDER"},400);
       if(!Number.isFinite(amount)||amount<=0||amount>10000||!/^\d+(\.\d{1,8})?$/.test(amountText))return json({error:"INVALID_RECHARGE_AMOUNT"},400);
-      if(provider==="usdt_tron"&&!/^[0-9a-f]{64}$/i.test(reference))return json({error:"INVALID_TRON_TRANSACTION_HASH"},400);
+      if(["usdt_tron","usdt_bep20"].includes(provider)&&!/^[0-9a-f]{64}$/i.test(reference))return json({error:"INVALID_ONCHAIN_TRANSACTION_HASH"},400);
       if(provider==="binance_pay_api"&&(reference.length<5||reference.length>128))return json({error:"INVALID_BINANCE_TRANSACTION_ID"},400);
       if(provider==="usdt_tron"&&!settings.usdt_wallet_address)return json({error:"STORE_USDT_ADDRESS_NOT_CONFIGURED"},503);
+      if(provider==="usdt_bep20"&&!settings.usdt_bep20_wallet_address)return json({error:"STORE_BEP20_ADDRESS_NOT_CONFIGURED"},503);
       if(provider==="binance_pay_api"&&!settings.binance_pay_id)return json({error:"STORE_BINANCE_PAY_NOT_CONFIGURED"},503);
       if(provider==="binance_pay_api"&&(!Deno.env.get("BINANCE_API_KEY")||!Deno.env.get("BINANCE_API_SECRET")))return json({error:"BINANCE_API_NOT_CONFIGURED",message:"Automatic Binance verification is not configured yet. Please contact store support."},503);
       const {data:usedOrderSubmission}=await admin.from("payment_submissions").select("id").ilike("transaction_reference",reference).limit(1).maybeSingle();
@@ -434,7 +492,7 @@ Deno.serve(async (req: Request) => {
         admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,product_id,paid_at,payment_method,products(name,warranty_days)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(50),
         admin.from("wallet_recharge_requests").select("id,amount,currency,provider,transaction_reference,status,review_note,last_verification_at,created_at").eq("telegram_customer_id",customer.id).order("created_at",{ascending:false}).limit(10),
       ]);
-      return json({ ok: true, profile: customer, channelJoined: await telegramChannelJoined(customer,settings), settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency, usdt_network: settings.usdt_network||'TRON', usdt_wallet_address: settings.usdt_wallet_address, payment_readiness: { usdt_wallet_configured: Boolean(settings.usdt_wallet_address), binance_pay_configured: Boolean(settings.binance_pay_id), binance_api_configured: Boolean(Deno.env.get("BINANCE_API_KEY") && Deno.env.get("BINANCE_API_SECRET")) }, support_url: settings.support_url, required_channel_url: settings.required_channel_url, tempsms_url: settings.tempsms_url||'https://tempsmslive.com', miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837' }, products: products.data || [], orders: orders.data || [], recharges: recharges.data || [] });
+      return json({ ok: true, profile: customer, channelJoined: await telegramChannelJoined(customer,settings), settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency, usdt_network: settings.usdt_network||'TRON', usdt_wallet_address: settings.usdt_wallet_address, usdt_bep20_wallet_address: settings.usdt_bep20_wallet_address, payment_readiness: { usdt_wallet_configured: Boolean(settings.usdt_wallet_address), bep20_wallet_configured: Boolean(settings.usdt_bep20_wallet_address), binance_pay_configured: Boolean(settings.binance_pay_id), binance_api_configured: Boolean(Deno.env.get("BINANCE_API_KEY") && Deno.env.get("BINANCE_API_SECRET")) }, support_url: settings.support_url, required_channel_url: settings.required_channel_url, tempsms_url: settings.tempsms_url||'https://tempsmslive.com', miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837', miniapp_hero_title: settings.miniapp_hero_title||'', miniapp_hero_subtitle: settings.miniapp_hero_subtitle||'', miniapp_banner_text: settings.miniapp_banner_text||'', miniapp_show_promo: settings.miniapp_show_promo!==false, miniapp_show_categories: settings.miniapp_show_categories!==false, miniapp_show_stock: settings.miniapp_show_stock!==false, miniapp_enable_search: settings.miniapp_enable_search!==false }, products: products.data || [], orders: orders.data || [], recharges: recharges.data || [] });
     }
     if (action === "save_binance_id") {
       const binanceId = String(body.binanceId || "").trim();
@@ -466,26 +524,28 @@ Deno.serve(async (req: Request) => {
     }
     if (action === 'verify_usdt_onchain') {
       const orderId=String(body.orderId||''); const txHash=String(body.transactionHash||'').trim().toLowerCase();
-      if(!orderId||!/^[0-9a-f]{64}$/.test(txHash))return json({error:'INVALID_TRON_TRANSACTION_HASH'},400);
-      if(String(settings.usdt_network||'TRON').toUpperCase()!=='TRON')return json({error:'UNSUPPORTED_USDT_NETWORK'},400);
-      if(!settings.usdt_wallet_address)return json({error:'STORE_USDT_ADDRESS_NOT_CONFIGURED'},503);
+      const network=String(body.network||"TRON").toUpperCase();
+      if(!orderId||!/^[0-9a-f]{64}$/.test(txHash))return json({error:"INVALID_ONCHAIN_TRANSACTION_HASH"},400);
+      if(!["TRON","BEP20"].includes(network))return json({error:"UNSUPPORTED_USDT_NETWORK"},400);
+      if(network==="TRON"&&!settings.usdt_wallet_address)return json({error:"STORE_USDT_ADDRESS_NOT_CONFIGURED"},503);
+      if(network==="BEP20"&&!settings.usdt_bep20_wallet_address)return json({error:"STORE_BEP20_ADDRESS_NOT_CONFIGURED"},503);
       const {data:order}=await admin.from('orders').select('*').eq('id',orderId).eq('telegram_customer_id',customer.id).maybeSingle();
       if(!order||order.status!=='awaiting_payment'||new Date(order.expires_at).getTime()<=Date.now())return json({error:'ORDER_NOT_PAYABLE_OR_EXPIRED'},409);
       if(String(order.currency).toUpperCase()!=='USDT')return json({error:'ONCHAIN_REQUIRES_USDT_ORDER'},400);
       const {data:prior}=await admin.from('payment_submissions').select('id').ilike('transaction_reference',txHash).maybeSingle(); if(prior)return json({error:'DUPLICATE_TRANSACTION',message:'This transaction hash has already been submitted.'},409);
-      const {data:submission,error}=await admin.from('payment_submissions').insert({order_id:order.id,telegram_customer_id:customer.id,provider:'usdt_tron',transaction_reference:txHash,amount:order.amount,currency:'USDT',status:'submitted',verification_source:'tronscan',verification_payload:{},chain_network:'TRON',chain_token_contract:'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',last_verification_at:new Date().toISOString()}).select('*').single();
+      const {data:submission,error}=await admin.from('payment_submissions').insert({order_id:order.id,telegram_customer_id:customer.id,provider:network==='TRON'?'usdt_tron':'usdt_bep20',transaction_reference:txHash,amount:order.amount,currency:'USDT',status:'submitted',verification_source:network==='TRON'?'tronscan':'bsc_rpc',verification_payload:{},chain_network:network,chain_token_contract:network==='TRON'?'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t':BSC_USDT_CONTRACT,last_verification_at:new Date().toISOString()}).select('*').single();
       if(error)return json({error:error.code==='23505'?'DUPLICATE_TRANSACTION':error.message},409);
-      try { const result=await verifyTronPayment(order,customer,submission,settings); return json({ok:true,submissionId:submission.id,...result}); }
+      try { const result=network==='TRON'?await verifyTronPayment(order,customer,submission,settings):await verifyBep20Payment(order,customer,submission,settings); return json({ok:true,submissionId:submission.id,...result}); }
       catch { await admin.from('payment_submissions').update({review_note:'TRON explorer temporarily unavailable. Retry verification.',last_verification_at:new Date().toISOString()}).eq('id',submission.id); return json({ok:true,state:'pending',submissionId:submission.id,message:'Explorer is temporarily unavailable. Your hash is saved; check again shortly.'}); }
     }
     if (action === 'refresh_onchain_payment') {
-      const submissionId=String(body.submissionId||''); const {data:submission}=await admin.from('payment_submissions').select('*').eq('id',submissionId).eq('telegram_customer_id',customer.id).eq('provider','usdt_tron').maybeSingle();
+      const submissionId=String(body.submissionId||''); const {data:submission}=await admin.from('payment_submissions').select('*').eq('id',submissionId).eq('telegram_customer_id',customer.id).in('provider',['usdt_tron','usdt_bep20']).maybeSingle();
       if(!submission)return json({error:'SUBMISSION_NOT_FOUND'},404); if(submission.status==='verified')return json({ok:true,state:'verified',message:'USDT transfer already verified.'});
       if(submission.status==='rejected')return json({error:'PAYMENT_REJECTED',message:submission.review_note},409);
       if(submission.last_verification_at&&Date.now()-new Date(submission.last_verification_at).getTime()<15000)return json({ok:true,state:'pending',message:'Wait a few seconds before checking again.'},429);
       const {data:order}=await admin.from('orders').select('*').eq('id',submission.order_id).eq('telegram_customer_id',customer.id).maybeSingle();
       if(!order||order.status!=='awaiting_payment'||new Date(order.expires_at).getTime()<=Date.now())return json({error:'ORDER_NOT_PAYABLE_OR_EXPIRED'},409);
-      const result=await verifyTronPayment(order,customer,submission,settings); return json({ok:true,submissionId,...result});
+      let result:any;try{result=submission.provider==='usdt_bep20'?await verifyBep20Payment(order,customer,submission,settings):await verifyTronPayment(order,customer,submission,settings);}catch(e){await admin.from('payment_submissions').update({last_verification_at:new Date().toISOString(),review_note:'On-chain verification provider temporarily unavailable. Retry shortly.'}).eq('id',submission.id);return json({ok:true,state:'pending',submissionId,message:'The blockchain verification service is temporarily unavailable. Retry shortly.'});}return json({ok:true,submissionId,...result});
     }
     if (action === "verify_payment") {
       const orderId = String(body.orderId || "");
