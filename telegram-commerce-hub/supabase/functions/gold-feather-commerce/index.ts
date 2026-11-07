@@ -317,6 +317,7 @@ Deno.serve(async (req: Request) => {
       if(provider==="binance_pay_api"&&(reference.length<5||reference.length>128))return json({error:"INVALID_BINANCE_TRANSACTION_ID"},400);
       if(provider==="usdt_tron"&&!settings.usdt_wallet_address)return json({error:"STORE_USDT_ADDRESS_NOT_CONFIGURED"},503);
       if(provider==="binance_pay_api"&&!settings.binance_pay_id)return json({error:"STORE_BINANCE_PAY_NOT_CONFIGURED"},503);
+      if(provider==="binance_pay_api"&&(!Deno.env.get("BINANCE_API_KEY")||!Deno.env.get("BINANCE_API_SECRET")))return json({error:"BINANCE_API_NOT_CONFIGURED",message:"Automatic Binance verification is not configured yet. Please contact store support."},503);
       const {data:usedOrderSubmission}=await admin.from("payment_submissions").select("id").ilike("transaction_reference",reference).limit(1).maybeSingle();
       if(usedOrderSubmission)return json({error:"DUPLICATE_TRANSACTION",message:"This transaction has already been used for an order payment."},409);
       const {data:recharge,error}=await admin.from("wallet_recharge_requests").insert({telegram_customer_id:customer.id,amount,currency:"USDT",provider,transaction_reference:provider==="usdt_tron"?reference.toLowerCase():reference,status:"pending"}).select("*").single();
@@ -433,7 +434,7 @@ Deno.serve(async (req: Request) => {
         admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,product_id,paid_at,payment_method,products(name,warranty_days)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(50),
         admin.from("wallet_recharge_requests").select("id,amount,currency,provider,transaction_reference,status,review_note,last_verification_at,created_at").eq("telegram_customer_id",customer.id).order("created_at",{ascending:false}).limit(10),
       ]);
-      return json({ ok: true, profile: customer, channelJoined: await telegramChannelJoined(customer,settings), settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency, usdt_network: settings.usdt_network||'TRON', usdt_wallet_address: settings.usdt_wallet_address, support_url: settings.support_url, required_channel_url: settings.required_channel_url, tempsms_url: settings.tempsms_url||'https://tempsmslive.com', miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837' }, products: products.data || [], orders: orders.data || [], recharges: recharges.data || [] });
+      return json({ ok: true, profile: customer, channelJoined: await telegramChannelJoined(customer,settings), settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency, usdt_network: settings.usdt_network||'TRON', usdt_wallet_address: settings.usdt_wallet_address, payment_readiness: { usdt_wallet_configured: Boolean(settings.usdt_wallet_address), binance_pay_configured: Boolean(settings.binance_pay_id), binance_api_configured: Boolean(Deno.env.get("BINANCE_API_KEY") && Deno.env.get("BINANCE_API_SECRET")) }, support_url: settings.support_url, required_channel_url: settings.required_channel_url, tempsms_url: settings.tempsms_url||'https://tempsmslive.com', miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837' }, products: products.data || [], orders: orders.data || [], recharges: recharges.data || [] });
     }
     if (action === "save_binance_id") {
       const binanceId = String(body.binanceId || "").trim();
@@ -492,6 +493,7 @@ Deno.serve(async (req: Request) => {
       if (!orderId || transactionId.length < 5 || transactionId.length > 128) return json({ error: "INVALID_PAYMENT_REFERENCE" }, 400);
       const { data: order } = await admin.from("orders").select("*").eq("id", orderId).eq("telegram_customer_id", customer.id).maybeSingle();
       if (!order || order.status !== "awaiting_payment") return json({ error: "ORDER_NOT_PAYABLE" }, 409);
+      if(!Deno.env.get("BINANCE_API_KEY")||!Deno.env.get("BINANCE_API_SECRET"))return json({error:"BINANCE_API_NOT_CONFIGURED"},503);
       const {data:rechargeClaim}=await admin.from("wallet_recharge_requests").select("id").eq("provider","binance_pay_api").ilike("transaction_reference",transactionId).limit(1).maybeSingle();
       if(rechargeClaim)return json({error:"DUPLICATE_TRANSACTION",message:"This Binance transaction has already been submitted as a wallet recharge."},409);
       if (new Date(order.expires_at).getTime() < Date.now() - 120000) return json({ error: "ORDER_EXPIRED" }, 409);
@@ -523,6 +525,7 @@ Deno.serve(async (req: Request) => {
       if (!submission) return json({ error: "SUBMISSION_NOT_FOUND" }, 404);
       if (submission.status === "verified") return json({ ok: true, state: "verified", message: "This payment has already been verified." });
       if (submission.status === "rejected") return json({ error: "PAYMENT_REJECTED", message: submission.review_note || "This payment reference was rejected." }, 409);
+      if(!Deno.env.get("BINANCE_API_KEY")||!Deno.env.get("BINANCE_API_SECRET"))return json({error:"BINANCE_API_NOT_CONFIGURED"},503);
       if (submission.last_verification_at && Date.now() - new Date(submission.last_verification_at).getTime() < 60000) {
         return json({ ok: true, state: "pending", message: "Please wait at least 60 seconds between Binance verification checks." }, 429);
       }
