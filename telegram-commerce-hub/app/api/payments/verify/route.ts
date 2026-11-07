@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     if (payment.status !== 'submitted') return NextResponse.json({ status: 'error', message: 'This payment submission is no longer pending.' }, { status: 409 });
 
     const { data: order, error: orderError } = await supabase.from('orders')
-      .select('id,amount,currency,status,expires_at').eq('id', payment.order_id).single();
+      .select('id,amount,currency,status,expires_at,created_at').eq('id', payment.order_id).single();
     if (orderError || !order) return NextResponse.json({ status: 'error', message: 'Order not found.' }, { status: 404 });
     if (order.status !== 'awaiting_payment') return NextResponse.json({ status: 'error', message: 'This order is not awaiting payment.' }, { status: 409 });
     const { data: settings } = await supabase.from('bot_settings').select('binance_pay_id').eq('id', 1).maybeSingle();
@@ -50,7 +50,6 @@ export async function POST(req: NextRequest) {
 
     const params = new URLSearchParams({
       timestamp: String(now),
-      startTime: String(now - 24 * 60 * 60 * 1000),
       endTime: String(now),
       limit: '100',
       recvWindow: '5000',
@@ -71,10 +70,11 @@ export async function POST(req: NextRequest) {
     if (!tx) return NextResponse.json({ status: 'pending', message: 'This transaction is not visible in Binance Pay history yet. It may take a short time to appear; retry later or wait for administrator review.' });
     const receiverPayId = String(tx.receiverInfo?.accountId || '');
     const incoming = Number(tx.amount) > 0;
+    const supportedType = ['PAY','C2C'].includes(String(tx.orderType || ''));
     const sameReceiver = receiverPayId === String(settings.binance_pay_id).trim();
     const sameAmount = decimalEqual(tx.amount, order.amount);
     const sameCurrency = String(tx.currency || '') === String(order.currency || '');
-    if (!incoming || !sameReceiver || !sameAmount || !sameCurrency) {
+    if (!incoming || !supportedType || !sameReceiver || !sameAmount || !sameCurrency || Number(tx.transactionTime || 0) < new Date(order.created_at).getTime()) {
       return NextResponse.json({ status: 'mismatch', message: 'A transaction with that reference was found, but the recipient, amount, currency or direction does not match this order. It has not been approved.' });
     }
 
