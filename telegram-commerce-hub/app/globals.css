@@ -452,3 +452,15 @@
 
 .mini-fee-consent{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid rgba(190,158,91,.35);border-radius:12px;margin:10px 0 12px;font-size:12px;line-height:1.55}
 .mini-fee-consent input{width:18px;height:18px;flex:0 0 18px;margin:1px 0 0;accent-color:var(--mini-accent)}
+
+/* Admin workspace usability and responsive product-plan editor */
+.plan-editor{border:1px solid var(--line,#e7e3db);border-radius:14px;padding:14px;margin:14px 0;background:rgba(145,126,88,.045)}
+.plan-editor-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.plan-editor .form-grid{margin-top:8px}
+.toggle-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0;padding:12px;border:1px solid var(--line,#e7e3db);border-radius:12px}
+.toggle-list label{display:flex;align-items:center;gap:9px;margin:0;font-size:13px}
+.toggle-list input{width:17px;height:17px;accent-color:#a78a50}
+.mini-announcement{margin:10px 0 14px;padding:11px 14px;border:1px solid color-mix(in srgb,var(--mini-accent) 42%,transparent);border-radius:13px;background:color-mix(in srgb,var(--mini-accent) 10%,transparent);font-size:12px;line-height:1.5;font-weight:650}
+.design-product{content-visibility:auto;contain-intrinsic-size:480px}
+@media(max-width:640px){.toggle-list{grid-template-columns:1fr}.plan-editor{padding:11px}.plan-editor .form-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
