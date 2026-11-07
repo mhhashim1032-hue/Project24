@@ -42,11 +42,11 @@ The integration is not Binance Merchant API. It accepts C2C Binance Pay ID trans
 
 - The transaction ID submitted by the customer
 - The receiving Pay ID configured in **Admin → Bot & Store**
-- The sender's Binance UID against the customer's linked Binance UID
+- The receiving Pay ID configured by the store; customers do not provide a Binance UID
 - Exact amount and currency
 - Successful incoming transfer type and order time window
 
-Each customer links their own numeric Binance UID in the Mini App before ordering. The UID is locked after the first order, preventing a customer from changing payer identity after an order exists.
+Customers are never asked for a Binance UID. They submit only the Binance transaction ID; the server checks that exact transaction against the store's incoming account history, configured receiving Pay ID, exact amount/currency, successful transfer status, supported transaction type and order time window.
 
 ### Binance credentials to add later
 
