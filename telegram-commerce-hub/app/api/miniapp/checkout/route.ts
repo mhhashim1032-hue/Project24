@@ -16,11 +16,6 @@ export async function POST(req:Request){
    if(error)throw error;
    return NextResponse.json({ok:true,payment:data});
   }
-  if(body.action==='save_binance_id'){
-   const {data,error}=await db.rpc('telegram_save_binance_id',{p_telegram_user_id:String(user.id),p_binance_id:String(body.binanceId||'').trim()});
-   if(error)throw error;
-   return NextResponse.json({ok:true,profile:data});
-  }
   if(body.action==='orders'){
    const {data,error}=await db.rpc('telegram_get_customer_orders',{p_telegram_user_id:String(user.id)});
    if(error)throw error;
