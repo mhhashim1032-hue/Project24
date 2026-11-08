@@ -140,6 +140,25 @@ export async function GET(req: NextRequest) {
   if (!expected || !supplied || supplied !== expected) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
+  if (req.nextUrl.searchParams.get('inspect') === '1') {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    if (!token) return NextResponse.json({ ok: false, error: 'Bot token missing' }, { status: 503 });
+    try {
+      const [webhookInfo, menuButton, bot] = await Promise.all([
+        telegram(token, 'getWebhookInfo'),
+        telegram(token, 'getChatMenuButton'),
+        telegram(token, 'getMe'),
+      ]);
+      return NextResponse.json({
+        ok: true,
+        webhookInfo,
+        menuButton,
+        bot: { id: bot?.id, username: bot?.username, canJoinGroups: bot?.can_join_groups },
+      });
+    } catch (error) {
+      return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : 'Inspection failed' }, { status: 502 });
+    }
+  }
   const forwarded = new NextRequest(req.url, {
     method: 'POST',
     headers: { 'x-setup-secret': process.env.TELEGRAM_WEBHOOK_SECRET || '' },
