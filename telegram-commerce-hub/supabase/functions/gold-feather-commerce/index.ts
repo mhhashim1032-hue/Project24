@@ -126,15 +126,8 @@ async function binancePayHistory(startTime: number, endTime: number) {
 async function referralBotLink(code:string,settings:any) {
   if(!code)return null;
   const configured=String(settings?.telegram_bot_username||Deno.env.get("TELEGRAM_BOT_USERNAME")||"").replace(/^@/,"").trim();
-  if(configured&&/^[A-Za-z0-9_]{5,32}$/.test(configured))return "https://t.me/"+configured+"?start=ref_"+encodeURIComponent(code);
-  const token=Deno.env.get("TELEGRAM_BOT_TOKEN");
-  if(!token)return null;
-  try {
-    const response=await fetch("https://api.telegram.org/bot"+token+"/getMe",{signal:AbortSignal.timeout(5000)});
-    const data=await response.json();
-    const username=String(data?.result?.username||"").replace(/^@/,"");
-    return data?.ok&&username ? "https://t.me/"+username+"?start=ref_"+encodeURIComponent(code) : null;
-  } catch { return null; }
+  if(!/^[A-Za-z0-9_]{5,32}$/.test(configured))return null;
+  return "https://t.me/"+configured+"?start=ref_"+encodeURIComponent(code);
 }
 async function notifyCommerceEvent(settings: any, message: string) {
   const token = Deno.env.get("NOTIFICATION_BOT_TOKEN"); const chatId = String(settings.notification_chat_id || "").trim();
