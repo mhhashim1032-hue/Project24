@@ -1,0 +1,45 @@
+alter table app_private.admin_secret_registry
+  drop constraint if exists admin_secret_registry_name_check;
+alter table app_private.admin_secret_registry
+  add constraint admin_secret_registry_name_check
+  check (name in ('binance_api_key','binance_api_secret','telegram_bot_token'));
+
+create or replace function public.admin_set_payment_secret(p_name text, p_secret text)
+returns void language plpgsql security definer set search_path = '' as $$
+declare v_id uuid; v_description text;
+begin
+  if coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role' then raise exception 'SERVICE_ROLE_REQUIRED'; end if;
+  if p_name not in ('binance_api_key','binance_api_secret','telegram_bot_token') then raise exception 'SECRET_NAME_NOT_ALLOWED'; end if;
+  if p_secret is null or length(trim(p_secret)) < 8 then raise exception 'SECRET_VALUE_INVALID'; end if;
+  v_description := case when p_name = 'telegram_bot_token' then 'Gold Feather Premium Telegram bot token' else 'Gold Feather Premium read-only Binance API credential' end;
+  select vault_secret_id into v_id from app_private.admin_secret_registry where name = p_name;
+  if v_id is null then
+    v_id := vault.create_secret(p_secret, p_name, v_description);
+    insert into app_private.admin_secret_registry(name, vault_secret_id, updated_at)
+    values (p_name, v_id, now())
+    on conflict (name) do update set vault_secret_id = excluded.vault_secret_id, updated_at = now();
+  else
+    perform vault.update_secret(v_id, p_secret, p_name, v_description);
+    update app_private.admin_secret_registry set updated_at = now() where name = p_name;
+  end if;
+end;
+$$;
+
+create or replace function public.admin_get_payment_secret(p_name text)
+returns text language plpgsql security definer set search_path = '' as $$
+declare v_secret text;
+begin
+  if coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role' then raise exception 'SERVICE_ROLE_REQUIRED'; end if;
+  if p_name not in ('binance_api_key','binance_api_secret','telegram_bot_token') then raise exception 'SECRET_NAME_NOT_ALLOWED'; end if;
+  select ds.decrypted_secret into v_secret
+  from app_private.admin_secret_registry r
+  join vault.decrypted_secrets ds on ds.id = r.vault_secret_id
+  where r.name = p_name;
+  return v_secret;
+end;
+$$;
+
+revoke all on function public.admin_set_payment_secret(text,text) from public, anon, authenticated;
+revoke all on function public.admin_get_payment_secret(text) from public, anon, authenticated;
+grant execute on function public.admin_set_payment_secret(text,text) to service_role;
+grant execute on function public.admin_get_payment_secret(text) to service_role;
