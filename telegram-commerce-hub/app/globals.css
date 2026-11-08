@@ -1291,3 +1291,8 @@
 .mini-shell .mini-freebies-rewards-title>span {
   opacity:1;
 }
+
+/* Final profile identity contrast correction verified by axe */
+.mini-shell .mini-profile-clean-identity>span {
+  color:#625c50;
+}
