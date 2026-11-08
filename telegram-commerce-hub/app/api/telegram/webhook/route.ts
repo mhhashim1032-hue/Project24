@@ -33,6 +33,12 @@ async function telegram(method: string, body: Record<string, unknown>) {
 
 async function registerCustomer(user: TelegramUser) {
   if (!SERVICE_KEY) throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing in Render');
+  const lookup = await fetch(`${SUPABASE_URL}/rest/v1/telegram_customers?telegram_user_id=eq.${encodeURIComponent(String(user.id))}&select=id`, {
+    headers: { apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}` },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!lookup.ok) throw new Error('Could not check existing Telegram customer registration');
+  const wasNew = ((await lookup.json()) || []).length === 0;
   const response = await fetch(`${SUPABASE_URL}/rest/v1/telegram_customers?on_conflict=telegram_user_id&select=id,telegram_user_id,referral_code`, {
     method: 'POST',
     headers: {
