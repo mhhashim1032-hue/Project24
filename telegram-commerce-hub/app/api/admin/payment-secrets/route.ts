@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     const apiSecret = typeof body.apiSecret === 'string' ? body.apiSecret.trim() : '';
     const telegramBotToken = typeof body.telegramBotToken === 'string' ? body.telegramBotToken.trim() : '';
     if (!apiKey && !apiSecret && !telegramBotToken) return NextResponse.json({ error: 'Enter at least one credential to save.' }, { status: 400 });
-    if ((apiKey && apiKey.length < 8) || (apiSecret && apiSecret.length < 8) || (telegramBotToken && !/^\\d{5,15}:[A-Za-z0-9_-]{20,}$/.test(telegramBotToken))) {
+    if ((apiKey && apiKey.length < 8) || (apiSecret && apiSecret.length < 8) || (telegramBotToken && !/^[0-9]{5,15}:[A-Za-z0-9_-]{20,}$/.test(telegramBotToken))) {
       return NextResponse.json({ error: 'Credential value is too short.' }, { status: 400 });
     }
     if (apiKey) await setSecret('binance_api_key', apiKey);
