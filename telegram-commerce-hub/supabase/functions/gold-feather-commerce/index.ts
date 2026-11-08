@@ -123,9 +123,12 @@ async function binancePayHistory(startTime: number, endTime: number) {
   }
   return Array.isArray(result.data) ? result.data : [];
 }
-async function referralBotLink(code:string) {
+async function referralBotLink(code:string,settings:any) {
+  if(!code)return null;
+  const configured=String(settings?.telegram_bot_username||Deno.env.get("TELEGRAM_BOT_USERNAME")||"").replace(/^@/,"").trim();
+  if(configured&&/^[A-Za-z0-9_]{5,32}$/.test(configured))return "https://t.me/"+configured+"?start=ref_"+encodeURIComponent(code);
   const token=Deno.env.get("TELEGRAM_BOT_TOKEN");
-  if(!token||!code)return null;
+  if(!token)return null;
   try {
     const response=await fetch("https://api.telegram.org/bot"+token+"/getMe",{signal:AbortSignal.timeout(5000)});
     const data=await response.json();
@@ -505,7 +508,7 @@ Deno.serve(async (req: Request) => {
         admin.from("referral_events").select("id,stars_awarded,created_at,referred_customer_id").eq("referrer_id",customer.id).order("created_at",{ascending:false}).limit(100),
         admin.from("freebie_redemptions").select("id,freebie_id,order_id,stars_spent,status,redeemed_at,delivery_payload,freebies(title)").eq("telegram_customer_id",customer.id).order("redeemed_at",{ascending:false}).limit(50),
       ]);
-      const referralLink=await referralBotLink(customer.referral_code||"");
+      const referralLink=await referralBotLink(customer.referral_code||"",settings);
       return json({ ok: true, profile: customer, referral: { code:customer.referral_code||null, stars:Number(customer.referral_stars||0), link:referralLink, total:referralEvents.data?.length||0, events:referralEvents.data||[] }, freebies:freebies.data||[], redemptions:redemptions.data||[], channelJoined: await telegramChannelJoined(customer,settings), settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, currency: settings.currency, usdt_network: settings.usdt_network||'TRON', usdt_wallet_address: settings.usdt_wallet_address, usdt_bep20_wallet_address: settings.usdt_bep20_wallet_address, payment_readiness: { usdt_wallet_configured: Boolean(settings.usdt_wallet_address), bep20_wallet_configured: Boolean(settings.usdt_bep20_wallet_address), binance_pay_configured: Boolean(settings.binance_pay_id), binance_api_configured: Boolean(Deno.env.get("BINANCE_API_KEY") && Deno.env.get("BINANCE_API_SECRET")) }, support_url: settings.support_url, required_channel_url: settings.required_channel_url, tempsms_url: settings.tempsms_url||'https://tempsmslive.com', miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837', miniapp_hero_title: settings.miniapp_hero_title||'', miniapp_hero_subtitle: settings.miniapp_hero_subtitle||'', miniapp_banner_text: settings.miniapp_banner_text||'', miniapp_show_promo: settings.miniapp_show_promo!==false, miniapp_show_categories: settings.miniapp_show_categories!==false, miniapp_show_stock: settings.miniapp_show_stock!==false, miniapp_enable_search: settings.miniapp_enable_search!==false }, products: products.data || [], orders: orders.data || [], recharges: recharges.data || [] });
     }
     if (action === "redeem_freebie") {
