@@ -863,3 +863,43 @@
 .mini-shell .mini-profile-action>svg{color:#a49a88;}
 .mini-shell .mini-profile-action:active{background:#f8f5ed;transform:scale(.99);}
 @media(max-width:360px){.mini-shell .mini-profile-clean{padding:12px!important}.mini-shell .mini-profile-clean-identity h2{font-size:14px}.mini-shell .mini-profile-metrics>div{padding:9px}.mini-shell .mini-profile-metrics b{font-size:15px}}
+
+
+/* Immersive 3D Mini App account connection intro */
+.mini-shell .mini-connect-screen{position:relative;isolation:isolate;overflow:hidden;min-height:calc(100svh - 112px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 22px 26px;border:1px solid rgba(211,177,111,.22);border-radius:25px;background:radial-gradient(ellipse at 50% 38%,rgba(174,133,61,.17),transparent 48%),linear-gradient(155deg,#171711 0%,#242116 52%,#11110e 100%);color:#f7f0df;text-align:center;box-shadow:0 22px 60px rgba(21,17,8,.2);}
+.mini-shell .mini-connect-screen:before,.mini-shell .mini-connect-screen:after{content:"";position:absolute;z-index:-1;width:240px;height:240px;border:1px solid rgba(219,184,112,.09);border-radius:50%;top:16%;left:50%;transform:translateX(-50%);}
+.mini-shell .mini-connect-screen:after{width:330px;height:330px;top:11%;border-color:rgba(219,184,112,.055);}
+.mini-shell .mini-connect-scene{position:relative;width:220px;height:220px;margin:0 auto 22px;perspective:700px;transform-style:preserve-3d;}
+.mini-shell .mini-connect-aura{position:absolute;inset:34px;border-radius:50%;background:radial-gradient(circle,rgba(224,181,98,.25),rgba(224,181,98,.06) 48%,transparent 72%);filter:blur(8px);animation:gfAura 3.6s ease-in-out infinite;}
+.mini-shell .mini-connect-core{position:absolute;left:50%;top:50%;width:94px;height:94px;display:grid;place-items:center;transform:translate(-50%,-50%) rotateX(-12deg);border:1px solid rgba(255,231,180,.8);border-radius:29px;background:linear-gradient(145deg,#f7e4b5 0%,#bd9148 35%,#6c4a1d 68%,#e7c782 100%);box-shadow:inset 0 2px 7px rgba(255,255,255,.7),inset 0 -10px 18px rgba(51,32,5,.42),0 18px 38px rgba(0,0,0,.5),0 0 38px rgba(216,172,91,.28);animation:gfCoreFloat 4s ease-in-out infinite;}
+.mini-shell .mini-connect-core span{font:900 27px/1 Manrope,sans-serif;letter-spacing:-2px;color:#39270d;text-shadow:0 1px rgba(255,255,255,.55);}
+.mini-shell .mini-connect-core i{position:absolute;inset:7px;border:1px solid rgba(255,250,226,.34);border-radius:23px;}
+.mini-shell .mini-connect-orbit{position:absolute;left:50%;top:50%;width:180px;height:70px;margin:-35px 0 0 -90px;border:1px solid rgba(237,203,137,.66);border-radius:50%;transform-style:preserve-3d;box-shadow:0 0 14px rgba(215,174,98,.1);}
+.mini-shell .mini-connect-orbit i{position:absolute;top:50%;left:5px;width:9px;height:9px;margin-top:-4px;border-radius:50%;background:#ffe3a8;box-shadow:0 0 12px 3px rgba(255,210,127,.75);}
+.mini-shell .mini-connect-orbit-one{transform:rotateX(68deg) rotateZ(-25deg);animation:gfOrbitOne 5.5s linear infinite;}
+.mini-shell .mini-connect-orbit-two{width:190px;height:88px;margin:-44px 0 0 -95px;border-color:rgba(246,222,176,.38);transform:rotateY(67deg) rotateZ(26deg);animation:gfOrbitTwo 7s linear infinite;}
+.mini-shell .mini-connect-orbit-two i{left:auto;right:8px;width:7px;height:7px;background:#fff1ce;}
+.mini-shell .mini-connect-orbit-three{width:145px;height:145px;margin:-72px 0 0 -72px;border-color:rgba(210,167,90,.24);transform:rotateX(76deg) rotateZ(50deg);animation:gfOrbitThree 9s linear infinite;}
+.mini-shell .mini-connect-orbit-three i{left:50%;top:0;width:6px;height:6px;background:#d5a85f;}
+.mini-shell .mini-connect-spark{position:absolute;color:#f3d59c;text-shadow:0 0 14px rgba(244,204,127,.65);font-size:17px;animation:gfSpark 2.8s ease-in-out infinite;}
+.mini-shell .mini-connect-spark.spark-a{top:22px;right:28px}.mini-shell .mini-connect-spark.spark-b{bottom:28px;left:20px;font-size:22px;animation-delay:.8s}.mini-shell .mini-connect-spark.spark-c{top:86px;left:0;font-size:12px;animation-delay:1.4s}
+.mini-shell .mini-connect-copy{max-width:310px;}
+.mini-shell .mini-connect-copy>small{font:700 8px 'DM Mono',monospace;letter-spacing:2px;color:#d8b879;}
+.mini-shell .mini-connect-copy h2{display:flex;align-items:center;justify-content:center;gap:5px;margin:12px 0 8px;font:750 clamp(19px,5vw,23px)/1.2 Manrope,sans-serif;letter-spacing:-.5px;color:#fff8e9;}
+.mini-shell .mini-connect-copy p{max-width:270px;margin:0 auto;color:#c1b79f;font:400 11px/1.7 Manrope,sans-serif;}
+.mini-shell .mini-connect-dots{display:inline-flex;gap:3px;align-items:center;margin-left:2px;}
+.mini-shell .mini-connect-dots i{width:3px;height:3px;border-radius:50%;background:#e3bd78;animation:gfDot 1.1s ease-in-out infinite;}.mini-shell .mini-connect-dots i:nth-child(2){animation-delay:.15s}.mini-shell .mini-connect-dots i:nth-child(3){animation-delay:.3s}
+.mini-shell .mini-connect-progress{width:min(190px,70%);height:2px;margin:27px auto 15px;overflow:hidden;border-radius:5px;background:rgba(255,255,255,.12);}
+.mini-shell .mini-connect-progress span{display:block;width:38%;height:100%;border-radius:5px;background:linear-gradient(90deg,transparent,#e8c27d,#fff0c9,transparent);box-shadow:0 0 9px #d6ad69;animation:gfProgress 1.8s ease-in-out infinite;}
+.mini-shell .mini-connect-foot{width:100%;max-width:310px;display:flex;justify-content:space-between;gap:8px;color:#8f846d;font:700 7px 'DM Mono',monospace;letter-spacing:1px;}
+.mini-shell .mini-connect-foot span:first-child{display:flex;align-items:center;gap:5px;color:#c3aa78;}
+@keyframes gfAura{0%,100%{transform:scale(.88);opacity:.65}50%{transform:scale(1.12);opacity:1}}
+@keyframes gfCoreFloat{0%,100%{transform:translate(-50%,-50%) rotateX(-12deg) rotateY(-9deg) translateY(0)}50%{transform:translate(-50%,-50%) rotateX(12deg) rotateY(9deg) translateY(-7px)}}
+@keyframes gfOrbitOne{from{transform:rotateX(68deg) rotateZ(-25deg) rotate(0)}to{transform:rotateX(68deg) rotateZ(-25deg) rotate(360deg)}}
+@keyframes gfOrbitTwo{from{transform:rotateY(67deg) rotateZ(26deg) rotate(360deg)}to{transform:rotateY(67deg) rotateZ(26deg) rotate(0)}}
+@keyframes gfOrbitThree{from{transform:rotateX(76deg) rotateZ(50deg) rotate(0)}to{transform:rotateX(76deg) rotateZ(50deg) rotate(360deg)}}
+@keyframes gfSpark{0%,100%{transform:translateY(0) scale(.8);opacity:.4}50%{transform:translateY(-8px) scale(1.15);opacity:1}}
+@keyframes gfDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+@keyframes gfProgress{0%{transform:translateX(-130%)}100%{transform:translateX(360%)}}
+@media(prefers-reduced-motion:reduce){.mini-shell .mini-connect-screen *{animation:none!important;transition:none!important}.mini-shell .mini-connect-progress span{width:60%;}}
+@media(max-width:360px){.mini-shell .mini-connect-scene{transform:scale(.9);margin-top:-8px;margin-bottom:10px}.mini-shell .mini-connect-screen{min-height:calc(100svh - 100px);padding:22px 15px}}
