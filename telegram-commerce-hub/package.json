@@ -14,12 +14,14 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "postcss": "8.5.32",
+    "three": "^0.181.2",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.181.0",
     "typescript": "^5.8.0"
   },
   "overrides": {
