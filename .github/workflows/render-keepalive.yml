@@ -1,0 +1,43 @@
+name: Keep Gold Feather Render service awake
+
+on:
+  schedule:
+    # Render Free sleeps after 15 minutes without inbound traffic.
+    # A 10-minute interval leaves a buffer for scheduler delays.
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: render-keepalive
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    name: Ping production health endpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Wake service and verify health
+        shell: bash
+        run: |
+          set -uo pipefail
+          URL="https://nova-telegram-commerce.onrender.com/api/health"
+          for attempt in 1 2 3; do
+            echo "Health check attempt ${attempt}/3: ${URL}"
+            if response="$(curl --silent --show-error --fail --max-time 120 --retry 1 --retry-delay 5 "${URL}")"; then
+              echo "${response}"
+              if echo "${response}" | jq -e '.ok == true' >/dev/null; then
+                echo "Gold Feather health check passed."
+                exit 0
+              fi
+              echo "Endpoint responded, but health JSON did not report ok=true."
+            else
+              echo "Request failed or service is still waking."
+            fi
+            if [ "${attempt}" -lt 3 ]; then sleep 15; fi
+          done
+          echo "Gold Feather did not pass its health check after 3 attempts."
+          exit 1
