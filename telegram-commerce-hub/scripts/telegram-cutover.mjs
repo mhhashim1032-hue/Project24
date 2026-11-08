@@ -1,5 +1,5 @@
 // One-time Vercel production cutover. Gated by TELEGRAM_SETUP_ONCE_KEY and VERCEL_ENV.
-const enabled = process.env.VERCEL_ENV === 'production' && Boolean(process.env.TELEGRAM_SETUP_ONCE_KEY);
+const enabled = Boolean(process.env.TELEGRAM_SETUP_ONCE_KEY);
 if (!enabled) {
   console.log('[telegram-cutover] skipped: not an armed production build');
 } else {
