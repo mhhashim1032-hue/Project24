@@ -77,10 +77,11 @@ function storeKeyboard() {
 }
 
 export async function POST(req: NextRequest) {
-  const token = await getServerSecret('telegram_bot_token', 'TELEGRAM_BOT_TOKEN');
-  if (!token || !WEBHOOK_SECRET || req.headers.get('x-telegram-bot-api-secret-token') !== WEBHOOK_SECRET) {
+  if (!WEBHOOK_SECRET || req.headers.get('x-telegram-bot-api-secret-token') !== WEBHOOK_SECRET) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
+  const token = await getServerSecret('telegram_bot_token', 'TELEGRAM_BOT_TOKEN');
+  if (!token) return NextResponse.json({ ok: false, error: 'BOT_TOKEN_NOT_CONFIGURED' }, { status: 503 });
 
   try {
     const update = await req.json();
@@ -152,7 +153,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('Telegram webhook handler failed:', error);
-    // Return 200 for transient internal errors so Telegram does not create an endless retry storm.
-    return NextResponse.json({ ok: false, error: 'WEBHOOK_HANDLER_FAILED' });
+    // Return a retryable status when Telegram delivery itself fails; registration is idempotent.
+    return NextResponse.json({ ok: false, error: 'WEBHOOK_HANDLER_FAILED' }, { status: 500 });
   }
 }
