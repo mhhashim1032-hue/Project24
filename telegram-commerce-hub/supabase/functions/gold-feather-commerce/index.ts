@@ -379,6 +379,45 @@ Deno.serve(async (req: Request) => {
     const needsChannel = ["create_order","pay_with_wallet","verify_usdt_onchain","refresh_onchain_payment","verify_payment","refresh_payment","resume_order","submit_wallet_recharge","refresh_wallet_recharge"].includes(action);
     const channelJoined = await telegramChannelJoined(customer,settings);
     if (needsChannel && !channelJoined) return json({error:"CHANNEL_JOIN_REQUIRED",message:"Join our Telegram channel before purchasing.",joinUrl:settings.required_channel_url||null},403);
+    if (action === "list_developer_api_keys") {
+      const {data,error}=await admin.from("telegram_developer_api_keys")
+        .select("id,name,key_prefix,created_at,last_used_at,revoked_at")
+        .eq("telegram_customer_id",customer.id)
+        .order("created_at",{ascending:false}).limit(10);
+      if(error)return json({error:"API_KEY_LIST_FAILED"},500);
+      return json({ok:true,keys:data||[]});
+    }
+    if (action === "create_developer_api_key") {
+      const name=String(body.name||"Default key").trim().slice(0,60);
+      if(!name)return json({error:"API_KEY_NAME_REQUIRED"},400);
+      const {count,error:countError}=await admin.from("telegram_developer_api_keys")
+        .select("id",{count:"exact",head:true})
+        .eq("telegram_customer_id",customer.id).is("revoked_at",null);
+      if(countError)return json({error:"API_KEY_LIMIT_CHECK_FAILED"},500);
+      if((count||0)>=5)return json({error:"API_KEY_LIMIT_REACHED",message:"You can keep up to five active developer API keys."},409);
+      const bytes=new Uint8Array(32);crypto.getRandomValues(bytes);
+      const token=btoa(String.fromCharCode(...bytes)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+      const apiKey="gf_live_"+token;
+      const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(apiKey));
+      const keyHash=Array.from(new Uint8Array(digest)).map(x=>x.toString(16).padStart(2,"0")).join("");
+      const keyPrefix=apiKey.slice(0,16);
+      const {data,error}=await admin.from("telegram_developer_api_keys")
+        .insert({telegram_customer_id:customer.id,name,key_prefix:keyPrefix,key_hash:keyHash})
+        .select("id,name,key_prefix,created_at").single();
+      if(error)return json({error:"API_KEY_CREATE_FAILED"},500);
+      return json({ok:true,key:apiKey,record:data,message:"Copy this key now. It will not be shown again."});
+    }
+    if (action === "revoke_developer_api_key") {
+      const keyId=String(body.keyId||"");
+      if(!keyId)return json({error:"API_KEY_ID_REQUIRED"},400);
+      const {data,error}=await admin.from("telegram_developer_api_keys")
+        .update({revoked_at:new Date().toISOString()})
+        .eq("id",keyId).eq("telegram_customer_id",customer.id).is("revoked_at",null)
+        .select("id").maybeSingle();
+      if(error)return json({error:"API_KEY_REVOKE_FAILED"},500);
+      if(!data)return json({error:"API_KEY_NOT_FOUND_OR_REVOKED"},404);
+      return json({ok:true,keyId:data.id});
+    }
     if (action === "resume_order") {
       const orderId=String(body.orderId||"");
       const {data:order,error}=await admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,payment_deadline_at,product_id,plan_id,quantity,payment_method,products(name)").eq("id",orderId).eq("telegram_customer_id",customer.id).maybeSingle();
