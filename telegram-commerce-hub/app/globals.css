@@ -1085,3 +1085,34 @@
 .mini-payment-next-ref>p{margin:6px 0 12px;color:#aaa69b;font-size:12px;line-height:1.55}
 .mini-payment-alt-actions{display:flex;gap:9px;margin-top:10px}
 .mini-payment-alt-actions>*{flex:1;min-width:0}
+
+
+/* High-visibility chain selection and verification actions */
+.mini-shell .mini-checkout-network-label{display:flex;flex-direction:column;gap:5px;margin:4px 0 11px}
+.mini-shell .mini-checkout-network-label>span{font:900 10px 'DM Mono';letter-spacing:1.3px;color:#9a793d}
+.mini-shell .mini-checkout-network-label>small{font:600 11px Manrope;color:#81796d}
+.mini-shell .mini-checkout-networks.premium-networks{display:grid;grid-template-columns:1fr;gap:10px;margin:0 0 13px}
+.mini-shell .mini-checkout-networks.premium-networks>button{display:block;width:100%;min-width:0;padding:13px 14px;border:1px solid #ded5c5;border-radius:15px;background:linear-gradient(145deg,#fff,#f8f5ee);color:#342f25;text-align:left;box-shadow:0 4px 14px #21190908;transition:border-color .2s,background .2s,box-shadow .2s,transform .2s}
+.mini-shell .mini-checkout-networks.premium-networks>button.active{border:2px solid #b28a43;padding:12px 13px;background:radial-gradient(circle at 100% 0%,#ead6a944,transparent 48%),linear-gradient(145deg,#fffdf7,#f5eedf);box-shadow:0 0 0 3px #c6a15b20,0 9px 22px #7c5a2319;transform:translateY(-1px)}
+.mini-shell .network-choice-top{display:flex;align-items:center;gap:10px}
+.mini-shell .network-token{width:39px;height:39px;flex:0 0 39px;display:grid;place-items:center;border-radius:12px;font:900 19px Manrope;font-style:normal}
+.mini-shell .network-token.tron-token{background:linear-gradient(145deg,#f6d8d4,#d9877e);color:#a22e2a}
+.mini-shell .network-token.bep-token{background:linear-gradient(145deg,#f7e6b5,#d4a63f);color:#674710}
+.mini-shell .network-choice-top>span{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.mini-shell .network-choice-top b{font:850 12px Manrope;color:#302b22}
+.mini-shell .network-choice-top small{font:650 10px Manrope;color:#8d806b}
+.mini-shell .network-choice-top em{flex-shrink:0;padding:5px 7px;border:1px solid #e4ddcf;border-radius:20px;color:#9b907e;font:900 7px 'DM Mono';font-style:normal;letter-spacing:.6px}
+.mini-shell .premium-networks>button.active .network-choice-top em{border-color:#c5a15c;background:#e9d7ad;color:#644a20}
+.mini-shell .network-choice-bottom{display:flex;align-items:center;gap:8px;margin:11px 0 0 49px;padding-top:9px;border-top:1px solid #eee8dc}
+.mini-shell .network-choice-bottom strong{padding:4px 6px;border-radius:6px;background:#eee7d9;color:#755a2b;font:900 8px 'DM Mono'}
+.mini-shell .network-choice-bottom small{font:600 9px Manrope;color:#8e8577}
+.mini-shell .mini-network-selected-note{display:flex;align-items:flex-start;gap:8px;margin:0 0 13px;padding:10px 11px;border:1px solid #d9c99f;border-radius:11px;background:#faf5e8}
+.mini-shell .mini-network-selected-note>span{width:18px;height:18px;flex:0 0 18px;display:grid;place-items:center;border-radius:50%;background:#e5d4a9;color:#695020;font-size:11px;font-weight:900}
+.mini-shell .mini-network-selected-note p{margin:0;color:#75684f;font:600 9px/1.5 Manrope}
+.mini-shell .mini-network-selected-note b{color:#55401f}
+.mini-shell .mini-payment-check-now{min-height:52px;border-radius:13px;font-size:12px;letter-spacing:.02em;box-shadow:0 9px 24px #b38a4329}
+.mini-shell .mini-payment-next-ref{padding:15px}
+.mini-shell .mini-payment-next-ref .mini-ref-countdown-label{display:block;margin-bottom:6px;color:#b8a16d;font:800 8px 'DM Mono';letter-spacing:1px}
+.mini-shell .mini-payment-next-ref .mini-ref-countdown{display:block;color:#f3d78f;font:900 28px 'DM Mono';letter-spacing:1px}
+.mini-shell .mini-payment-next-ref>p strong{color:#e8d29a}
+@media(min-width:520px){.mini-shell .mini-checkout-networks.premium-networks{grid-template-columns:1fr 1fr}}
