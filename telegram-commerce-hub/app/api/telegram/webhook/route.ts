@@ -62,6 +62,8 @@ async function registerCustomer(user: TelegramUser) {
     const detail = await response.text();
     throw new Error(`Supabase customer registration failed (${response.status}): ${detail.slice(0, 300)}`);
   }
+  const rows = await response.json();
+  return Array.isArray(rows) && rows[0] ? { ...rows[0], wasNew } : null;
 }
 
 function storeKeyboard() {
@@ -92,8 +94,19 @@ export async function POST(req: NextRequest) {
     if (isStart && user?.id) {
       let registered = false;
       try {
-        await registerCustomer(user);
+        const customer = await registerCustomer(user);
         registered = true;
+        const startPayload = input.split(/\s+/, 2)[1] || '';
+        const referralCode = startPayload.startsWith('ref_') ? startPayload.slice(4).toLowerCase() : '';
+        if (customer?.id && customer.wasNew && referralCode) {
+          const referralResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/apply_referral_onboarding`, {
+            method: 'POST',
+            headers: { apikey: SERVICE_KEY!, authorization: `Bearer ${SERVICE_KEY}`, 'content-type': 'application/json' },
+            body: JSON.stringify({ p_new_customer_id: customer.id, p_referral_code: referralCode }),
+            signal: AbortSignal.timeout(8000),
+          });
+          if (!referralResponse.ok) console.error('Referral attribution failed:', (await referralResponse.text()).slice(0, 300));
+        }
       } catch (error) {
         console.error('Telegram customer registration failed:', error);
       }
