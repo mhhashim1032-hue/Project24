@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSecret } from '@/lib/server-secrets';
 
 export const runtime = 'nodejs';
 
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
 
-  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const token = await getServerSecret('telegram_bot_token', 'TELEGRAM_BOT_TOKEN');
   const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
   if (!token || !appUrl) {
     return NextResponse.json({ ok: false, error: 'Telegram bot token or APP_URL is not configured' }, { status: 503 });
