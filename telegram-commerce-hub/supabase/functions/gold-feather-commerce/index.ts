@@ -49,7 +49,7 @@ async function verifyTelegramInitData(raw: string, botId: string) {
     } catch { valid = false; }
   }
   if (!valid) {
-    const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
+    const botToken = await getAdminPaymentSecret("telegram_bot_token", "TELEGRAM_BOT_TOKEN");
     if (!botToken) throw new Error("TELEGRAM_BOT_TOKEN_NOT_CONFIGURED");
     const encoder = new TextEncoder();
     const secretKey = await crypto.subtle.importKey("raw", encoder.encode("WebAppData"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
@@ -152,7 +152,7 @@ async function notifyCommerceEvent(settings: any, message: string) {
 }
 async function telegramChannelJoined(customer: any, settings: any) {
   const channelId=String(settings.required_channel_id||"").trim(); if(!channelId)return true;
-  const token=Deno.env.get("TELEGRAM_BOT_TOKEN"); if(!token)return false;
+  const token=await getAdminPaymentSecret("telegram_bot_token", "TELEGRAM_BOT_TOKEN"); if(!token)return false;
   try { const r=await fetch("https://api.telegram.org/bot"+token+"/getChatMember",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:channelId,user_id:Number(customer.telegram_user_id)}),signal:AbortSignal.timeout(8000)}); const d=await r.json(); const s=d?.result?.status; return Boolean(d?.ok&&(["creator","administrator","member"].includes(s)||(s==="restricted"&&d.result?.is_member===true))); } catch { return false; }
 }
 
