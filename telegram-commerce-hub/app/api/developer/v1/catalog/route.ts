@@ -28,6 +28,7 @@ async function supabase(path: string, init: RequestInit = {}) {
     signal: AbortSignal.timeout(10000),
   });
   if (!response.ok) throw new Error('DATABASE_REQUEST_FAILED');
+  if (response.status === 204) return null;
   return response.json();
 }
 
