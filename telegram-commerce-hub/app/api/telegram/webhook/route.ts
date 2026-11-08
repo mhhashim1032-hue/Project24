@@ -32,7 +32,7 @@ async function telegram(method: string, body: Record<string, unknown>) {
 }
 
 async function registerCustomer(user: TelegramUser) {
-  if (!SERVICE_KEY) throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing in Render');
+  if (!SERVICE_KEY) throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing in Vercel');
   const lookup = await fetch(`${SUPABASE_URL}/rest/v1/telegram_customers?telegram_user_id=eq.${encodeURIComponent(String(user.id))}&select=id`, {
     headers: { apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}` },
     signal: AbortSignal.timeout(8000),
