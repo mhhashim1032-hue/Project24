@@ -390,21 +390,19 @@ Deno.serve(async (req: Request) => {
     if (action === "create_developer_api_key") {
       const name=String(body.name||"Default key").trim().slice(0,60);
       if(!name)return json({error:"API_KEY_NAME_REQUIRED"},400);
-      const {count,error:countError}=await admin.from("telegram_developer_api_keys")
-        .select("id",{count:"exact",head:true})
-        .eq("telegram_customer_id",customer.id).is("revoked_at",null);
-      if(countError)return json({error:"API_KEY_LIMIT_CHECK_FAILED"},500);
-      if((count||0)>=5)return json({error:"API_KEY_LIMIT_REACHED",message:"You can keep up to five active developer API keys."},409);
       const bytes=new Uint8Array(32);crypto.getRandomValues(bytes);
       const token=btoa(String.fromCharCode(...bytes)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
       const apiKey="gf_live_"+token;
       const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(apiKey));
       const keyHash=Array.from(new Uint8Array(digest)).map(x=>x.toString(16).padStart(2,"0")).join("");
       const keyPrefix=apiKey.slice(0,16);
-      const {data,error}=await admin.from("telegram_developer_api_keys")
-        .insert({telegram_customer_id:customer.id,name,key_prefix:keyPrefix,key_hash:keyHash})
-        .select("id,name,key_prefix,created_at").single();
-      if(error)return json({error:"API_KEY_CREATE_FAILED"},500);
+      const {data,error}=await admin.rpc("create_telegram_developer_api_key",{
+        p_customer_id:customer.id,p_name:name,p_key_prefix:keyPrefix,p_key_hash:keyHash
+      });
+      if(error){
+        if(error.message?.includes("API_KEY_LIMIT_REACHED"))return json({error:"API_KEY_LIMIT_REACHED",message:"You can keep up to five active developer API keys."},409);
+        return json({error:"API_KEY_CREATE_FAILED"},500);
+      }
       return json({ok:true,key:apiKey,record:data,message:"Copy this key now. It will not be shown again."});
     }
     if (action === "revoke_developer_api_key") {
