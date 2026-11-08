@@ -972,3 +972,53 @@
 .mini-shell .mini-profile-telegram-id b{margin-top:3px;font:750 10px 'DM Mono';color:#39352c;overflow-wrap:anywhere}
 .mini-shell .mini-profile-telegram-id button{width:29px;height:29px;flex:0 0 29px;display:grid;place-items:center;border-radius:8px;background:#eee7d8;color:#765c32}
 @media(max-width:360px){.mini-shell .mini-freebies-grid{grid-template-columns:1fr}.mini-shell .mini-freebies-hero{padding:14px}.mini-shell .mini-freebies-hero-copy{max-width:82%}}
+
+/* Immersive payment verification journey */
+.mini-shell .mini-payment-live{position:relative;overflow:hidden;margin:14px 0 4px;padding:15px;border:1px solid #dfd2b5;border-radius:17px;background:radial-gradient(ellipse at 50% 34%,#e9d9b533,transparent 46%),linear-gradient(155deg,#fffefa,#f6f1e6);box-shadow:0 12px 30px #21190912}
+.mini-shell .mini-payment-live:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 20%,#fff9 48%,transparent 72%);transform:translateX(-120%);animation:mini-payment-sheen 4s ease-in-out infinite}
+.mini-shell .mini-payment-live-head{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:9px}
+.mini-shell .mini-payment-live-head>div small,.mini-shell .mini-payment-live-head>div b{display:block}
+.mini-shell .mini-payment-live-head>div small{font:700 7px 'DM Mono';letter-spacing:1px;color:#9a8359}
+.mini-shell .mini-payment-live-head>div b{margin-top:4px;font:800 14px Manrope;color:#302c24}
+.mini-shell .mini-payment-live-badge{padding:6px 8px;border:1px solid #e2d3b1;border-radius:20px;background:#f8f1df;color:#896b35;font:800 7px 'DM Mono';letter-spacing:.5px;white-space:nowrap}
+.mini-shell .mini-payment-live-badge.success{border-color:#c8dfc9;background:#edf7ed;color:#347346}
+.mini-shell .mini-payment-live-badge.problem{border-color:#e8caca;background:#fff0ef;color:#a44842}
+.mini-shell .mini-payment-orbit-scene{position:relative;width:142px;height:132px;margin:5px auto 0;display:grid;place-items:center;perspective:500px}
+.mini-shell .mini-payment-orbit{position:absolute;inset:20px 10px;border:1px solid #c7a96888;border-radius:50%;transform:rotateX(65deg) rotateZ(0deg);box-shadow:0 0 13px #d5b66b20}
+.mini-shell .mini-payment-orbit.orbit-a{animation:mini-payment-orbit 5s linear infinite}
+.mini-shell .mini-payment-orbit.orbit-b{inset:10px 22px;transform:rotateX(65deg) rotateZ(60deg);border-color:#a58b5c99;animation:mini-payment-orbit-reverse 7s linear infinite}
+.mini-shell .mini-payment-orbit.orbit-c{inset:29px 2px;transform:rotateX(65deg) rotateZ(120deg);border-style:dashed;animation:mini-payment-orbit 9s linear infinite}
+.mini-shell .mini-payment-core{position:relative;z-index:2;width:58px;height:58px;display:grid;place-items:center;border:1px solid #e4cf9d;border-radius:19px;background:radial-gradient(circle at 30% 20%,#fff5d7,#d7b66f 68%,#98743a);color:#47361c;box-shadow:0 9px 20px #8b6b333d,inset 0 1px 4px #fff9;transform:rotateX(12deg) rotateZ(-7deg);animation:mini-payment-float 2.8s ease-in-out infinite}
+.mini-shell .mini-payment-particle{position:absolute;z-index:3;width:7px;height:7px;border-radius:50%;background:#c19b51;box-shadow:0 0 12px #c49d54}
+.mini-shell .mini-payment-particle.particle-a{top:17px;left:37px;animation:mini-payment-particle-a 3.3s ease-in-out infinite}
+.mini-shell .mini-payment-particle.particle-b{right:23px;top:51px;width:5px;height:5px;animation:mini-payment-particle-b 2.7s ease-in-out infinite}
+.mini-shell .mini-payment-particle.particle-c{bottom:16px;left:55px;width:4px;height:4px;animation:mini-payment-particle-c 3.8s ease-in-out infinite}
+.mini-shell .mini-payment-live.is-success .mini-payment-core{background:radial-gradient(circle at 30% 20%,#f4fff3,#a7d2a5 70%,#56895c);border-color:#a7cba6;color:#245a34;animation:mini-payment-success-pop .55s cubic-bezier(.2,1.5,.5,1) both}
+.mini-shell .mini-payment-live.is-success .mini-payment-orbit{border-color:#78ad7b99;animation-duration:15s}
+.mini-shell .mini-payment-live.is-problem .mini-payment-core{background:radial-gradient(circle at 30% 20%,#fff5ef,#e9b5a7 70%,#b9685e);border-color:#d9a79d;color:#813d36}
+.mini-shell .mini-payment-live-message{text-align:center;position:relative;z-index:1}
+.mini-shell .mini-payment-live-message>b{display:block;font:800 13px Manrope;color:#373127}
+.mini-shell .mini-payment-live-message>p{max-width:330px;margin:5px auto 0;font:500 9px/1.6 Manrope;color:#81796d}
+.mini-shell .mini-payment-steps{display:flex;align-items:flex-start;justify-content:space-between;gap:3px;margin:17px 0 9px}
+.mini-shell .mini-payment-step{min-width:0;display:flex;flex:0 0 29%;flex-direction:column;align-items:center;gap:5px;text-align:center;color:#a39a8b}
+.mini-shell .mini-payment-step>span{width:22px;height:22px;display:grid;place-items:center;border:1px solid #ded5c4;border-radius:50%;background:#fff;color:#a39a8b;font:800 9px Manrope}
+.mini-shell .mini-payment-step.done>span{border-color:#b8d4b9;background:#eaf4e9;color:#3c7a49}
+.mini-shell .mini-payment-step.current>span{border-color:#c6a35f;background:#f5ead0;color:#7b5a25;box-shadow:0 0 0 4px #d5b56b22;animation:mini-payment-step-pulse 1.6s ease-in-out infinite}
+.mini-shell .mini-payment-step small{font:700 7px/1.3 Manrope;color:#938a7b}
+.mini-shell .mini-payment-steps>i{height:2px;flex:1;margin-top:10px;background:#e7dfd0}
+.mini-shell .mini-payment-steps>i.done{background:#8fba91}
+.mini-shell .mini-payment-steps>i.current{background:linear-gradient(90deg,#c7a25e 50%,#e7dfd0 50%);background-size:200% 100%;animation:mini-payment-progress 1.4s linear infinite}
+.mini-shell .mini-payment-live-foot{display:flex;align-items:center;justify-content:center;gap:7px;margin:10px 0 2px;color:#95876d;font:600 8px Manrope}
+.mini-shell .mini-payment-pulse{width:6px;height:6px;border-radius:50%;background:#b28c4b;box-shadow:0 0 0 4px #b28c4b20;animation:mini-payment-step-pulse 1.4s infinite}
+.mini-shell .mini-payment-live .mini-secondary,.mini-shell .mini-payment-live .mini-primary{margin-top:10px}
+@keyframes mini-payment-orbit{to{transform:rotateX(65deg) rotateZ(360deg)}}
+@keyframes mini-payment-orbit-reverse{to{transform:rotateX(65deg) rotateZ(-300deg)}}
+@keyframes mini-payment-float{0%,100%{transform:translateY(0) rotateX(12deg) rotateZ(-7deg)}50%{transform:translateY(-6px) rotateX(18deg) rotateZ(2deg)}}
+@keyframes mini-payment-particle-a{50%{transform:translate(9px,9px);opacity:.45}}
+@keyframes mini-payment-particle-b{50%{transform:translate(-8px,-9px);opacity:.4}}
+@keyframes mini-payment-particle-c{50%{transform:translate(8px,-7px);opacity:.55}}
+@keyframes mini-payment-step-pulse{50%{box-shadow:0 0 0 7px #d5b56b10;opacity:.72}}
+@keyframes mini-payment-progress{to{background-position:-200% 0}}
+@keyframes mini-payment-sheen{0%,65%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+@keyframes mini-payment-success-pop{0%{transform:scale(.7) rotateZ(-18deg)}75%{transform:scale(1.12) rotateZ(5deg)}100%{transform:scale(1) rotateZ(0)}}
+@media(prefers-reduced-motion:reduce){.mini-shell .mini-payment-live:before,.mini-shell .mini-payment-orbit,.mini-shell .mini-payment-core,.mini-shell .mini-payment-particle,.mini-shell .mini-payment-step.current>span,.mini-shell .mini-payment-pulse,.mini-shell .mini-payment-steps>i.current{animation:none!important}}
