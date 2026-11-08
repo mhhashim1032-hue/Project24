@@ -682,3 +682,63 @@
  .mini-shell .mini-product-cta{min-height:31px;padding:0 8px;font-size:8px}
  .mini-shell .mini-price{font-size:10px}
 }
+
+
+/* Premium mobile-first checkout redesign */
+.mini-checkout-panel{padding:clamp(16px,4vw,25px);border-radius:22px;box-shadow:0 16px 45px #352a1012}
+.mini-checkout-title{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:10px 0 18px}
+.mini-checkout-title>div{min-width:0}
+.mini-checkout-title small{font:600 9px 'DM Mono';letter-spacing:1.25px;color:var(--mini-accent)}
+.mini-checkout-title h1{font:800 clamp(25px,6vw,32px)/1.12 Manrope;letter-spacing:-1.1px;margin:8px 0;color:inherit}
+.mini-checkout-title p{font-size:11px;line-height:1.6;color:#8b867c;margin:0;max-width:440px}
+.mini-checkout-lock{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:14px;background:color-mix(in srgb,var(--mini-accent) 12%,white);color:var(--mini-accent)}
+.mini-checkout-summary{padding:17px;border-radius:17px;background:linear-gradient(135deg,#20251d,#343a2c);color:#fff;box-shadow:0 12px 28px #171b1424}
+.mini-checkout-summary-top{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#d9c994;font:600 9px 'DM Mono';letter-spacing:1.1px}
+.mini-checkout-order{color:#ffffff9c;letter-spacing:.4px}
+.mini-checkout-summary>strong{display:block;font:800 clamp(28px,7vw,36px) Manrope;letter-spacing:-1px;margin:7px 0 15px}
+.mini-checkout-summary>strong small{font:600 13px 'DM Sans';letter-spacing:0;color:#e2d6b8}
+.mini-checkout-countdown{display:flex;align-items:center;gap:7px;flex-wrap:wrap;border-top:1px solid #ffffff24;padding-top:12px;color:#e7e5dc;font-size:10px}
+.mini-checkout-countdown svg{color:#dfc681}
+.mini-checkout-countdown b{color:#f1d995;font:700 11px 'DM Mono'}
+.mini-checkout-deadline{margin-left:auto;color:#ffffff9c;font-size:9px}
+.mini-checkout-continue{width:100%;margin:10px 0 20px;padding:10px;border:1px solid #e9e3d7;border-radius:10px;background:#fff;color:#82775f;font-size:10px;font-weight:600}
+.mini-checkout-section-head{display:flex;align-items:center;gap:10px;margin:19px 0 10px}
+.mini-checkout-section-head>span{width:27px;height:27px;flex:0 0 27px;border-radius:9px;display:grid;place-items:center;background:color-mix(in srgb,var(--mini-accent) 13%,white);color:var(--mini-accent);font:700 10px 'DM Mono'}
+.mini-checkout-section-head b,.mini-checkout-section-head small{display:block}
+.mini-checkout-section-head b{font:700 12px Manrope;color:inherit}
+.mini-checkout-section-head small{font-size:9px;color:#938a7b;margin-top:3px}
+.mini-checkout-methods{gap:8px;margin:0 0 16px}
+.mini-checkout-methods button{min-width:0;min-height:110px;align-items:flex-start;justify-content:flex-start;padding:12px 10px;border-radius:14px;gap:5px;transition:border-color .18s,background .18s,transform .18s}
+.mini-checkout-methods button.active{border:2px solid var(--mini-accent);padding:11px 9px;box-shadow:0 5px 15px color-mix(in srgb,var(--mini-accent) 13%,transparent)}
+.mini-method-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#f1eee5;color:#71592e;margin-bottom:2px}
+.mini-checkout-methods button b{font:700 11px Manrope}
+.mini-checkout-methods button small{font-size:9px;line-height:1.35;color:#8d877c;overflow-wrap:anywhere}
+.mini-usdt-icon,.mini-binance-icon{font:800 19px Manrope}
+.mini-usdt-icon{background:#e9f5f1;color:#16866b}
+.mini-binance-icon{background:#fff4d9;color:#b47a0b}
+.mini-checkout-instructions-head{margin-top:17px}
+.mini-checkout-instructions{margin:0;padding:15px;border:1px solid #eee8dc;border-radius:15px;background:#fdfcf9}
+.mini-checkout-balance{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;background:#f4f0e6}
+.mini-checkout-balance span{font-size:10px;color:#857a66}
+.mini-checkout-balance b{font:700 12px Manrope;color:#735629}
+.mini-checkout-action{min-height:46px;margin:12px 0 8px;border-radius:12px;font-size:11px}
+.mini-checkout-network-label{font-size:10px;font-weight:700;margin-bottom:9px}
+.mini-checkout-networks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.mini-checkout-networks button{display:flex;flex-direction:column;gap:4px;text-align:left;padding:11px;border:1px solid #e8e1d4;border-radius:11px;background:#fff;color:#413b2e}
+.mini-checkout-networks button.active{border:2px solid var(--mini-accent);padding:10px;background:color-mix(in srgb,var(--mini-accent) 8%,white)}
+.mini-checkout-networks b{font:700 11px Manrope}
+.mini-checkout-networks small{font-size:9px;color:#8b8375}
+.mini-checkout-hint{padding:11px 12px;border-radius:10px;background:#f5f0e4;color:#79633a;font-size:10px;line-height:1.6;margin:10px 0}
+.mini-checkout-address-label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:15px 0 7px}
+.mini-checkout-address-label span{font:600 9px 'DM Mono';letter-spacing:.6px;color:#8a754b}
+.mini-checkout-address-label small{font-size:9px;color:#938a7b;text-align:right}
+.mini-checkout-address{gap:8px;min-width:0;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.mini-checkout-address button{flex:0 0 34px;width:34px;height:34px;border-radius:9px;background:#eee8d9;color:#705629;display:grid;place-items:center}
+.mini-checkout-explain{font-size:10px;line-height:1.65;color:#8a8378;margin:8px 0}
+.mini-checkout-input{width:100%;min-height:46px;padding:12px;border:1px solid #e4ddcf;border-radius:10px;background:#fff;font-size:11px;outline:none;margin:10px 0 4px}
+.mini-checkout-input:focus{border-color:var(--mini-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--mini-accent) 13%,transparent)}
+.mini-checkout-instructions .mini-fee-consent{display:flex;align-items:flex-start;gap:8px;padding:10px;border-radius:9px;background:#f4f0e6;font-size:9px;line-height:1.5;color:#71664f}
+.mini-checkout-instructions .mini-fee-consent input{width:16px;min-width:16px;margin:1px 0 0;accent-color:var(--mini-accent)}
+.mini-checkout-verification{border:1px solid #e7e0d2;background:#f8f6ef}
+@media(max-width:390px){.mini-checkout-methods{gap:5px}.mini-checkout-methods button{padding:9px 7px;min-height:104px}.mini-checkout-methods button.active{padding:8px 6px}.mini-checkout-methods button small{font-size:8px}.mini-checkout-summary{padding:14px}.mini-checkout-deadline{margin-left:0;width:100%}}
+@media(prefers-reduced-motion:reduce){.mini-checkout-methods button{transition:none}}
