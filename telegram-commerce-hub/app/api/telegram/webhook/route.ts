@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
         parse_mode: 'HTML',
         reply_markup: storeKeyboard(),
       });
-      return NextResponse.json({ ok: true, registered });
+      return NextResponse.json({ ok: true, registered: true });
     }
 
     if (input.startsWith('/catalog') || input === 'Browse catalogue') {
