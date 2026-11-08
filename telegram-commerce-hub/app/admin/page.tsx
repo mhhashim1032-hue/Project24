@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Activity, ArrowDownLeft, ArrowUpRight, Bot, Boxes, Check, ChevronDown, CircleDollarSign, ClipboardList, Command, CreditCard, ExternalLink, LayoutDashboard, LogOut, Package, Plus, RefreshCw, Search, Settings, ShieldCheck, ShoppingBag, Sparkles, Users, X, BarChart3, Wallet, Trash2, Layers } from 'lucide-react';
+import { Activity, ArrowDownLeft, ArrowUpRight, Bot, Boxes, Check, ChevronDown, CircleDollarSign, ClipboardList, Command, CreditCard, ExternalLink, LayoutDashboard, LogOut, Package, Plus, RefreshCw, Search, Settings, ShieldCheck, ShoppingBag, Sparkles, Users, X, BarChart3, Wallet, Trash2, Layers, Download, Upload } from 'lucide-react';
 type Product = {id:string;name:string;slug:string;category:string;kind:string;description:string;image_url?:string|null;warranty_days?:number;is_active:boolean;fulfillment_mode:string;delivery_payload?:any;product_plans?:Plan[]};
 type Plan = {id:string;product_id:string;name:string;price:number;currency:string;duration_days:number|null;stock:number|null;is_active:boolean;quantity_discount_tiers?:{min_quantity:number;discount_percent:number}[]};
 type Order = {id:string;order_number:string;customer_email:string|null;telegram_user_id:string|null;amount:number;currency:string;status:string;created_at:string;products?:{name:string}};
