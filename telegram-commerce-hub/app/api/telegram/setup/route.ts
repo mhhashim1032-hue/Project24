@@ -131,3 +131,18 @@ export async function POST(req: NextRequest) {
     }, { status: 502 });
   }
 }
+
+
+// Temporary one-time activation path. Remove the TELEGRAM_SETUP_ONCE_KEY after successful setup.
+export async function GET(req: NextRequest) {
+  const expected = process.env.TELEGRAM_SETUP_ONCE_KEY;
+  const supplied = req.nextUrl.searchParams.get('key');
+  if (!expected || !supplied || supplied !== expected) {
+    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  }
+  const forwarded = new NextRequest(req.url, {
+    method: 'POST',
+    headers: { 'x-setup-secret': process.env.TELEGRAM_WEBHOOK_SECRET || '' },
+  });
+  return POST(forwarded);
+}
