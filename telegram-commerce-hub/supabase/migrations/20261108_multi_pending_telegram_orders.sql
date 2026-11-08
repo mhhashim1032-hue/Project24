@@ -124,3 +124,45 @@ revoke all on function public.modify_telegram_order(uuid,uuid,uuid,integer) from
 revoke all on function public.cancel_telegram_order(uuid,uuid) from public,anon,authenticated;
 grant execute on function public.modify_telegram_order(uuid,uuid,uuid,integer) to service_role;
 grant execute on function public.cancel_telegram_order(uuid,uuid) to service_role;
+
+-- Serialize wallet debits per Telegram customer so two concurrent pending orders
+-- cannot both spend the same balance.
+create index if not exists wallet_transactions_customer_currency_idx
+  on public.wallet_transactions (telegram_customer_id, upper(currency))
+  include (amount,direction);
+
+create or replace function public.pay_telegram_order_from_wallet(p_order_id uuid,p_customer_id uuid)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare o public.orders%rowtype; c public.telegram_customers%rowtype; balance numeric; prod public.products%rowtype; secret jsonb; final_status public.order_status;
+begin
+ if coalesce(auth.role(),'') <> 'service_role' then raise exception 'SERVICE_ROLE_REQUIRED'; end if;
+ select * into o from public.orders where id=p_order_id and telegram_customer_id=p_customer_id for update;
+ if o.id is null or o.status<>'awaiting_payment' or o.expires_at<=now() then raise exception 'ORDER_NOT_PAYABLE_OR_EXPIRED'; end if;
+ select * into c from public.telegram_customers where id=p_customer_id for update;
+ if c.id is null or c.is_blocked then raise exception 'CUSTOMER_NOT_ELIGIBLE'; end if;
+ if exists(select 1 from public.wallet_transactions where idempotency_key='order-wallet:'||o.id::text) then
+   return jsonb_build_object('ok',true,'status',o.status,'already_paid',true);
+ end if;
+ select coalesce(sum(case when direction='credit' then amount else -amount end),0) into balance
+ from public.wallet_transactions where telegram_customer_id=p_customer_id and upper(currency)=upper(o.currency);
+ if balance<o.amount then raise exception 'INSUFFICIENT_WALLET_BALANCE'; end if;
+ insert into public.wallet_transactions(telegram_customer_id,amount,currency,direction,transaction_type,reference_type,reference_id,idempotency_key,note)
+ values(p_customer_id,o.amount,upper(o.currency),'debit','purchase','order',o.id,'order-wallet:'||o.id::text,'Wallet payment for order '||o.order_number);
+ insert into public.payment_submissions(order_id,telegram_customer_id,provider,transaction_reference,amount,currency,status,verification_source,review_note)
+ values(o.id,p_customer_id,'wallet','WALLET:'||o.id::text,o.amount,upper(o.currency),'verified','wallet_ledger','Paid from customer wallet')
+ on conflict do nothing;
+ select * into prod from public.products where id=o.product_id;
+ if prod.fulfillment_mode='automatic' then select payload into secret from public.product_delivery_secrets where product_id=o.product_id; end if;
+ if prod.fulfillment_mode='automatic' and nullif(secret->>'content','') is not null then
+   update public.orders set status='fulfilled',payment_method='wallet',paid_at=now(),fulfilled_at=now(),
+     delivery_data=jsonb_build_object('content',secret->>'content','mode','automatic') where id=o.id;
+   insert into public.deliveries(order_id,mode,status,payload,delivered_at)
+   values(o.id,'automatic','sent',jsonb_build_object('content',secret->>'content','mode','automatic'),now())
+   on conflict(order_id) do nothing;
+   final_status:='fulfilled';
+ else
+   update public.orders set status='paid',payment_method='wallet',paid_at=now() where id=o.id;
+   final_status:='paid';
+ end if;
+ return jsonb_build_object('ok',true,'status',final_status,'order_number',o.order_number,'balance_after',balance-o.amount);
+end; $$;
