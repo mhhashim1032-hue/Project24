@@ -28,3 +28,5 @@ jobs:
         run: npm run build
 
 # Validate the full Next.js application, including admin API routes and Mini App scenes.
+
+# Build check includes all 3D scene components and Store panels.
