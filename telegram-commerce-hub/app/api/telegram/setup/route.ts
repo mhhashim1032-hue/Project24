@@ -75,35 +75,3 @@ export async function POST(req: NextRequest) {
     }, { status: 502 });
   }
 }
-
-// Temporary authenticated activation/inspection endpoint; remove after the live cutover is verified.
-export async function GET(req: NextRequest) {
-  const expected = process.env.TELEGRAM_SETUP_ONCE_KEY;
-  const supplied = req.nextUrl.searchParams.get('key');
-  if (!expected || !supplied || supplied !== expected) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
-  if (!token || !appUrl) return NextResponse.json({ ok: false, error: 'Bot token or APP_URL missing' }, { status: 503 });
-
-  const webhookUrl = `${appUrl}/api/telegram/webhook`;
-  const miniAppUrl = `${appUrl}/miniapp`;
-  if (req.nextUrl.searchParams.get('inspect') === '1') {
-    try {
-      return NextResponse.json({ ok: true, ...(await diagnostics(token, webhookUrl, miniAppUrl)) });
-    } catch (error) {
-      return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : 'Inspection failed' }, { status: 502 });
-    }
-  }
-
-  return POST(new NextRequest(req.url, {
-    method: 'POST',
-    headers: { 'x-setup-secret': secretForInternalCall() },
-  }));
-}
-
-function secretForInternalCall() {
-  return process.env.TELEGRAM_WEBHOOK_SECRET || '';
-}
