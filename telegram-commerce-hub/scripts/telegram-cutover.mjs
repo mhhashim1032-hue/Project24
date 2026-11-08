@@ -1,5 +1,5 @@
 // One-time Vercel production cutover. Gated by TELEGRAM_SETUP_ONCE_KEY and VERCEL_ENV.
-const enabled = Boolean(process.env.TELEGRAM_SETUP_ONCE_KEY);
+const enabled = (process.env.APP_URL || '').replace(/\/$/, '') === 'https://gold-feather-premium-pakstylebd.vercel.app';
 if (!enabled) {
   console.log('[telegram-cutover] skipped: not an armed production build');
 } else {
