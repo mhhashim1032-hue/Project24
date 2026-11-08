@@ -12,7 +12,7 @@ export async function GET() {
     background_color: '#f6f5f1',
     theme_color: '#171a20',
     orientation: 'any',
-    icons: [{ src: '/admin-icon.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'any' }, { src: '/admin-icon.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' }]
+    icons: [{ src: '/admin-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: '/admin-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: '/admin-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }, { src: '/admin-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }]
   };
   return Response.json(manifest, {
     headers: {
