@@ -464,3 +464,121 @@
 .design-product{content-visibility:auto;contain-intrinsic-size:480px}
 @media(max-width:640px){.toggle-list{grid-template-columns:1fr}.plan-editor{padding:11px}.plan-editor .form-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+
+/* GOLD FEATHER ADMIN — premium command-centre refresh */
+.admin-app-shell{--gf-ink:#20211f;--gf-muted:#85857e;--gf-line:#e9e6dc;--gf-gold:#b99755;--gf-gold-deep:#8d6d32;--gf-paper:#f6f5f1;min-height:100vh;background:radial-gradient(ellipse at 86% 0%,#eee8d9 0,transparent 34%),var(--gf-paper);color:var(--gf-ink)}
+.admin-app-shell .sidebar{width:268px;padding:25px 18px;background:linear-gradient(165deg,#171a20 0%,#20242c 55%,#171a20 100%);border-right:1px solid #ffffff0d;box-shadow:12px 0 40px #171a2010}
+.admin-app-shell .brand{font-family:Manrope,system-ui,sans-serif;font-size:15px;letter-spacing:1.45px;gap:9px}
+.admin-app-shell .brand-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#e2c887,#9b7738);color:#171a20;box-shadow:0 7px 22px #c8a96a35}
+.admin-app-shell .brand-tag{color:#c7b17e}
+.admin-app-shell .workspace{border:1px solid #ffffff13;background:linear-gradient(135deg,#ffffff0d,#ffffff05);border-radius:13px;margin:32px 0 28px;padding:13px}
+.admin-app-shell .workspace-icon{background:linear-gradient(145deg,#dfc78f,#9d7b41);color:#24221b;border-radius:10px}
+.admin-app-shell .sidebar nav{gap:6px}
+.admin-app-shell .nav-item{border:1px solid transparent;border-radius:11px;padding:11px 12px;transition:background .18s,border-color .18s,transform .18s}
+.admin-app-shell .nav-item:hover{background:#ffffff0c;transform:translateX(2px)}
+.admin-app-shell .nav-item.active{background:linear-gradient(100deg,#c3a66b22,#c3a66b08);border-color:#c6a96b36;box-shadow:inset 3px 0 #d6bb80;color:#f5e8c9}
+.admin-app-shell .nav-item.active svg{color:#dfc78f}
+.admin-app-shell .status-card{background:#ffffff09;border:1px solid #ffffff0e;border-radius:12px}
+.admin-app-shell .main{margin-left:268px}
+.admin-app-shell .topbar{height:76px;padding:0 clamp(20px,3vw,48px);background:#ffffffdc;backdrop-filter:blur(18px);border-bottom:1px solid #e8e4da;position:sticky;top:0;z-index:4}
+.admin-app-shell .breadcrumb{font-size:12px;color:#99958b}
+.admin-app-shell .breadcrumb b{color:#272923}
+.admin-app-shell .live-pill{color:#477c61;background:#edf5ee;border:1px solid #dceadd;padding:7px 10px;border-radius:30px}
+.admin-app-shell .top-avatar{background:linear-gradient(145deg,#e6d5a8,#a98b52);color:#28251d;border-radius:50%}
+.admin-app-shell .content{max-width:1680px;padding:36px clamp(20px,3vw,48px) 70px}
+.admin-app-shell .page-heading{align-items:center;margin-bottom:25px}
+.admin-app-shell .page-heading .eyebrow{color:#9b7d46;letter-spacing:1.8px}
+.admin-app-shell .page-heading h1{font-size:clamp(25px,2vw,32px);letter-spacing:-1.15px;color:#24251f}
+.admin-app-shell .page-heading p{font-size:12px;color:#89877e}
+.admin-app-shell .metric-grid{gap:13px;margin-bottom:17px}
+.admin-app-shell .metric-card,.admin-app-shell .panel{border:1px solid #e8e5dc;border-radius:16px;background:linear-gradient(145deg,#fff 0%,#fdfcf9 100%);box-shadow:0 5px 22px #2c2a1e06}
+.admin-app-shell .metric-card{padding:18px 18px 17px;position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s}
+.admin-app-shell .metric-card:after{content:'';position:absolute;width:82px;height:82px;right:-34px;bottom:-38px;border-radius:50%;background:#c5a66b12}
+.admin-app-shell .metric-card:hover{transform:translateY(-2px);box-shadow:0 12px 30px #2c2a1e0d}
+.admin-app-shell .metric-top{font-size:10px;font-weight:650;letter-spacing:.2px;color:#77766e}
+.admin-app-shell .metric-icon{width:36px;height:36px;border-radius:12px;background:linear-gradient(145deg,#f4eddd,#e9dec5);color:#96763e}
+.admin-app-shell .metric-card>strong{font-size:25px;color:#24251f;letter-spacing:-1px}
+.admin-app-shell .metric-card>small{color:#98958a;font-size:10px}
+.admin-app-shell .admin-kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.admin-app-shell .quick-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:13px 15px;margin-bottom:17px;background:linear-gradient(105deg,#242830,#30343b);border:1px solid #343942;color:#fff;box-shadow:0 9px 26px #24283018}
+.admin-app-shell .quick-actions>div{margin-right:auto;min-width:190px}
+.admin-app-shell .quick-actions .eyebrow{display:block;color:#d0b77f;font-size:9px}
+.admin-app-shell .quick-actions b,.admin-app-shell .quick-actions small{display:block}
+.admin-app-shell .quick-actions b{font:700 13px Manrope;margin:3px 0}
+.admin-app-shell .quick-actions small{font-size:10px;color:#b8b9b7}
+.admin-app-shell .quick-actions .secondary{background:#ffffff0d;color:#f6f1e6;border:1px solid #ffffff20;border-radius:9px;padding:9px 11px}
+.admin-app-shell .quick-actions .secondary:hover{background:#ffffff18;border-color:#d5bd87}
+.admin-app-shell .dashboard-grid{gap:15px}
+.admin-app-shell .panel{padding:20px}
+.admin-app-shell .panel-head h3{font-size:14px;color:#282922}
+.admin-app-shell .panel-head p{color:#929087;line-height:1.55}
+.admin-app-shell .link-button,.admin-app-shell .text-button{color:#9b7c43}
+.admin-app-shell .primary{background:linear-gradient(135deg,#c8ad72,#a18146);color:#1e1d18;border-radius:9px;box-shadow:0 5px 15px #b2935730}
+.admin-app-shell .primary:hover{background:linear-gradient(135deg,#d5bd87,#ad8b4d)}
+.admin-app-shell .secondary{background:#fffdf9;border-color:#e4e0d5;color:#55554d;border-radius:9px}
+.admin-app-shell .secondary:hover{border-color:#c7ad77;color:#806333}
+.admin-app-shell .table-wrap{border:1px solid #efede7;border-radius:11px}
+.admin-app-shell table{white-space:nowrap}
+.admin-app-shell th{background:#faf9f5;color:#999487;padding:12px 11px}
+.admin-app-shell td{padding:13px 11px;color:#65645d;border-bottom-color:#f0eee8}
+.admin-app-shell td b{color:#282923}
+.admin-app-shell .tag{border-radius:30px;padding:5px 9px}
+.admin-app-shell .tag.success{background:#eaf3e9;color:#4d7957}
+.admin-app-shell .tag.warning{background:#fbf2df;color:#9a7432}
+.admin-app-shell .tag.danger{background:#faeaea;color:#a85252}
+.admin-app-shell .queue-row{border-bottom-color:#f0eee8}
+.admin-app-shell .queue-icon,.admin-app-shell .product-icon,.admin-app-shell .connection-icon{background:linear-gradient(145deg,#f4eddd,#e9dec5);color:#96763e;border-radius:11px}
+.admin-app-shell .searchbox{background:#fff;border-color:#e8e5dc;border-radius:10px}
+.admin-app-shell .searchbox input{background:transparent}
+.admin-app-shell .product-card{border-color:#e9e6dd;border-radius:14px;background:#fff;transition:transform .18s,box-shadow .18s}
+.admin-app-shell .product-card:hover{transform:translateY(-3px);box-shadow:0 12px 28px #28251b10}
+.admin-app-shell .product-card h3{color:#282923}
+.admin-app-shell .settings-panel input,.admin-app-shell .settings-panel textarea,.admin-app-shell .settings-panel select,.admin-app-shell .modal input,.admin-app-shell .modal textarea,.admin-app-shell .modal select{border-color:#e7e3d9;border-radius:9px;background:#fffefa}
+.admin-app-shell .settings-panel input:focus,.admin-app-shell .settings-panel textarea:focus,.admin-app-shell .modal input:focus,.admin-app-shell .modal textarea:focus{border-color:#c1a46a;box-shadow:0 0 0 3px #c1a46a20}
+.admin-app-shell .notice{background:#edf4eb;border-color:#dce9d9;color:#4d7957;border-radius:11px}
+.admin-app-shell .modal{border-radius:18px;box-shadow:0 24px 90px #14161035}
+.admin-app-shell .modal-backdrop{backdrop-filter:blur(7px)}
+.admin-app-shell .storefront-design-card{border-radius:13px}
+.admin-app-shell .storefront-design-card.selected{border-color:#b99a5d;box-shadow:0 0 0 2px #b99a5d25}
+.admin-app-shell .metric-grid .metric-card{min-width:0}
+.admin-app-shell .loading{color:#8b7a55}
+.admin-app-shell button:focus-visible,.admin-app-shell a:focus-visible,.admin-app-shell input:focus-visible,.admin-app-shell select:focus-visible,.admin-app-shell textarea:focus-visible{outline:3px solid #c3a66b70;outline-offset:2px}
+@media(max-width:1200px){.admin-app-shell .sidebar{width:232px}.admin-app-shell .main{margin-left:232px}.admin-app-shell .admin-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){
+ .admin-app-shell .sidebar{position:sticky;top:0;z-index:8;width:100%;padding:11px 13px 9px;background:#1b1e25f7;backdrop-filter:blur(18px);box-shadow:0 8px 24px #15171c22}
+ .admin-app-shell .brand{font-size:13px;letter-spacing:1px}
+ .admin-app-shell .brand-mark{width:32px;height:32px}
+ .admin-app-shell .workspace,.admin-app-shell .nav-label,.admin-app-shell .sidebar-bottom{display:none}
+ .admin-app-shell .sidebar nav{display:flex;overflow-x:auto;scrollbar-width:none;margin:9px -2px 0;padding:0 0 2px;gap:5px}
+ .admin-app-shell .sidebar nav::-webkit-scrollbar{display:none}
+ .admin-app-shell .nav-item{flex:0 0 auto;white-space:nowrap;padding:8px 10px;font-size:10px;gap:6px;border-radius:9px}
+ .admin-app-shell .nav-item.active{box-shadow:inset 0 -2px #d6bb80}
+ .admin-app-shell .nav-item.active svg{width:14px}
+ .admin-app-shell .main{margin:0}
+ .admin-app-shell .topbar{height:52px;padding:0 14px;position:relative}
+ .admin-app-shell .content{padding:22px 13px 45px}
+ .admin-app-shell .page-heading{gap:11px;align-items:flex-start}
+ .admin-app-shell .page-heading h1{font-size:24px}
+ .admin-app-shell .heading-actions{width:100%}
+ .admin-app-shell .heading-actions>*{flex:1}
+ .admin-app-shell .admin-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .admin-app-shell .metric-card{padding:12px;border-radius:13px}
+ .admin-app-shell .metric-card>strong{font-size:19px;overflow-wrap:anywhere}
+ .admin-app-shell .metric-top{font-size:9px;gap:5px}
+ .admin-app-shell .metric-icon{width:29px;height:29px}
+ .admin-app-shell .metric-icon svg{width:15px}
+ .admin-app-shell .metric-card>small{font-size:9px;line-height:1.4}
+ .admin-app-shell .quick-actions{gap:7px;padding:12px}
+ .admin-app-shell .quick-actions>div{flex-basis:100%;margin:0 0 3px}
+ .admin-app-shell .quick-actions .secondary{flex:1 1 calc(50% - 7px);font-size:10px;padding:9px 7px}
+ .admin-app-shell .dashboard-grid,.admin-app-shell .settings-grid{grid-template-columns:1fr}
+ .admin-app-shell .panel{padding:14px;border-radius:13px}
+ .admin-app-shell .toolbar{align-items:stretch;gap:9px;flex-direction:column}
+ .admin-app-shell .searchbox{width:100%}
+ .admin-app-shell .review-actions{flex-direction:row}
+ .admin-app-shell .modal-backdrop{padding:8px}
+ .admin-app-shell .modal{padding:16px;border-radius:14px;max-height:94vh}
+ .admin-app-shell .table-wrap{max-width:calc(100vw - 56px)}
+}
+@media(min-width:761px) and (max-width:1050px){.admin-app-shell .dashboard-grid{grid-template-columns:1fr}.admin-app-shell .admin-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
