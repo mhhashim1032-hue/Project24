@@ -1467,3 +1467,6 @@
 .gf-pick-card>b { max-width:90%; font:750 13px/1.25 'Plus Jakarta Sans',sans-serif; }
 .gf-pick-card>small { color:#aeb8c9; font:600 9px 'DM Sans',sans-serif; }
 .gf-pick-card>strong { color:#f2d18d; font:750 10px 'DM Sans',sans-serif; }
+
+.gf-ads-scene { width:100%; height:190px; min-height:190px; margin:-5px 0 8px; overflow:hidden; pointer-events:none; }
+.gf-ads-scene canvas { display:block; width:100%; height:100%; }
