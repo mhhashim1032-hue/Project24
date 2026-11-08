@@ -3,7 +3,7 @@ import {NextResponse} from 'next/server';
 
 export async function GET(){
  const token=await isServerSecretConfigured('telegram_bot_token','TELEGRAM_BOT_TOKEN');
- const appUrl=Boolean(process.env.APP_URL);
+ const appUrl=Boolean(process.env.APP_URL||process.env.NEXT_PUBLIC_APP_URL);
  const webhook=Boolean(process.env.TELEGRAM_WEBHOOK_SECRET&&appUrl);
  const supabase=Boolean(process.env.SUPABASE_URL||process.env.NEXT_PUBLIC_SUPABASE_URL);
  const anonKey=Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
