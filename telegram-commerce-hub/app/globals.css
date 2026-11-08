@@ -1077,3 +1077,11 @@
 .mini-payment-final-amount b{color:#f4d88f;font-size:23px;font-weight:900;font-variant-numeric:tabular-nums}
 @keyframes paymentRevealIn{from{opacity:0;transform:translateY(14px) scale(.97);filter:blur(5px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
 @media(prefers-reduced-motion:reduce){.mini-payment-revealed{animation:none}}
+
+.mini-payment-check-now{min-height:48px;font-weight:850;letter-spacing:.02em;box-shadow:0 8px 24px #d3ad5b22}
+.mini-payment-next-ref{margin-top:14px;padding:16px;border:1px solid #d2ad5b55;border-radius:16px;background:linear-gradient(145deg,#1b1b20,#111217);animation:paymentRevealIn .35s ease both}
+.mini-payment-next-ref>span{display:block;text-align:center;color:#d8bb77;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
+.mini-payment-next-ref>b{display:block;color:#f2d895;font-size:14px}
+.mini-payment-next-ref>p{margin:6px 0 12px;color:#aaa69b;font-size:12px;line-height:1.55}
+.mini-payment-alt-actions{display:flex;gap:9px;margin-top:10px}
+.mini-payment-alt-actions>*{flex:1;min-width:0}
