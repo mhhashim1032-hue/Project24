@@ -369,8 +369,9 @@ Deno.serve(async (req: Request) => {
       if(error||!order)return json({error:"ORDER_NOT_FOUND"},404);
       if(order.status!=="awaiting_payment")return json({error:"ORDER_NOT_PAYABLE",order},409);
       if(new Date(order.expires_at).getTime()<=Date.now())return json({error:"ORDER_EXPIRED",message:"This order's payment window has expired. Please create a new order."},409);
-      const {data:submission}=await admin.from("payment_submissions").select("id,provider,transaction_reference,status,review_note,last_verification_at").eq("order_id",order.id).eq("telegram_customer_id",customer.id).in("status",["submitted","verified"]).order("created_at",{ascending:false}).limit(1).maybeSingle();
-      return json({ok:true,order,pendingSubmission:submission||null});
+      const {data:submissions}=await admin.from("payment_submissions").select("id,provider,transaction_reference,status,review_note,last_verification_at,created_at").eq("order_id",order.id).eq("telegram_customer_id",customer.id).in("status",["submitted","verified"]).order("created_at",{ascending:false}).limit(20);
+      const pendingSubmissions=(submissions||[]).filter((x:any)=>x.status==="submitted");
+      return json({ok:true,order,pendingSubmission:pendingSubmissions[0]||null,pendingSubmissions});
     }
     if (action === "submit_wallet_recharge") {
       const provider=String(body.provider||""), amountText=String(body.amount||"").trim(), amount=Number(amountText), reference=String(body.transactionReference||"").trim();
