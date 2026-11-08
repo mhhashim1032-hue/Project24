@@ -35,13 +35,11 @@ export async function POST(req: NextRequest) {
   }
 
   const webhookUrl = `${appUrl}/api/telegram/webhook`;
+  const miniAppUrl = `${appUrl}/miniapp`;
   const steps: Record<string, boolean> = {};
 
   try {
-    await telegram(token, 'setMyName', {
-      name: 'Gold Feather Premium',
-      language_code: 'en',
-    });
+    await telegram(token, 'setMyName', { name: 'Gold Feather Premium', language_code: 'en' });
     steps.botName = true;
 
     await telegram(token, 'setMyDescription', {
@@ -65,11 +63,7 @@ export async function POST(req: NextRequest) {
     steps.commands = true;
 
     await telegram(token, 'setChatMenuButton', {
-      menu_button: {
-        type: 'web_app',
-        text: 'Open Store',
-        web_app: { url: `${appUrl}/miniapp` },
-      },
+      menu_button: { type: 'web_app', text: 'Open Store', web_app: { url: miniAppUrl } },
     });
     steps.menuButton = true;
 
@@ -81,25 +75,54 @@ export async function POST(req: NextRequest) {
     });
     steps.webhookSet = true;
 
-    const [webhookInfo, menuButton] = await Promise.all([
+    const [webhookInfo, menuButton, commands, bot] = await Promise.all([
       telegram(token, 'getWebhookInfo'),
       telegram(token, 'getChatMenuButton'),
+      telegram(token, 'getMyCommands'),
+      telegram(token, 'getMe'),
     ]);
 
     const verifiedWebhook = String(webhookInfo?.url || '') === webhookUrl;
     const verifiedMenuButton = menuButton?.type === 'web_app'
-      && String(menuButton?.web_app?.url || '') === `${appUrl}/miniapp`;
+      && String(menuButton?.web_app?.url || '') === miniAppUrl;
+    const verifiedCommands = Array.isArray(commands)
+      && ['start', 'catalog', 'orders', 'help'].every(command =>
+        commands.some((item: any) => item.command === command)
+      );
 
+    const botUsername = String(bot?.username || '').replace(/^@/, '');
+    let referralUsernameSaved = false;
+    const supabaseUrl = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/$/, '');
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (/^[A-Za-z0-9_]{5,32}$/.test(botUsername) && supabaseUrl && serviceKey) {
+      const saved = await fetch(`${supabaseUrl}/rest/v1/bot_settings?id=eq.1`, {
+        method: 'PATCH',
+        headers: {
+          apikey: serviceKey,
+          authorization: `Bearer ${serviceKey}`,
+          'content-type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ telegram_bot_username: botUsername, updated_at: new Date().toISOString() }),
+        signal: AbortSignal.timeout(10000),
+      });
+      referralUsernameSaved = saved.ok;
+    }
+
+    const ok = verifiedWebhook && verifiedMenuButton && verifiedCommands;
     return NextResponse.json({
-      ok: verifiedWebhook && verifiedMenuButton,
+      ok,
       steps,
+      botUsername: botUsername || null,
+      referralUsernameSaved,
       verification: {
         webhook: verifiedWebhook,
         menuButton: verifiedMenuButton,
+        commands: verifiedCommands,
         pendingUpdateCount: Number(webhookInfo?.pending_update_count || 0),
         lastWebhookError: webhookInfo?.last_error_message || null,
       },
-    }, { status: verifiedWebhook && verifiedMenuButton ? 200 : 502 });
+    }, { status: ok ? 200 : 502 });
   } catch (error) {
     return NextResponse.json({
       ok: false,
