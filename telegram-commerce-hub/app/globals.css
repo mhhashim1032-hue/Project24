@@ -1218,3 +1218,17 @@
   color:#fff;
   background:#73551f;
 }
+
+/* Preserve the original product-card typography after semantic heading correction */
+.mini-shell .mini-product h2 {
+  font:700 14px Manrope,sans-serif;
+  margin:13px 0 6px;
+}
+.mini-shell.theme-midnight .mini-product h2,
+.mini-shell.theme-cyber .mini-product h2 {
+  color:#f4f6fb;
+}
+.mini-shell .mini-center h1 {
+  font:700 18px Manrope,sans-serif;
+  margin:8px 0;
+}
