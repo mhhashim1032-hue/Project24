@@ -1203,3 +1203,18 @@
   background:#8a6a2c;
   color:#fff;
 }
+
+/* Final contrast corrections verified by axe on the storefront preview */
+.mini-shell .mini-category-rail>button.active {
+  color:#fff;
+  background:#1d2118;
+}
+.mini-shell .mini-promo-copy small {
+  color:#625c50;
+  opacity:1;
+}
+.mini-shell.theme-midnight .mini-category-rail>button.active,
+.mini-shell.theme-cyber .mini-category-rail>button.active {
+  color:#fff;
+  background:#73551f;
+}
