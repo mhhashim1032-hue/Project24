@@ -1,14 +1,16 @@
 export async function GET() {
   const manifest = {
     id: '/admin',
-    name: 'Gold Feather Premium Admin',
+    name: 'Gold Feather Premium · Admin',
     short_name: 'Gold Feather',
-    description: 'Private commerce operations dashboard',
+    description: 'Secure premium commerce command centre for Gold Feather.',
     start_url: '/admin',
     scope: '/admin',
     display: 'standalone',
-    background_color: '#101116',
-    theme_color: '#111318',
+    display_override: ['standalone', 'minimal-ui'],
+    categories: ['business', 'productivity'],
+    background_color: '#f6f5f1',
+    theme_color: '#171a20',
     orientation: 'any',
     icons: [{ src: '/admin-icon.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'any' }, { src: '/admin-icon.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' }]
   };
