@@ -26,3 +26,5 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Build Next.js app
         run: npm run build
+
+# Validate the full Next.js application, including admin API routes and Mini App scenes.
