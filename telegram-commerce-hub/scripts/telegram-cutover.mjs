@@ -1,53 +1,42 @@
-// One-time Vercel production cutover. Gated by TELEGRAM_SETUP_ONCE_KEY and VERCEL_ENV.
-const enabled = (process.env.APP_URL || '').replace(/\/$/, '') === 'https://gold-feather-premium-pakstylebd.vercel.app';
-if (!enabled) {
-  console.log('[telegram-cutover] skipped: not an armed production build');
+// Temporary read-only Telegram post-cutover verification for Vercel production builds.
+const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
+if (appUrl !== 'https://gold-feather-premium-pakstylebd.vercel.app') {
+  console.log('[telegram-check] skipped: not the Vercel production deployment');
 } else {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-  const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
-  if (!token || !secret || !appUrl) {
-    console.error('[telegram-cutover] missing required production environment configuration');
+  if (!token) {
+    console.error('[telegram-check] TELEGRAM_BOT_TOKEN missing from Vercel build environment');
   } else {
-    const call = async (method, body = {}) => {
+    const call = async method => {
       const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
+        body: '{}',
         signal: AbortSignal.timeout(12000),
       });
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error(data.description || `${method} HTTP ${response.status}`);
       return data.result;
     };
-    const webhookUrl = `${appUrl}/api/telegram/webhook`;
-    const miniAppUrl = `${appUrl}/miniapp`;
     try {
-      await call('setWebhook', {
-        url: webhookUrl,
-        secret_token: secret,
-        allowed_updates: ['message', 'callback_query'],
-        drop_pending_updates: false,
-      });
-      console.log('[telegram-cutover] webhook set');
-      await call('setChatMenuButton', {
-        menu_button: { type: 'web_app', text: 'Open Store', web_app: { url: miniAppUrl } },
-      });
-      console.log('[telegram-cutover] menu button set');
-      const [info, menu] = await Promise.all([
+      await new Promise(resolve => setTimeout(resolve, 12000));
+      const [info, menu, bot] = await Promise.all([
         call('getWebhookInfo'),
         call('getChatMenuButton'),
+        call('getMe'),
       ]);
-      const webhookOk = info?.url === webhookUrl;
-      const menuOk = menu?.type === 'web_app' && menu?.web_app?.url === miniAppUrl;
-      console.log('[telegram-cutover] verification', JSON.stringify({
-        webhookOk, menuOk, pendingUpdateCount: info?.pending_update_count ?? 0,
-        lastWebhookError: info?.last_error_message ?? null,
+      console.log('[telegram-check] post-cutover', JSON.stringify({
+        botUsername: bot?.username,
+        webhookUrl: info?.url,
+        webhookOk: info?.url === `${appUrl}/api/telegram/webhook`,
         menuButtonType: menu?.type,
+        menuAppUrl: menu?.web_app?.url,
+        menuOk: menu?.type === 'web_app' && menu?.web_app?.url === `${appUrl}/miniapp`,
+        pendingUpdateCount: info?.pending_update_count ?? 0,
+        lastWebhookError: info?.last_error_message ?? null,
       }));
-      if (!webhookOk || !menuOk) console.error('[telegram-cutover] verification failed');
     } catch (error) {
-      console.error('[telegram-cutover] failed:', error instanceof Error ? error.message : String(error));
+      console.error('[telegram-check] failed:', error instanceof Error ? error.message : String(error));
     }
   }
 }
