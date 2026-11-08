@@ -1,0 +1,33 @@
+name: Vercel migration build check
+
+on:
+  push:
+    branches:
+      - migration/vercel-production
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "telegram-commerce-hub/**"
+      - ".github/workflows/vercel-migration-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: telegram-commerce-hub
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: telegram-commerce-hub/package.json
+      - name: Install dependencies
+        run: npm install
+      - name: Build Next.js application
+        run: npm run build

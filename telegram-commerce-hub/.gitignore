@@ -1,0 +1,15 @@
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+!.env.vercel.example
+
+# Vercel project metadata
+.vercel
+
+# Next.js build output
+.next
+out
+
+# Dependencies
+node_modules
