@@ -903,3 +903,72 @@
 @keyframes gfProgress{0%{transform:translateX(-130%)}100%{transform:translateX(360%)}}
 @media(prefers-reduced-motion:reduce){.mini-shell .mini-connect-screen *{animation:none!important;transition:none!important}.mini-shell .mini-connect-progress span{width:60%;}}
 @media(max-width:360px){.mini-shell .mini-connect-scene{transform:scale(.9);margin-top:-8px;margin-bottom:10px}.mini-shell .mini-connect-screen{min-height:calc(100svh - 100px);padding:22px 15px}}
+
+/* Refined compact Freebies reward experience */
+.mini-shell .mini-freebies-page{display:block;min-width:0;padding:13px 0 20px}
+.mini-shell .mini-freebies-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.mini-shell .mini-freebies-top>span{font:700 7px 'DM Mono';letter-spacing:1.15px;color:#9a7b43}
+.mini-shell .mini-freebies-top .mini-back{margin:0}
+.mini-shell .mini-freebies-hero{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:13px;align-items:center;padding:17px;border:1px solid #d7c18d;border-radius:17px;background:radial-gradient(circle at 88% 8%,#d5b46b35,transparent 36%),linear-gradient(130deg,#20241d,#343126 72%,#51432c);color:#fff8e9;box-shadow:0 10px 24px #17180f20}
+.mini-shell .mini-freebies-hero:after{content:"✧";position:absolute;z-index:-1;right:10px;top:-29px;font-size:118px;color:#f2d99a12}
+.mini-shell .mini-freebies-hero-orb{position:absolute;right:15px;top:12px;width:45px;height:45px;display:grid;place-items:center;border:1px solid #e5c98766;border-radius:50%;background:radial-gradient(circle at 30% 25%,#f8e6b8,#a47d3e 72%);color:#3d2d14;font-size:22px;box-shadow:0 0 24px #e2bd6b40}
+.mini-shell .mini-freebies-hero-copy{position:relative;z-index:1;grid-column:1/-1;max-width:78%}
+.mini-shell .mini-freebies-hero-copy>small{font:700 7px 'DM Mono';letter-spacing:1.35px;color:#dfc68e}
+.mini-shell .mini-freebies-hero-copy h1{margin:6px 0 4px;font:850 clamp(22px,6vw,28px)/1.05 Manrope;letter-spacing:-.9px;color:#fff8e9}
+.mini-shell .mini-freebies-hero-copy p{margin:0;color:#d4cbb7;font:500 9px/1.5 Manrope}
+.mini-shell .mini-freebies-balance{position:relative;z-index:1;grid-column:1/-1;display:flex;align-items:center;gap:9px;padding:10px 11px;border:1px solid #e4d1a344;border-radius:11px;background:#ffffff0c}
+.mini-shell .mini-freebies-balance>span{font-size:20px}
+.mini-shell .mini-freebies-balance div{flex:1}
+.mini-shell .mini-freebies-balance small,.mini-shell .mini-freebies-balance b{display:block}
+.mini-shell .mini-freebies-balance small{font:700 7px 'DM Mono';letter-spacing:.8px;color:#c8b88f}
+.mini-shell .mini-freebies-balance b{margin-top:2px;font:850 20px Manrope;color:#fff2d0}
+.mini-shell .mini-freebies-balance em{font:700 7px 'DM Mono';font-style:normal;letter-spacing:1px;color:#d4bd86}
+.mini-shell .mini-freebies-invite{margin-top:11px;padding:13px;border:1px solid #e9e1d2;border-radius:14px;background:#fff;box-shadow:0 5px 17px #17140b08}
+.mini-shell .mini-freebies-section-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 1px 8px}
+.mini-shell .mini-freebies-section-title>div{min-width:0}
+.mini-shell .mini-freebies-section-title small,.mini-shell .mini-freebies-section-title b{display:block}
+.mini-shell .mini-freebies-section-title small{font:700 7px 'DM Mono';letter-spacing:1px;color:#9c855b}
+.mini-shell .mini-freebies-section-title b{margin-top:3px;font:800 14px Manrope;color:#302d25}
+.mini-shell .mini-freebies-section-title>span{flex-shrink:0;font:700 8px Manrope;color:#927443}
+.mini-shell .mini-freebies-invite p{margin:0 0 9px;font:500 9px/1.55 Manrope;color:#81796d}
+.mini-shell .mini-freebies-link{display:flex;align-items:center;gap:8px;min-width:0;padding:8px 9px;border:1px solid #ece5d8;border-radius:9px;background:#faf8f3}
+.mini-shell .mini-freebies-link>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 9px 'DM Mono';color:#74664d}
+.mini-shell .mini-freebies-link button{width:28px;height:28px;flex:0 0 28px;display:grid;place-items:center;border-radius:7px;background:#eee7d8;color:#755b2e}
+.mini-shell .mini-freebies-share{width:100%;min-height:38px;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:8px;border:0;border-radius:9px;background:linear-gradient(110deg,#dfc68c,#b18c4c);color:#292316;font:800 10px Manrope}
+.mini-shell .mini-freebies-share:disabled{opacity:.45}
+.mini-shell .mini-freebies-rewards-title{margin:17px 2px 9px}
+.mini-shell .mini-freebies-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.mini-shell .mini-freebie-card{min-width:0;padding:11px;border:1px solid #e9e2d5;border-radius:13px;background:linear-gradient(160deg,#fff,#faf8f3);box-shadow:0 5px 16px #1d180b08}
+.mini-shell .mini-freebie-card-top{display:flex;align-items:center;justify-content:space-between;gap:5px}
+.mini-shell .mini-freebie-gift{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:linear-gradient(145deg,#f1e4c5,#dfc58e);color:#76572a;font-size:17px}
+.mini-shell .mini-freebie-cost{font:800 8px Manrope;color:#8b6a34}
+.mini-shell .mini-freebie-card h3{margin:9px 0 4px;font:800 11px/1.25 Manrope;color:#302d25;overflow-wrap:anywhere}
+.mini-shell .mini-freebie-card>p{min-height:27px;margin:0;font:500 8px/1.45 Manrope;color:#827b70}
+.mini-shell .mini-freebie-meta{display:block;margin-top:7px;font:600 7px/1.45 Manrope;color:#9b907e}
+.mini-shell .mini-freebie-card-foot{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-top:10px;padding-top:8px;border-top:1px solid #eee8dc}
+.mini-shell .mini-freebie-card-foot>span{font:600 7px Manrope;color:#9a907e}
+.mini-shell .mini-freebie-card-foot button{min-height:29px;display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:0 7px;border:1px solid #d8c28f;border-radius:7px;background:#f4eddd;color:#70552c;font:800 7px Manrope}
+.mini-shell .mini-freebie-card-foot button:disabled{opacity:.5}
+.mini-shell .mini-freebies-empty,.mini-shell .mini-freebies-history-empty{padding:22px 14px;border:1px dashed #ded4c1;border-radius:13px;background:#faf8f3;text-align:center}
+.mini-shell .mini-freebies-empty>span{font-size:24px;color:#a88b53}
+.mini-shell .mini-freebies-empty b{display:block;margin-top:5px;font:800 11px Manrope;color:#3c372d}
+.mini-shell .mini-freebies-empty p,.mini-shell .mini-freebies-history-empty{font:500 9px/1.6 Manrope;color:#8b8377}
+.mini-shell .mini-freebies-delivery{margin-top:12px;padding:12px;border:1px solid #c8d8bd;border-radius:12px;background:#f4f8f0;color:#34432e}
+.mini-shell .mini-freebies-delivery p{font-size:9px}
+.mini-shell .mini-freebies-delivery pre,.mini-shell .mini-freebies-history pre{white-space:pre-wrap;overflow-wrap:anywhere;font:500 8px/1.5 'DM Mono';color:inherit}
+.mini-shell .mini-freebies-history{display:grid;gap:7px}
+.mini-shell .mini-freebies-history article{display:flex;align-items:flex-start;gap:9px;padding:10px;border:1px solid #ebe5d9;border-radius:11px;background:#fff}
+.mini-shell .mini-freebie-history-icon{width:25px;height:25px;flex:0 0 25px;display:grid;place-items:center;border-radius:8px;background:#edf3e8;color:#5c7c4a;font-weight:800}
+.mini-shell .mini-freebies-history article>div{flex:1;min-width:0}
+.mini-shell .mini-freebies-history article b,.mini-shell .mini-freebies-history article small{display:block}
+.mini-shell .mini-freebies-history article b{font:750 9px Manrope;color:#373229}
+.mini-shell .mini-freebies-history article small{margin-top:3px;font:500 7px Manrope;color:#918879}
+.mini-shell .mini-freebies-history article .mini-status{font-size:7px}
+.mini-shell .mini-profile-telegram-id{display:flex;align-items:center;gap:9px;margin:11px 0 0;padding:9px 10px;border:1px solid #e8e0d0;border-radius:11px;background:#f9f7f1}
+.mini-shell .mini-profile-telegram-icon{width:27px;height:27px;flex:0 0 27px;display:grid;place-items:center;border-radius:8px;background:#e9e2d3;color:#765c32;font:800 14px 'DM Mono'}
+.mini-shell .mini-profile-telegram-id>div{flex:1;min-width:0}
+.mini-shell .mini-profile-telegram-id small,.mini-shell .mini-profile-telegram-id b{display:block}
+.mini-shell .mini-profile-telegram-id small{font:700 7px 'DM Mono';letter-spacing:.8px;color:#95876c}
+.mini-shell .mini-profile-telegram-id b{margin-top:3px;font:750 10px 'DM Mono';color:#39352c;overflow-wrap:anywhere}
+.mini-shell .mini-profile-telegram-id button{width:29px;height:29px;flex:0 0 29px;display:grid;place-items:center;border-radius:8px;background:#eee7d8;color:#765c32}
+@media(max-width:360px){.mini-shell .mini-freebies-grid{grid-template-columns:1fr}.mini-shell .mini-freebies-hero{padding:14px}.mini-shell .mini-freebies-hero-copy{max-width:82%}}
