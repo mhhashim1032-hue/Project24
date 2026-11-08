@@ -53,10 +53,10 @@ async function isConfigured(name: string) {
 export async function GET(req: NextRequest) {
   try {
     await requireAdmin(req);
-    const [apiKey, apiSecret] = await Promise.all([
-      isConfigured('binance_api_key'), isConfigured('binance_api_secret'),
+    const [apiKey, apiSecret, telegramBotToken] = await Promise.all([
+      isConfigured('binance_api_key'), isConfigured('binance_api_secret'), isConfigured('telegram_bot_token'),
     ]);
-    return NextResponse.json({ configured: apiKey && apiSecret, apiKeyConfigured: apiKey, apiSecretConfigured: apiSecret });
+    return NextResponse.json({ configured: apiKey && apiSecret, apiKeyConfigured: apiKey, apiSecretConfigured: apiSecret, telegramBotTokenConfigured: telegramBotToken });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'SECRET_VAULT_ERROR';
     const status = message.includes('AUTH') || message.includes('SESSION') ? 401 : message.includes('ACCESS') ? 403 : 503;
@@ -70,18 +70,20 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const apiKey = typeof body.apiKey === 'string' ? body.apiKey.trim() : '';
     const apiSecret = typeof body.apiSecret === 'string' ? body.apiSecret.trim() : '';
-    if (!apiKey && !apiSecret) return NextResponse.json({ error: 'Enter at least one credential to save.' }, { status: 400 });
-    if ((apiKey && apiKey.length < 8) || (apiSecret && apiSecret.length < 8)) {
+    const telegramBotToken = typeof body.telegramBotToken === 'string' ? body.telegramBotToken.trim() : '';
+    if (!apiKey && !apiSecret && !telegramBotToken) return NextResponse.json({ error: 'Enter at least one credential to save.' }, { status: 400 });
+    if ((apiKey && apiKey.length < 8) || (apiSecret && apiSecret.length < 8) || (telegramBotToken && !/^\\d{5,15}:[A-Za-z0-9_-]{20,}$/.test(telegramBotToken))) {
       return NextResponse.json({ error: 'Credential value is too short.' }, { status: 400 });
     }
     if (apiKey) await setSecret('binance_api_key', apiKey);
     if (apiSecret) await setSecret('binance_api_secret', apiSecret);
-    const [keySaved, secretSaved] = await Promise.all([
-      isConfigured('binance_api_key'), isConfigured('binance_api_secret'),
+    if (telegramBotToken) await setSecret('telegram_bot_token', telegramBotToken);
+    const [keySaved, secretSaved, botTokenSaved] = await Promise.all([
+      isConfigured('binance_api_key'), isConfigured('binance_api_secret'), isConfigured('telegram_bot_token'),
     ]);
     return NextResponse.json({
       ok: true, configured: keySaved && secretSaved,
-      apiKeyConfigured: keySaved, apiSecretConfigured: secretSaved,
+      apiKeyConfigured: keySaved, apiSecretConfigured: secretSaved, telegramBotTokenConfigured: botTokenSaved,
       message: 'Credential saved encrypted in Supabase Vault. The secret is never returned to the browser.',
     });
   } catch (error) {
