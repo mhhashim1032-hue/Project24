@@ -166,3 +166,20 @@ begin
  end if;
  return jsonb_build_object('ok',true,'status',final_status,'order_number',o.order_number,'balance_after',balance-o.amount);
 end; $$;
+
+-- Do not release a reserved order while a payment reference is being verified.
+create or replace function public.cancel_telegram_order(p_order_id uuid,p_customer_id uuid)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare o public.orders%rowtype;
+begin
+ if coalesce(auth.role(),'') <> 'service_role' then raise exception 'SERVICE_ROLE_REQUIRED'; end if;
+ select * into o from public.orders where id=p_order_id and telegram_customer_id=p_customer_id for update;
+ if o.id is null then raise exception 'ORDER_NOT_FOUND'; end if;
+ if o.status<>'awaiting_payment' then raise exception 'ORDER_NOT_CANCELLABLE'; end if;
+ if exists(select 1 from public.payment_submissions where order_id=o.id and status in ('submitted','verified')) then
+   raise exception 'PAYMENT_ALREADY_SUBMITTED';
+ end if;
+ update public.orders set status='cancelled',updated_at=now() where id=o.id;
+ update public.product_plans set stock=stock+o.quantity where id=o.plan_id and stock is not null;
+ return jsonb_build_object('ok',true,'order_id',o.id,'status','cancelled','released_quantity',o.quantity);
+end; $$;
