@@ -21,14 +21,14 @@ The Render service hostname is still the technical `nova-telegram-commerce` host
 ## Telegram bot activation
 
 1. Create the bot with **@BotFather**.
-2. Add `TELEGRAM_BOT_TOKEN` to the Render service environment.
-3. The application automatically calls Telegram's Bot API to set the display name, description, commands, webhook and Mini App menu button.
-4. On startup, it also synchronizes the numeric bot ID into Supabase so the Edge Function can validate Telegram's signed Mini App launch data.
-5. Send `/start` to the bot and open the Mini App.
+2. Sign in to the admin dashboard and open **Bot & Store → Encrypted bot & payment credentials**.
+3. Paste the main Telegram bot token from BotFather and save it. The token is encrypted in Supabase Vault and is never returned to the browser.
+4. Keep `TELEGRAM_WEBHOOK_SECRET`, `APP_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and the Supabase public key configured in the Vercel project. `TELEGRAM_BOT_TOKEN` may remain configured as a server-side fallback during migration.
+5. Configure the webhook and Mini App menu button using the protected Telegram setup endpoint, then send `/start` to the bot.
 
-The display name is set to **Gold Feather Premium**. The bot username (the `@username`) is controlled by BotFather and cannot be renamed through the Bot API.
+The bot username (the `@username`) is controlled by BotFather and cannot be renamed through the Bot API. Save the correct username in the admin dashboard so referral links point to the right bot.
 
-The Mini App authenticates Telegram users using signed `initData`: Telegram's Ed25519 verification is preferred, with standard Bot-token HMAC validation as a compatibility fallback. It does not trust the browser's `initDataUnsafe`. Customer registration is automatic when the Mini App opens.
+The Mini App authenticates Telegram users using signed `initData`: Telegram's Ed25519 verification is preferred, with standard Bot-token HMAC validation as a compatibility fallback. The Edge Function reads the token from Supabase Vault first and falls back to its `TELEGRAM_BOT_TOKEN` Edge Function secret. It does not trust the browser's `initDataUnsafe`. Customer registration is automatic when the Mini App opens.
 
 Telegram shares the fields available in the Telegram profile: Telegram ID, first/last name, username, language, optional profile photo and premium status. Telegram does not automatically share email or phone number.
 
@@ -47,15 +47,11 @@ The integration is not Binance Merchant API. It accepts C2C Binance Pay ID trans
 
 Customers are never asked for a Binance UID. They submit only the Binance transaction ID; the server checks that exact transaction against the store's incoming account history, configured receiving Pay ID, exact amount/currency, successful transfer status, supported transaction type and order time window.
 
-### Binance credentials to add later
+### Binance credentials
 
-In the Supabase Dashboard, open **Edge Functions → Secrets** and add:
+Open **Admin → Bot & Store → Encrypted bot & payment credentials** and save the Binance API key and secret. The admin API stores them in Supabase Vault. The Edge Function reads Vault first and retains `BINANCE_API_KEY` / `BINANCE_API_SECRET` Edge Function secrets as a server-side fallback.
 
-- `BINANCE_API_KEY`
-- `BINANCE_API_SECRET`
-- `TELEGRAM_BOT_TOKEN` (same token used by Render; enables HMAC fallback on Telegram clients that do not provide the Ed25519 signature)
-
-Create the personal Binance API key with **Enable Reading / USER_DATA only**. Do not enable trading, withdrawals or transfers. Use IP restrictions if your Binance account supports them. These secrets are available only to the Edge Function; they are never sent to the Mini App or browser.
+Create the personal Binance API key with **Enable Reading / USER_DATA only**. Do not enable trading, withdrawals or transfers. Use IP restrictions if your Binance account supports them. The credentials are never sent to the Mini App or browser.
 
 Until both Binance credentials are configured, transaction references can be saved but automatic verification remains unavailable. Admins can manually approve or reject a submission after checking the receiving Binance account; all manual approvals are audited and transaction IDs are globally claimed. No product is delivered without either a successful automatic match or an explicit admin approval.
 
@@ -109,13 +105,13 @@ where p.id = u.id
 - The Edge Function uses Supabase's server-side service role; no service-role key is shipped to the browser.
 - Customer profiles and payment claims are not directly readable by anonymous users.
 - Internal Render-to-Supabase bot-ID synchronization uses a server-only secret.
-- Binance API credentials stay in Supabase Edge Function Secrets.
+- Telegram bot token and Binance API credentials are stored in Supabase Vault when configured through the admin dashboard; server-side environment secrets remain fallback options.
 - Product delivery payloads are stored in an admin-only table.
 - No Binance trading or withdrawal permission is required.
 
 ## Remaining activation steps
 
-The infrastructure, database, dashboard, Mini App, bot webhook, Edge Function and verification logic are deployed. Live Telegram registration requires `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `APP_URL`, `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in Render. Automatic Binance verification requires `BINANCE_API_KEY` and `BINANCE_API_SECRET` in Supabase Edge Function Secrets and the receiving Pay ID in the admin dashboard. The first admin account must also be created and promoted using the SQL above.
+The infrastructure, database, dashboard, Mini App, bot webhook, Edge Function and verification logic are deployed. Live Telegram registration requires `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `APP_URL`, `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in Render. Automatic Binance verification requires the read-only API key and secret saved in the admin Vault panel (or configured as Edge Function fallback secrets) and the receiving Pay ID in the admin dashboard. The first admin account must also be created and promoted using the SQL above.
 \n\n## Commerce extensions added\n\nA follow-up migration adds product warranty duration, per-plan quantity-discount configuration, an auditable stock adjustment ledger, wallet transaction ledger, refund requests and warranty claims. Admin stock adjustments and wallet credits are restricted to authenticated admins; warranty claims are accepted only for paid/fulfilled orders while the product warranty is active. The admin and Mini App screens still need to be wired to all these workflows before they are customer-ready.\n
 
 ## Render deployment target
