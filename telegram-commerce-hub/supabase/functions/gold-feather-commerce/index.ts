@@ -104,6 +104,13 @@ async function getAdminPaymentSecret(name: string, fallbackEnv: string) {
   } catch (error) { console.warn("Vault credential lookup failed for", name); }
   return Deno.env.get(fallbackEnv) || "";
 }
+async function binanceCredentialsConfigured() {
+  const [apiKey, apiSecret] = await Promise.all([
+    getAdminPaymentSecret("binance_api_key", "BINANCE_API_KEY"),
+    getAdminPaymentSecret("binance_api_secret", "BINANCE_API_SECRET"),
+  ]);
+  return Boolean(apiKey && apiSecret);
+}
 async function binancePayHistory(startTime: number, endTime: number) {
   const [apiKey, apiSecret] = await Promise.all([
     getAdminPaymentSecret("binance_api_key", "BINANCE_API_KEY"),
@@ -391,7 +398,7 @@ Deno.serve(async (req: Request) => {
       if(provider==="usdt_tron"&&!settings.usdt_wallet_address)return json({error:"STORE_USDT_ADDRESS_NOT_CONFIGURED"},503);
       if(provider==="usdt_bep20"&&!settings.usdt_bep20_wallet_address)return json({error:"STORE_BEP20_ADDRESS_NOT_CONFIGURED"},503);
       if(provider==="binance_pay_api"&&!settings.binance_pay_id)return json({error:"STORE_BINANCE_PAY_NOT_CONFIGURED"},503);
-      if(provider==="binance_pay_api"&&(!Deno.env.get("BINANCE_API_KEY")||!Deno.env.get("BINANCE_API_SECRET")))return json({error:"BINANCE_API_NOT_CONFIGURED",message:"Automatic Binance verification is not configured yet. Please contact store support."},503);
+      if(provider==="binance_pay_api"&&!(await binanceCredentialsConfigured()))return json({error:"BINANCE_API_NOT_CONFIGURED",message:"Automatic Binance verification is not configured yet. Please contact store support."},503);
       const {data:usedOrderSubmission}=await admin.from("payment_submissions").select("id").ilike("transaction_reference",reference).limit(1).maybeSingle();
       if(usedOrderSubmission)return json({error:"DUPLICATE_TRANSACTION",message:"This transaction has already been used for an order payment."},409);
       const {data:recharge,error}=await admin.from("wallet_recharge_requests").insert({telegram_customer_id:customer.id,amount,currency:"USDT",provider,transaction_reference:provider==="usdt_tron"?reference.toLowerCase():reference,status:"pending"}).select("*").single();
@@ -595,7 +602,7 @@ Deno.serve(async (req: Request) => {
       if (!orderId || transactionId.length < 5 || transactionId.length > 128) return json({ error: "INVALID_PAYMENT_REFERENCE" }, 400);
       const { data: order } = await admin.from("orders").select("*").eq("id", orderId).eq("telegram_customer_id", customer.id).maybeSingle();
       if (!order || order.status !== "awaiting_payment") return json({ error: "ORDER_NOT_PAYABLE" }, 409);
-      if(!Deno.env.get("BINANCE_API_KEY")||!Deno.env.get("BINANCE_API_SECRET"))return json({error:"BINANCE_API_NOT_CONFIGURED"},503);
+      if(!(await binanceCredentialsConfigured()))return json({error:"BINANCE_API_NOT_CONFIGURED"},503);
       const {data:rechargeClaim}=await admin.from("wallet_recharge_requests").select("id").eq("provider","binance_pay_api").ilike("transaction_reference",transactionId).limit(1).maybeSingle();
       if(rechargeClaim)return json({error:"DUPLICATE_TRANSACTION",message:"This Binance transaction has already been submitted as a wallet recharge."},409);
       if (new Date(order.expires_at).getTime() < Date.now() - 120000) return json({ error: "ORDER_EXPIRED" }, 409);
@@ -626,7 +633,7 @@ Deno.serve(async (req: Request) => {
       if (!submission) return json({ error: "SUBMISSION_NOT_FOUND" }, 404);
       if (submission.status === "verified") return json({ ok: true, state: "verified", message: "This payment has already been verified." });
       if (submission.status === "rejected") return json({ error: "PAYMENT_REJECTED", message: submission.review_note || "This payment reference was rejected." }, 409);
-      if(!Deno.env.get("BINANCE_API_KEY")||!Deno.env.get("BINANCE_API_SECRET"))return json({error:"BINANCE_API_NOT_CONFIGURED"},503);
+      if(!(await binanceCredentialsConfigured()))return json({error:"BINANCE_API_NOT_CONFIGURED"},503);
       if (submission.last_verification_at && Date.now() - new Date(submission.last_verification_at).getTime() < 60000) {
         return json({ ok: true, state: "pending", message: "Please wait at least 60 seconds between Binance verification checks." }, 429);
       }
