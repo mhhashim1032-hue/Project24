@@ -1,5 +1,7 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return;
+  // Telegram rate-limits bot configuration. Keep setup manual; do not call Telegram on every Render restart.
+  if (process.env.TELEGRAM_SETUP_ON_STARTUP !== 'true') return;
   const token=process.env.TELEGRAM_BOT_TOKEN, secret=process.env.TELEGRAM_WEBHOOK_SECRET, appUrl=process.env.APP_URL;
   if(!token||!secret||!appUrl)return;
   const base='https://api.telegram.org/bot'+token+'/';
