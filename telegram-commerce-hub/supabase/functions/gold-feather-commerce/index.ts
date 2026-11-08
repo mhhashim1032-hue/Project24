@@ -495,7 +495,7 @@ Deno.serve(async (req: Request) => {
     if (action === "bootstrap") {
       const [products, orders, recharges, freebies, referralEvents, redemptions] = await Promise.all([
         admin.from("products").select("id,name,description,category,image_url,product_plans(id,name,description,price,currency,duration_days,stock,is_active,quantity_discount_tiers)").eq("is_active", true).eq("product_plans.is_active", true).order("sort_order"),
-        admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,product_id,paid_at,payment_method,products(name,warranty_days)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(50),
+        admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,product_id,plan_id,quantity,paid_at,payment_method,products(name,warranty_days),product_plans(name)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(200),
         admin.from("wallet_recharge_requests").select("id,amount,currency,provider,transaction_reference,status,review_note,last_verification_at,created_at").eq("telegram_customer_id",customer.id).order("created_at",{ascending:false}).limit(10),
         admin.from("freebies").select("id,title,description,category,stars_cost,duration_days,stock,sort_order,product_id,plan_id,products(name),product_plans(name)").eq("is_active",true).order("sort_order"),
         admin.from("referral_events").select("id,stars_awarded,created_at,referred_customer_id",{count:"exact"}).eq("referrer_id",customer.id).order("created_at",{ascending:false}).limit(100),
@@ -533,6 +533,21 @@ Deno.serve(async (req: Request) => {
       if (error) return json({ error: error.message || "ORDER_CREATE_FAILED" }, 400);
       if (body.paymentMethod) await admin.from('orders').update({payment_method:String(body.paymentMethod)}).eq('id',order.id);
       return json({ ok: true, order: {...order,payment_deadline_at:order.payment_deadline_at||order.expires_at}, reusedOpenOrder: Boolean(order?.reusedOpenOrder) });
+    }
+    if (action === "update_order") {
+      const orderId=String(body.orderId||""), planId=String(body.planId||"");
+      const quantity=Number(body.quantity||1);
+      if(!/^[0-9a-f-]{36}$/i.test(orderId)||!/^[0-9a-f-]{36}$/i.test(planId)||!Number.isInteger(quantity)||quantity<1||quantity>1000)return json({error:"INVALID_ORDER_EDIT"},400);
+      const {data,error}=await admin.rpc("modify_telegram_order",{p_order_id:orderId,p_customer_id:customer.id,p_plan_id:planId,p_quantity:quantity});
+      if(error)return json({error:error.message||"ORDER_UPDATE_FAILED"},409);
+      return json({ok:true,order:data});
+    }
+    if (action === "cancel_order") {
+      const orderId=String(body.orderId||"");
+      if(!/^[0-9a-f-]{36}$/i.test(orderId))return json({error:"INVALID_ORDER_ID"},400);
+      const {data,error}=await admin.rpc("cancel_telegram_order",{p_order_id:orderId,p_customer_id:customer.id});
+      if(error)return json({error:error.message||"ORDER_CANCEL_FAILED"},409);
+      return json({ok:true,...data});
     }
     if (action === 'pay_with_wallet') {
       const orderId=String(body.orderId||''); if(!orderId)return json({error:'ORDER_ID_REQUIRED'},400);
