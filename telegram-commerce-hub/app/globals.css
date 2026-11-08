@@ -582,3 +582,28 @@
  .admin-app-shell .table-wrap{max-width:calc(100vw - 56px)}
 }
 @media(min-width:761px) and (max-width:1050px){.admin-app-shell .dashboard-grid{grid-template-columns:1fr}.admin-app-shell .admin-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Premium authentication surface */
+.auth-shell{background:radial-gradient(ellipse at 18% 20%,#34302a 0,transparent 42%),#171a20}
+.auth-shell .auth-art{background:linear-gradient(145deg,#171a20 0%,#22252b 58%,#181b20 100%);border-right:1px solid #ffffff10}
+.auth-shell .auth-art:before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 78% 55%,#c7a86a1c,transparent 34%),linear-gradient(120deg,transparent 48%,#ffffff04 49%,transparent 50%);pointer-events:none}
+.auth-shell .brand-mark{background:linear-gradient(145deg,#e2c887,#9b7738);color:#171a20;box-shadow:0 8px 26px #c8a96a35}
+.auth-shell .brand-tag{color:#c7b17e}
+.auth-shell .art-copy .eyebrow{color:#d4bd88}
+.auth-shell .art-copy h1{color:#f5f1e7}
+.auth-shell .art-copy h1 span{color:#d8bd82}
+.auth-shell .art-copy p{color:#c0beb6}
+.auth-shell .art-stats strong{color:#f1e7d0}
+.auth-shell .art-stats small,.auth-shell .art-foot{color:#aaa79d}
+.auth-shell .auth-panel{background:linear-gradient(145deg,#f8f6f0,#efede6)}
+.auth-shell .auth-card{background:#fffdf9;border:1px solid #e9e3d6;border-radius:22px;padding:34px;box-shadow:0 24px 80px #171a2017}
+.auth-shell .auth-card .eyebrow{color:#a18146;letter-spacing:1.7px}
+.auth-shell .auth-card h2{color:#24251f}
+.auth-shell .auth-card>p{color:#89867d}
+.auth-shell .auth-card label{color:#69665e}
+.auth-shell .auth-card input{background:#fffefa;border-color:#e7e2d7;border-radius:10px}
+.auth-shell .auth-card input:focus{border-color:#c1a46a;box-shadow:0 0 0 3px #c1a46a20}
+.auth-shell .auth-card .primary{background:linear-gradient(135deg,#c8ad72,#a18146);color:#1e1d18;border-radius:10px;box-shadow:0 5px 15px #b2935730}
+.auth-shell .auth-card .text-button{color:#92733d}
+.auth-shell .secure-note{border-color:#ece8df;color:#89867d}
+@media(max-width:760px){.auth-shell .auth-panel{background:radial-gradient(ellipse at 50% 0%,#eee5d3 0,transparent 48%),#f6f5f1}.auth-shell .auth-card{padding:25px 21px;border-radius:18px}.auth-shell .mobile-brand{color:#28251e}.auth-shell .mobile-brand span{color:#a18146}}
