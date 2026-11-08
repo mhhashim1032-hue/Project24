@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   }
 
   const token = await getServerSecret('telegram_bot_token', 'TELEGRAM_BOT_TOKEN');
-  const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
+  const appUrl = (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || '').replace(/\/$/, '');
   if (!token || !appUrl) {
     return NextResponse.json({ ok: false, error: 'Telegram bot token or APP_URL is not configured' }, { status: 503 });
   }
