@@ -33,13 +33,13 @@ async function telegram(method: string, body: Record<string, unknown>) {
 
 async function registerCustomer(user: TelegramUser) {
   if (!SERVICE_KEY) throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing in Render');
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/telegram_customers?on_conflict=telegram_user_id`, {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/telegram_customers?on_conflict=telegram_user_id&select=id,telegram_user_id,referral_code`, {
     method: 'POST',
     headers: {
       apikey: SERVICE_KEY,
       authorization: `Bearer ${SERVICE_KEY}`,
       'content-type': 'application/json',
-      Prefer: 'resolution=merge-duplicates,return=minimal',
+      Prefer: 'resolution=merge-duplicates,return=representation',
     },
     body: JSON.stringify({
       telegram_user_id: String(user.id),
