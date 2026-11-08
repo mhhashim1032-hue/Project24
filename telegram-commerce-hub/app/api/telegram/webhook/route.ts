@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSecret } from '@/lib/server-secrets';
 
 export const runtime = 'nodejs';
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
 const APP_URL = (process.env.APP_URL || '').replace(/\/$/, '');
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ckresrujdienuqczzyki.supabase.co';
@@ -17,10 +17,10 @@ type TelegramUser = {
   is_premium?: boolean;
 };
 
-const api = (method: string) => `https://api.telegram.org/bot${BOT_TOKEN}/${method}`;
+const api = (token: string, method: string) => `https://api.telegram.org/bot${token}/${method}`;
 
-async function telegram(method: string, body: Record<string, unknown>) {
-  const response = await fetch(api(method), {
+async function telegram(token: string, method: string, body: Record<string, unknown>) {
+  const response = await fetch(api(token, method), {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
@@ -77,7 +77,8 @@ function storeKeyboard() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!BOT_TOKEN || !WEBHOOK_SECRET || req.headers.get('x-telegram-bot-api-secret-token') !== WEBHOOK_SECRET) {
+  const token = await getServerSecret('telegram_bot_token', 'TELEGRAM_BOT_TOKEN');
+  if (!token || !WEBHOOK_SECRET || req.headers.get('x-telegram-bot-api-secret-token') !== WEBHOOK_SECRET) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
@@ -116,7 +117,7 @@ export async function POST(req: NextRequest) {
         ? `<b>${storeName}</b>\nWelcome, ${String(user.first_name || 'there').replace(/[&<>"]/g, '')}! Your Telegram account is now registered. Open the store to browse products, place orders and manage your purchases.`
         : `<b>${storeName}</b>\nWelcome! The store is temporarily unable to finish your profile registration. Please open the Mini App or try again shortly.`;
 
-      await telegram('sendMessage', {
+      await telegram(token, 'sendMessage', {
         chat_id: chatId,
         text,
         parse_mode: 'HTML',
@@ -126,7 +127,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (input.startsWith('/catalog') || input === 'Browse catalogue') {
-      await telegram('sendMessage', {
+      await telegram(token, 'sendMessage', {
         chat_id: chatId,
         text: 'Browse products and plans in the store:',
         reply_markup: storeKeyboard(),
@@ -135,7 +136,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (input.startsWith('/orders') || input === 'My orders') {
-      await telegram('sendMessage', {
+      await telegram(token, 'sendMessage', {
         chat_id: chatId,
         text: 'Open the store to view your profile, payment status and digital deliveries:',
         reply_markup: storeKeyboard(),
@@ -143,7 +144,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    await telegram('sendMessage', {
+    await telegram(token, 'sendMessage', {
       chat_id: chatId,
       text: 'Use /start to register and open the store.',
       reply_markup: storeKeyboard(),
