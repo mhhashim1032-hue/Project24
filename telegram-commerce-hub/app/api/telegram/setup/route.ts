@@ -96,8 +96,25 @@ export async function POST(req: NextRequest) {
     });
 
     const result = await diagnostics(token, webhookUrl, miniAppUrl);
-    const ok = result.verification.webhook && result.verification.menuButton;
-    return NextResponse.json({ ok, ...result }, { status: ok ? 200 : 502 });
+    const syncResponse = await fetch(URL + '/rest/v1/bot_settings?id=eq.1', {
+      method: 'PATCH',
+      headers: {
+        apikey: SERVICE,
+        authorization: 'Bearer ' + SERVICE,
+        'content-type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({
+        telegram_bot_id: String(result.bot.id),
+        ...(result.bot.username ? { telegram_bot_username: String(result.bot.username) } : {}),
+      }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(8000),
+    });
+    const settingsSynced = syncResponse.ok;
+    if (!settingsSynced) console.error('Telegram bot identity sync failed:', syncResponse.status, (await syncResponse.text()).slice(0, 300));
+    const ok = result.verification.webhook && result.verification.menuButton && settingsSynced;
+    return NextResponse.json({ ok, settingsSynced, ...result }, { status: ok ? 200 : 502 });
   } catch (error) {
     return NextResponse.json({
       ok: false,
