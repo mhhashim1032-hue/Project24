@@ -1296,3 +1296,43 @@
 .mini-shell .mini-profile-clean-identity>span {
   color:#625c50;
 }
+
+
+/* Gold Feather verifier mascot — GPU-conscious transparent canvas */
+.gf-verifier-scene {
+  position: relative;
+  width: 100%;
+  min-height: 250px;
+  height: clamp(250px, 34vw, 390px);
+  overflow: hidden;
+  isolation: isolate;
+  pointer-events: none;
+  contain: layout paint;
+}
+.gf-verifier-scene canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.gf-verifier-scene-fallback {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  border: 1px solid rgba(226, 185, 111, .7);
+  border-radius: 28px;
+  color: #f2d49a;
+  background: radial-gradient(circle at 35% 25%, #53627a, #151b28 70%);
+  box-shadow: 0 12px 48px rgba(28, 116, 245, .16);
+  font: 800 25px/1 'Plus Jakarta Sans', sans-serif;
+}
+.gf-verifier-scene-compact {
+  height: 190px;
+  min-height: 190px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gf-verifier-scene canvas { opacity: .88; }
+}
