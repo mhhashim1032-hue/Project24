@@ -1232,3 +1232,62 @@
   font:700 18px Manrope,sans-serif;
   margin:8px 0;
 }
+
+/* WCAG contrast corrections across product, orders, profile and rewards views */
+.mini-shell .mini-heading>small,
+.mini-shell .mini-profile-clean-identity>small,
+.mini-shell .mini-profile-telegram-id>div>small,
+.mini-shell .mini-profile-metrics small,
+.mini-shell .mini-profile-action>span:nth-child(2)>small,
+.mini-shell .mini-freebies-top>span,
+.mini-shell .mini-freebies-invite .mini-freebies-section-title small,
+.mini-shell .mini-freebies-invite .mini-freebies-section-title>span,
+.mini-shell .mini-freebies-invite>p,
+.mini-shell .mini-freebies-rewards-title small,
+.mini-shell .mini-freebies-rewards-title>span,
+.mini-shell .mini-freebies-empty>p,
+.mini-shell .mini-freebies-history-empty,
+.mini-shell .mini-order-tabs>button:not(.active) {
+  color:#5e574b;
+}
+.mini-shell .mini-orders-heading h1,
+.mini-shell .mini-profile-clean-identity h1 {
+  font:800 20px/1.25 Manrope,sans-serif;
+  margin:3px 0;
+}
+.mini-shell .mini-orders-heading h1 {font-size:20px}
+.mini-shell .mini-profile-clean-identity h1 {font-size:18px}
+.mini-shell.theme-midnight .mini-heading>small,
+.mini-shell.theme-midnight .mini-profile-clean-identity>small,
+.mini-shell.theme-midnight .mini-profile-telegram-id>div>small,
+.mini-shell.theme-midnight .mini-profile-metrics small,
+.mini-shell.theme-midnight .mini-profile-action>span:nth-child(2)>small,
+.mini-shell.theme-midnight .mini-freebies-top>span,
+.mini-shell.theme-midnight .mini-freebies-invite .mini-freebies-section-title small,
+.mini-shell.theme-midnight .mini-freebies-invite .mini-freebies-section-title>span,
+.mini-shell.theme-midnight .mini-freebies-invite>p,
+.mini-shell.theme-midnight .mini-freebies-rewards-title small,
+.mini-shell.theme-midnight .mini-freebies-rewards-title>span,
+.mini-shell.theme-midnight .mini-freebies-empty>p,
+.mini-shell.theme-midnight .mini-freebies-history-empty,
+.mini-shell.theme-cyber .mini-heading>small,
+.mini-shell.theme-cyber .mini-profile-clean-identity>small,
+.mini-shell.theme-cyber .mini-profile-telegram-id>div>small,
+.mini-shell.theme-cyber .mini-profile-metrics small,
+.mini-shell.theme-cyber .mini-profile-action>span:nth-child(2)>small,
+.mini-shell.theme-cyber .mini-freebies-top>span,
+.mini-shell.theme-cyber .mini-freebies-invite .mini-freebies-section-title small,
+.mini-shell.theme-cyber .mini-freebies-invite .mini-freebies-section-title>span,
+.mini-shell.theme-cyber .mini-freebies-invite>p,
+.mini-shell.theme-cyber .mini-freebies-rewards-title small,
+.mini-shell.theme-cyber .mini-freebies-rewards-title>span,
+.mini-shell.theme-cyber .mini-freebies-empty>p,
+.mini-shell.theme-cyber .mini-freebies-history-empty,
+.mini-shell.theme-midnight .mini-order-tabs>button:not(.active),
+.mini-shell.theme-cyber .mini-order-tabs>button:not(.active) {
+  color:#c5ccda;
+}
+.mini-shell .mini-freebies-invite .mini-freebies-section-title>span,
+.mini-shell .mini-freebies-rewards-title>span {
+  opacity:1;
+}
