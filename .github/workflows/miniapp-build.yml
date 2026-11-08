@@ -1,0 +1,30 @@
+name: Mini App build check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'telegram-commerce-hub/**'
+      - '.github/workflows/miniapp-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: telegram-commerce-hub
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: build-only-placeholder-publishable-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: telegram-commerce-hub/package-lock.json
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build Next.js app
+        run: npm run build
