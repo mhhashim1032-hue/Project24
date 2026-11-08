@@ -591,8 +591,7 @@ Deno.serve(async (req: Request) => {
       if (new Date(order.expires_at).getTime() < Date.now() - 120000) return json({ error: "ORDER_EXPIRED" }, 409);
       const { data: prior } = await admin.from("payment_submissions").select("id,provider").ilike("transaction_reference", transactionId).maybeSingle();
       if (prior) return json({ error: "DUPLICATE_TRANSACTION", message: "This transaction ID has already been used and cannot be reused. Submit a different transaction ID." }, 409);
-      const { data: pending } = await admin.from("payment_submissions").select("id").eq("order_id", order.id).eq("provider", "binance_pay_api").eq("status", "submitted").maybeSingle();
-      if (pending) return json({ error: "PAYMENT_ALREADY_PENDING", message: "This order already has a payment reference awaiting verification." }, 409);
+      // Multiple distinct references may be tracked for the same order. Existing submissions remain active and independently verifiable.
       const { data: submission, error } = await admin.from("payment_submissions").insert({
         order_id: order.id, customer_id: null, telegram_customer_id: customer.id,
         provider: "binance_pay_api", transaction_reference: transactionId, currency: order.currency,
