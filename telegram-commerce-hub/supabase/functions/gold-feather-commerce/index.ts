@@ -142,7 +142,7 @@ async function telegramChannelJoined(customer: any, settings: any) {
 
 const BSC_USDT_CONTRACT='0x55d398326f99059ff775485246999027b3197955';
 const BSC_TRANSFER_TOPIC='0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-function decimalToUnits(value: unknown, decimals: number): bigint {
+function decimalToTokenUnits(value: unknown, decimals: number): bigint {
   const s=String(value??'').trim(); if(!/^\d+(?:\.\d+)?$/.test(s))throw new Error('INVALID_TOKEN_AMOUNT');
   const [whole,fraction='']=s.split('.'); if(fraction.length>decimals)throw new Error('TOKEN_AMOUNT_PRECISION');
   return BigInt(whole)*10n**BigInt(decimals)+BigInt((fraction+'0'.repeat(decimals)).slice(0,decimals)||'0');
@@ -167,7 +167,7 @@ async function readBep20Transfer(hash:string,receiverAddress:string,expectedAmou
   const logs=(receipt.logs||[]).filter((l:any)=>String(l.address||'').toLowerCase()===BSC_USDT_CONTRACT&&String(l.topics?.[0]||'').toLowerCase()===BSC_TRANSFER_TOPIC&&String(l.topics?.[2]||'').toLowerCase()===recipientTopic);
   if(!logs.length)return {state:'rejected',message:'No USDT BEP20 transfer to the configured receiving wallet was found.'};
   const total=logs.reduce((sum:bigint,l:any)=>sum+BigInt(l.data||'0x0'),0n);
-  if(total!==decimalToUnits(expectedAmount,18))return {state:'rejected',message:'The BEP20 transfer amount does not exactly match the required amount.'};
+  if(total!==decimalToTokenUnits(expectedAmount,18))return {state:'rejected',message:'The BEP20 transfer amount does not exactly match the required amount.'};
   const block=await bscRpc('eth_getBlockByNumber',[receipt.blockNumber,false]);
   const timestamp=Number(BigInt(block?.timestamp||'0x0'))*1000;
   if(!timestamp||timestamp<new Date(createdAt).getTime()-120000||(expiresAt&&timestamp>new Date(expiresAt).getTime()+120000)||timestamp>Date.now()+120000)return {state:'rejected',message:'The transaction timestamp is outside the permitted payment window.'};
