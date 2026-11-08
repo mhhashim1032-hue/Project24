@@ -1116,3 +1116,90 @@
 .mini-shell .mini-payment-next-ref .mini-ref-countdown{display:block;color:#f3d78f;font:900 28px 'DM Mono';letter-spacing:1px}
 .mini-shell .mini-payment-next-ref>p strong{color:#e8d29a}
 @media(min-width:520px){.mini-shell .mini-checkout-networks.premium-networks{grid-template-columns:1fr 1fr}}
+
+
+/* WCAG 2.1 AA accessibility contrast and keyboard visibility fixes */
+.mini-shell .mini-center p,
+.mini-shell .mini-footer,
+.mini-shell .mini-section-title>span,
+.mini-shell .mini-category-rail>button,
+.mini-shell .mini-muted,
+.mini-shell .mini-profile-copy span,
+.mini-shell .mini-heading p,
+.mini-shell .mini-product>p,
+.mini-shell .mini-order small,
+.mini-shell .mini-plan small,
+.mini-shell .mini-step p,
+.mini-shell .mini-verification p,
+.mini-shell .mini-amount span,
+.mini-shell .mini-binance-link>p,
+.mini-shell .mini-binance-setup p,
+.mini-shell .mini-promo-copy small {
+  color:#625c50;
+}
+.mini-shell .mini-category {
+  color:#62512f;
+}
+.mini-shell .mini-primary,
+.mini-shell .mini-shell-button,
+.mini-shell .mini-language-dialog .mini-primary {
+  background:#73551f;
+  color:#fff;
+}
+.mini-shell .mini-primary:disabled {
+  color:#fff;
+  background:#73551f;
+  opacity:1;
+  filter:brightness(1.12);
+}
+.mini-shell .mini-secondary {
+  color:#51401f;
+  background:#fff;
+}
+.mini-shell .mini-status,
+.mini-shell .mini-back,
+.mini-shell .mini-plan strong,
+.mini-shell .mini-payid,
+.mini-shell .mini-payid button {
+  color:#5b451e;
+}
+.mini-shell :where(button,a,input,textarea,select,[tabindex]):focus-visible {
+  outline:3px solid #1d5f9b;
+  outline-offset:3px;
+}
+.mini-shell :where(button,a) {
+  -webkit-tap-highlight-color:transparent;
+}
+.mini-shell.theme-midnight .mini-center p,
+.mini-shell.theme-midnight .mini-footer,
+.mini-shell.theme-midnight .mini-section-title>span,
+.mini-shell.theme-midnight .mini-category-rail>button,
+.mini-shell.theme-midnight .mini-muted,
+.mini-shell.theme-midnight .mini-profile-copy span,
+.mini-shell.theme-midnight .mini-heading p,
+.mini-shell.theme-midnight .mini-product>p,
+.mini-shell.theme-midnight .mini-order small,
+.mini-shell.theme-midnight .mini-plan small,
+.mini-shell.theme-midnight .mini-step p,
+.mini-shell.theme-midnight .mini-verification p,
+.mini-shell.theme-midnight .mini-amount span,
+.mini-shell.theme-cyber .mini-center p,
+.mini-shell.theme-cyber .mini-footer,
+.mini-shell.theme-cyber .mini-section-title>span,
+.mini-shell.theme-cyber .mini-category-rail>button,
+.mini-shell.theme-cyber .mini-muted,
+.mini-shell.theme-cyber .mini-profile-copy span,
+.mini-shell.theme-cyber .mini-heading p,
+.mini-shell.theme-cyber .mini-product>p,
+.mini-shell.theme-cyber .mini-order small,
+.mini-shell.theme-cyber .mini-plan small,
+.mini-shell.theme-cyber .mini-step p,
+.mini-shell.theme-cyber .mini-verification p,
+.mini-shell.theme-cyber .mini-amount span {
+  color:#c5ccda;
+}
+.mini-shell.theme-midnight .mini-primary,
+.mini-shell.theme-cyber .mini-primary {
+  background:#8a6a2c;
+  color:#fff;
+}
