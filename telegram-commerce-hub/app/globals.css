@@ -830,3 +830,36 @@
  .mini-shell .mini-bottom-nav{width:calc(100% - 28px)!important;min-height:60px;padding:6px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important}
  .mini-shell .mini-bottom-nav button{min-height:46px}
 }
+
+
+/* Compact premium account profile */
+.mini-shell .mini-profile-clean{padding:15px!important;border-radius:18px!important;box-shadow:0 10px 28px #211b0d0c!important;}
+.mini-shell .mini-profile-clean-head{display:flex;align-items:center;gap:12px;padding:2px 1px 14px;border-bottom:1px solid #eae4d8;}
+.mini-shell .mini-profile-clean-head .mini-avatar.large{width:48px;height:48px;min-width:48px;margin:0;border-radius:15px;font-size:19px;}
+.mini-shell .mini-profile-clean-identity{min-width:0;flex:1;}
+.mini-shell .mini-profile-clean-identity small{display:block;font:700 7px 'DM Mono';letter-spacing:1.1px;color:#9b7c43;}
+.mini-shell .mini-profile-clean-identity h2{margin:3px 0 1px;font:800 16px/1.2 Manrope;color:#29271f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mini-shell .mini-profile-clean-identity>span{font:500 10px Manrope;color:#898276;}
+.mini-shell .mini-profile-member-mark{width:25px;height:25px;display:grid;place-items:center;border-radius:9px;background:#edf4e9;color:#648451;}
+.mini-shell .mini-profile-metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0;}
+.mini-shell .mini-profile-metrics>div{min-width:0;padding:10px 11px;border:1px solid #eee8dc;border-radius:12px;background:#faf8f3;}
+.mini-shell .mini-profile-metrics small{display:block;font:700 7px 'DM Mono';letter-spacing:.65px;color:#928873;}
+.mini-shell .mini-profile-metrics b{display:block;margin-top:5px;font:800 17px Manrope;color:#6f562d;}
+.mini-shell .mini-profile-invite{padding:12px;border:1px solid #e9dfc9;border-radius:13px;background:linear-gradient(135deg,#fbf8ef,#f5f0e4);}
+.mini-shell .mini-profile-invite-title{display:flex;align-items:center;gap:9px;}
+.mini-shell .mini-profile-invite-title>span{width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:#e9dfc9;color:#816331;}
+.mini-shell .mini-profile-invite-title b,.mini-shell .mini-profile-invite-title small{display:block;}
+.mini-shell .mini-profile-invite-title b{font:800 11px Manrope;color:#302b20;}
+.mini-shell .mini-profile-invite-title small{margin-top:2px;font:500 8px/1.4 Manrope;color:#8a806e;}
+.mini-shell .mini-profile-invite .mini-payid{margin:10px 0 0;padding:8px 9px;border:1px solid #e9e0d0;border-radius:9px;background:#fff;font:500 9px/1.45 'DM Mono';color:#766b58;}
+.mini-shell .mini-profile-invite .mini-share-button{min-height:38px;margin-top:8px;font-size:10px;}
+.mini-shell .mini-profile-actions{display:grid;gap:7px;margin-top:12px;}
+.mini-shell .mini-profile-action{width:100%;min-width:0;display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid #eee9df;border-radius:11px;background:#fff;text-align:left;color:#39352c;}
+.mini-shell .mini-profile-action-icon{width:31px;height:31px;flex:0 0 31px;display:grid;place-items:center;border-radius:9px;background:#f3efe5;color:#806638;font:700 14px Manrope;}
+.mini-shell .mini-profile-action>span:nth-child(2){min-width:0;flex:1;}
+.mini-shell .mini-profile-action b,.mini-shell .mini-profile-action small{display:block;}
+.mini-shell .mini-profile-action b{font:750 10px Manrope;color:#302d26;}
+.mini-shell .mini-profile-action small{margin-top:2px;font:500 8px Manrope;color:#928b7f;}
+.mini-shell .mini-profile-action>svg{color:#a49a88;}
+.mini-shell .mini-profile-action:active{background:#f8f5ed;transform:scale(.99);}
+@media(max-width:360px){.mini-shell .mini-profile-clean{padding:12px!important}.mini-shell .mini-profile-clean-identity h2{font-size:14px}.mini-shell .mini-profile-metrics>div{padding:9px}.mini-shell .mini-profile-metrics b{font-size:15px}}
