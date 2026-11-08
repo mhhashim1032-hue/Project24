@@ -1426,3 +1426,11 @@
 .gf-vault-card label { margin:4px 0 -5px; color:var(--text,#dce5f1); font-size:12px; font-weight:700; }
 .gf-vault-card input { width:100%; min-height:42px; padding:10px 12px; border:1px solid rgba(255,255,255,.14); border-radius:10px; color:inherit; background:rgba(0,0,0,.18); }
 .gf-vault-card .help-text { margin:0; line-height:1.55; }
+
+
+.gf-payment-scene { position:relative; width:100%; height:128px; min-height:128px; margin:2px 0 12px; overflow:hidden; pointer-events:none; }
+.gf-payment-scene canvas { display:block; width:100%; height:100%; }
+.gf-payment-scene>span { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); color:rgba(243,211,150,.45); font:800 25px 'Plus Jakarta Sans',sans-serif; pointer-events:none; }
+.gf-payment-scene-wallet { width:110px; height:92px; min-height:92px; margin:0 auto -4px; }
+.gf-wallet-purse-scene { height:140px; min-height:140px; margin:-6px auto -10px; }
+.gf-payment-scene-wallet>span { font-size:17px; }
