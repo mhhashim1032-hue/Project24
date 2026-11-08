@@ -742,3 +742,26 @@
 .mini-checkout-verification{border:1px solid #e7e0d2;background:#f8f6ef}
 @media(max-width:390px){.mini-checkout-methods{gap:5px}.mini-checkout-methods button{padding:9px 7px;min-height:104px}.mini-checkout-methods button.active{padding:8px 6px}.mini-checkout-methods button small{font-size:8px}.mini-checkout-summary{padding:14px}.mini-checkout-deadline{margin-left:0;width:100%}}
 @media(prefers-reduced-motion:reduce){.mini-checkout-methods button{transition:none}}
+
+
+/* Homepage Freebies reward hub and one-tap referral sharing */
+.mini-shell .mini-freebies-home{position:relative;display:grid;grid-template-columns:112px minmax(0,1fr);gap:16px;align-items:center;overflow:hidden;margin:0 0 20px;padding:16px;border:1px solid #d9c69a;border-radius:19px;background:radial-gradient(circle at 8% 12%,#f2e4bf 0,transparent 45%),linear-gradient(135deg,#25291f,#171a20 78%);color:#f8f2e4;box-shadow:0 14px 34px #191a1426}
+.mini-shell .mini-freebies-home:after{content:'✧';position:absolute;right:12px;top:-20px;font-size:100px;line-height:1;color:#e4cc8c12;pointer-events:none}
+.mini-shell .mini-freebies-home-art{height:112px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #d8bd7b66;border-radius:15px;background:linear-gradient(145deg,#d6bd82,#92703c);color:#252219;box-shadow:inset 0 1px #fff8,0 8px 22px #0002}
+.mini-shell .mini-freebies-home-art>span{font-size:27px;line-height:1}
+.mini-shell .mini-freebies-home-art>b{font:900 13px Manrope;letter-spacing:1.2px;margin-top:5px}
+.mini-shell .mini-freebies-home-art>small{font:700 7px 'DM Mono';letter-spacing:1.5px;margin-top:3px}
+.mini-shell .mini-freebies-home-copy{position:relative;z-index:1;min-width:0}
+.mini-shell .mini-freebies-home-copy>small{font:700 8px 'DM Mono';letter-spacing:1.2px;color:#d9c18a}
+.mini-shell .mini-freebies-home-copy h2{margin:6px 0;font:800 clamp(17px,4.5vw,22px)/1.12 Manrope;letter-spacing:-.6px;color:#fff8e9}
+.mini-shell .mini-freebies-home-copy p{margin:0;color:#d0cabb;font:500 10px/1.55 Manrope}
+.mini-shell .mini-freebies-home-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.mini-shell .mini-freebies-home-actions .mini-primary{min-height:35px;padding:0 11px;font-size:9px}
+.mini-shell .mini-share-compact{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:35px;padding:0 10px;border:1px solid #e2d2a35c;border-radius:9px;background:#ffffff0d;color:#f2e4c2;font:700 9px Manrope}
+.mini-shell .mini-share-compact:disabled,.mini-shell .mini-share-button:disabled{opacity:.48;cursor:not-allowed}
+.mini-shell .mini-share-button{display:flex;align-items:center;justify-content:center;gap:9px;min-height:44px;margin-top:9px;border:1px solid #c6a96b;border-radius:11px;background:linear-gradient(135deg,#e2cb91,#b08c4e);color:#242117;font:800 11px Manrope;box-shadow:0 5px 14px #9a783722}
+.mini-shell .mini-referral-link{overflow-wrap:anywhere}
+.mini-shell .mini-referral-link>button{flex:0 0 34px}
+.mini-shell .mini-bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr))}
+.mini-shell .mini-nav-gift{display:grid;place-items:center;width:19px;height:19px;font-size:20px;line-height:1}
+@media(max-width:390px){.mini-shell .mini-freebies-home{grid-template-columns:82px minmax(0,1fr);gap:11px;padding:12px}.mini-shell .mini-freebies-home-art{height:94px}.mini-shell .mini-freebies-home-art>b{font-size:10px}.mini-shell .mini-freebies-home-copy h2{font-size:17px}.mini-shell .mini-freebies-home-copy p{font-size:9px}.mini-shell .mini-freebies-home-actions{gap:5px}.mini-shell .mini-freebies-home-actions .mini-primary,.mini-shell .mini-share-compact{padding:0 8px;font-size:8px}}
