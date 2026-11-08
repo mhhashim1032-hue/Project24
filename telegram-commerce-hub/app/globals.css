@@ -1416,3 +1416,13 @@
 .gf-balance-row strong { color:#f2d18d; font:750 11px 'DM Sans',sans-serif; }
 .gf-balance-row em { color:#aeb8c9; font:600 9px 'DM Sans',sans-serif; font-style:normal; }
 @media(max-width:370px){.gf-feature-product{align-items:flex-start;flex-direction:column}.gf-feature-product button{width:100%;justify-content:center}.gf-methods-showcase .gf-verifier-scene{flex-basis:38%;width:38%}}
+
+
+/* Admin payment credential vault */
+.gf-vault-card { display:grid; gap:11px; margin:18px 0; padding:18px; border:1px solid rgba(54,167,123,.28); border-radius:16px; background:linear-gradient(145deg,rgba(18,45,42,.58),rgba(18,25,36,.94)); }
+.gf-vault-card .panel-head { margin:0; }
+.gf-vault-card .panel-head h3 { margin:0 0 4px; }
+.gf-vault-card .panel-head p { margin:0; }
+.gf-vault-card label { margin:4px 0 -5px; color:var(--text,#dce5f1); font-size:12px; font-weight:700; }
+.gf-vault-card input { width:100%; min-height:42px; padding:10px 12px; border:1px solid rgba(255,255,255,.14); border-radius:10px; color:inherit; background:rgba(0,0,0,.18); }
+.gf-vault-card .help-text { margin:0; line-height:1.55; }
