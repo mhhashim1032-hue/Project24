@@ -146,9 +146,17 @@ async function referralBotLink(code:string,settings:any) {
   return "https://t.me/"+configured+"?start=ref_"+encodeURIComponent(code);
 }
 async function notifyCommerceEvent(settings: any, message: string) {
-  const token = Deno.env.get("NOTIFICATION_BOT_TOKEN"); const chatId = String(settings.notification_chat_id || "").trim();
+  const token = await getAdminPaymentSecret("telegram_bot_token", "TELEGRAM_BOT_TOKEN");
+  const chatId = String(settings.notification_chat_id || settings.admin_telegram_id || "").trim();
   if (!token || !chatId) return;
-  try { await fetch("https://api.telegram.org/bot"+token+"/sendMessage",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:chatId,text:message,disable_web_page_preview:true}),signal:AbortSignal.timeout(8000)}); } catch (err) { console.error("Notification bot delivery failed",err); }
+  try {
+    const response = await fetch("https://api.telegram.org/bot"+token+"/sendMessage",{
+      method:"POST",headers:{"content-type":"application/json"},
+      body:JSON.stringify({chat_id:chatId,text:message,disable_web_page_preview:true}),
+      signal:AbortSignal.timeout(8000)
+    });
+    if(!response.ok)console.error("Telegram commerce notification returned HTTP",response.status);
+  } catch (err) { console.error("Telegram commerce notification failed",err); }
 }
 async function telegramChannelJoined(customer: any, settings: any) {
   const channelId=String(settings.required_channel_id||"").trim(); if(!channelId)return true;
