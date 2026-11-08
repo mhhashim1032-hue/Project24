@@ -1022,3 +1022,31 @@
 @keyframes mini-payment-sheen{0%,65%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
 @keyframes mini-payment-success-pop{0%{transform:scale(.7) rotateZ(-18deg)}75%{transform:scale(1.12) rotateZ(5deg)}100%{transform:scale(1) rotateZ(0)}}
 @media(prefers-reduced-motion:reduce){.mini-shell .mini-payment-live:before,.mini-shell .mini-payment-orbit,.mini-shell .mini-payment-core,.mini-shell .mini-payment-particle,.mini-shell .mini-payment-step.current>span,.mini-shell .mini-payment-pulse,.mini-shell .mini-payment-steps>i.current{animation:none!important}}
+
+
+/* Invalid payment references stay inside the 3D verification scene */
+.mini-shell .mini-payment-live.is-problem .mini-payment-core{
+  background:radial-gradient(circle at 28% 20%,#fff0ec,#e98f83 68%,#a83e3a);
+  border:1px solid #d77c73;
+  color:#7d211e;
+  box-shadow:0 9px 22px #a83e3a45,inset 0 1px 4px #fff9;
+  animation:mini-payment-invalid 1.1s ease-in-out infinite;
+}
+.mini-shell .mini-payment-live.is-problem .mini-payment-orbit{
+  border-color:#d47b7388;
+  box-shadow:0 0 15px #bd514522;
+}
+.mini-shell .mini-payment-live.is-problem .mini-payment-particle{
+  background:#c94e47;
+  box-shadow:0 0 12px #c94e47;
+}
+.mini-shell .mini-payment-live.is-problem .mini-payment-live-message>b,
+.mini-shell .mini-payment-live.is-problem .mini-payment-live-head b{color:#9b302b}
+@keyframes mini-payment-invalid{
+  0%,100%{transform:translateX(0) rotateX(12deg) rotateZ(-7deg)}
+  18%{transform:translateX(-3px) rotateX(12deg) rotateZ(-11deg)}
+  36%{transform:translateX(3px) rotateX(12deg) rotateZ(-3deg)}
+  54%{transform:translateX(-2px) rotateX(12deg) rotateZ(-9deg)}
+  72%{transform:translateX(2px) rotateX(12deg) rotateZ(-5deg)}
+}
+@media(prefers-reduced-motion:reduce){.mini-shell .mini-payment-live.is-problem .mini-payment-core{animation:none!important}}
