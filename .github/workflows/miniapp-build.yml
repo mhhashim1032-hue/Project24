@@ -30,7 +30,7 @@ jobs:
         with:
           deno-version: v2.x
       - name: Type-check Supabase Edge Function
-        run: deno check --no-lock supabase/functions/gold-feather-commerce/index.ts
+        run: deno check --node-modules-dir=auto --no-lock supabase/functions/gold-feather-commerce/index.ts
 
 # Validate the full Next.js application, including admin API routes and Mini App scenes.
 
