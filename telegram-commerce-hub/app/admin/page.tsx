@@ -98,16 +98,16 @@ const logout=async()=>supabase.auth.signOut();
 <p>Choose a complete storefront experience. Each concept changes page composition, navigation, product cards, typography, spacing and motion—not just its colour palette.</p>
 <div className="storefront-design-grid">
 {[
-{id:'aurum',name:'01 · AURUM / Gilded Atelier',type:'Sculpted heritage luxury',desc:'Ivory marble, warm gold foil, dimensional product plinths and slow cinematic movement.',layout:'grid',headline:'THE ART OF EXCEPTION'},
+{id:'aurum',name:'01 · AURUM / Gilded Atelier',type:'Sculpted heritage luxury',desc:'A restrained ivory-and-stone monochrome palette, dimensional product plinths and slow cinematic movement.',layout:'grid',headline:'THE ART OF EXCEPTION'},
 {id:'eclipse',name:'02 · OBSIDIAN / Black Label',type:'Pure monochrome obsidian',desc:'Pure black, graphite and silver surfaces, sculptural chrome lighting and high-contrast product staging.',layout:'list',headline:'BEYOND ORDINARY'},
-{id:'aurora',name:'03 · AURORA / Prism Lab',type:'Iridescent glass future',desc:'Prismatic gradients, translucent layers, refracted light and fluid motion.',layout:'grid',headline:'A NEW LIGHT ON DIGITAL'},
-{id:'sakura',name:'04 · SAKURA / Tokyo Edit',type:'Japanese editorial',desc:'Soft porcelain pink, asymmetric magazine composition and refined kinetic typography.',layout:'list',headline:'CURATED WITH INTENTION'},
+{id:'aurora',name:'03 · AURORA / Prism Lab',type:'Iridescent glass future',desc:'A single-hue lavender-grey palette, translucent layers, refracted light and fluid motion.',layout:'grid',headline:'A NEW LIGHT ON DIGITAL'},
+{id:'sakura',name:'04 · SAKURA / Tokyo Edit',type:'Japanese editorial',desc:'A single-hue porcelain-rose palette, asymmetric magazine composition and refined kinetic typography.',layout:'list',headline:'CURATED WITH INTENTION'},
 {id:'monolith',name:'05 · MONOLITH / Form',type:'Architectural brutalism',desc:'Oversized typography, hard geometry, monochrome surfaces and precise transitions.',layout:'compact',headline:'FORM FOLLOWS FUNCTION'},
-{id:'verdant',name:'06 · VERDANT / Eden',type:'Organic modern boutique',desc:'Forest tones, botanical gradients, sculptural cards and calm ambient movement.',layout:'list',headline:'THE DIGITAL ESSENTIALS'},
-{id:'glacier',name:'07 · GLACIER / Icefield',type:'Arctic glass architecture',desc:'Frosted glass, crystalline highlights, cool depth and weightless product panels.',layout:'grid',headline:'CLARITY IN EVERY DETAIL'},
-{id:'solstice',name:'08 · SOLSTICE / Ember',type:'Solar kinetic studio',desc:'Burnished copper, molten gradients, radiant lighting and energetic transitions.',layout:'grid',headline:'MAKE YOUR NEXT MOVE'},
-{id:'neon-forge',name:'09 · NEON FORGE / 2088',type:'Futurist cyberdeck',desc:'Electric blue light, holographic outlines, precision grids and animated scan effects.',layout:'compact',headline:'ACCESS THE NEXT'},
-{id:'porcelain',name:'10 · PORCELAIN / Gallery',type:'Ultra-clean gallery',desc:'Gallery-white canvas, ink typography, blue ceramic accents and refined spatial rhythm.',layout:'grid',headline:'LESS NOISE. MORE VALUE.'}
+{id:'verdant',name:'06 · VERDANT / Eden',type:'Organic modern boutique',desc:'A single-hue forest-green palette, sculptural cards and calm ambient movement.',layout:'list',headline:'THE DIGITAL ESSENTIALS'},
+{id:'glacier',name:'07 · GLACIER / Icefield',type:'Arctic glass architecture',desc:'A single-hue ice-blue palette, crystalline highlights, cool depth and weightless product panels.',layout:'grid',headline:'CLARITY IN EVERY DETAIL'},
+{id:'solstice',name:'08 · SOLSTICE / Ember',type:'Solar kinetic studio',desc:'A single-hue smoked-amber palette, sculptural lighting and energetic transitions.',layout:'grid',headline:'MAKE YOUR NEXT MOVE'},
+{id:'neon-forge',name:'09 · NEON FORGE / 2088',type:'Futurist cyberdeck',desc:'A single-hue electric-slate palette, holographic outlines, precision grids and animated scan effects.',layout:'compact',headline:'ACCESS THE NEXT'},
+{id:'porcelain',name:'10 · PORCELAIN / Gallery',type:'Ultra-clean gallery',desc:'A single-hue porcelain-slate palette, ink typography and refined spatial rhythm.',layout:'grid',headline:'LESS NOISE. MORE VALUE.'}
 ].map(d=><button type="button" key={d.id} className={'storefront-design-card '+((settings.miniapp_theme||'aurum')===d.id?'selected':'')} onClick={()=>setSettings({...settings,miniapp_theme:d.id,miniapp_layout:d.layout})}>
 <div className={'storefront-thumb thumb-'+d.id}><div className="thumb-top"><i/><i/><i/><span>G F</span></div><div className="thumb-hero"><small>CURATED COLLECTION</small><b>{d.headline}</b></div><div className="thumb-products"><i/><i/><i/></div><div className="thumb-bottom"><i/><i/><i/><i/></div></div>
 <span className="storefront-card-copy"><b>{d.name}</b><small>{d.type}</small><em>{d.desc}</em></span><span className="storefront-select">{(settings.miniapp_theme||'aurum')===d.id?'✓ Selected':'Select design'}</span>
