@@ -12,7 +12,17 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const secretKeysRaw = Deno.env.get("SUPABASE_SECRET_KEYS");
 // These Vault RPCs explicitly require the legacy service_role JWT claim. Prefer the platform-injected legacy key while the database guards use that claim; the newer sb_secret key is not a JWT.
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || (secretKeysRaw ? JSON.parse(secretKeysRaw).default : "");
-const admin = createClient(supabaseUrl, serviceKey!, { auth: { persistSession: false, autoRefreshToken: false } });
+function createApiKeyFetch(apiKey: string): typeof fetch {
+  return async (input, init) => {
+    const requestHeaders = input instanceof Request ? input.headers : undefined;
+    const headers = new Headers(init?.headers ?? requestHeaders);
+    if (apiKey.startsWith("sb_") && headers.get("authorization") === `Bearer ${apiKey}`) {
+      headers.delete("authorization");
+    }
+    return fetch(input, { ...init, headers });
+  };
+}
+const admin = createClient(supabaseUrl, serviceKey!, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: createApiKeyFetch(serviceKey!) } });
 
 function fromHex(hex: string) { return new Uint8Array(hex.match(/.{1,2}/g)!.map(x => parseInt(x, 16))); }
 function fromBase64Url(value: string) {
