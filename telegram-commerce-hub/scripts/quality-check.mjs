@@ -5,6 +5,8 @@ import assert from "node:assert/strict";
 const read = (file) => fs.readFileSync(path.join(process.cwd(), file), "utf8");
 const css = read("app/globals.css");
 const themes = ["light-gold","obsidian"];
+const themeSelectors = [...css.matchAll(/\\.mini-shell\\.theme-([a-z-]+)\\s*\\{/g)].map((m) => m[1]);
+assert.deepEqual(themeSelectors, themes, "The Mini App must contain exactly two theme selectors.");
 function rgb(hex) {
   let value = hex.replace("#", "");
   if (value.length === 3) value = [...value].map((c) => c + c).join("");
@@ -109,6 +111,9 @@ for (const [label, source] of [["verifier",verifierScene],["payment",paymentScen
 }
 
 const admin = read("app/admin/page.tsx");
-assert.ok(admin.includes("light-gold") && admin.includes("obsidian"), "Admin must expose both premium themes.");
+assert.ok(admin.includes("id:'light-gold'") && admin.includes("id:'obsidian'"), "Admin must expose both premium themes.");
+assert.equal((admin.match(/id:'(?:light-gold|obsidian)'/g) || []).length, 2, "Admin gallery must contain exactly two theme choices.");
+const themeMigration = read("supabase/migrations/20261110010000_two_premium_storefront_themes.sql");
+assert.ok(themeMigration.includes("ARRAY['light-gold','obsidian']"), "Database migration must constrain the setting to exactly two themes.");
 for (const legacy of ["aurora","sakura","monolith","verdant","glacier","solstice","neon-forge","porcelain"]) assert.ok(!admin.includes("id:'"+legacy+"'"), "Legacy theme remains in admin gallery: "+legacy);
 assert.ok(!mini.includes("design-${settings.miniapp_theme") && mini.includes("layout-grid"), "Mini App must use one shared layout rather than theme-specific structures.");
