@@ -1587,3 +1587,62 @@ body{overflow-x:clip}.mini-shell{--gf-button-text:#fff;isolation:isolate;positio
 .mini-shell .mini-footer{color:var(--gf-muted)!important}
 @media(max-width:520px){.mini-shell .mini-hero-art{min-height:205px!important;grid-row:1}.mini-shell .mini-hero-art .gf-verifier-scene{height:210px!important;min-height:210px!important}.mini-shell .gf-payment-scene{height:155px!important;min-height:155px!important}}
 @media(prefers-reduced-motion:reduce){.mini-shell .mini-hero-art canvas,.mini-shell .gf-verifier-scene canvas,.mini-shell .gf-payment-scene canvas,.mini-shell .gf-ads-scene canvas{filter:var(--gf-scene-filter)!important}}
+
+
+/* Product staging, freebies and checkout details now share the selected single-hue material system. */
+.mini-shell .design-product-stage{background:linear-gradient(145deg,var(--gf-surface),var(--gf-soft))!important;border:1px solid var(--gf-border);box-shadow:inset 0 1px color-mix(in srgb,var(--gf-text) 8%,transparent)}
+.mini-shell .design-product-stage:before{background:linear-gradient(135deg,color-mix(in srgb,var(--gf-surface) 70%,transparent),transparent 55%,color-mix(in srgb,var(--gf-accent) 10%,transparent))!important}
+.mini-shell .design-product-glow{background:color-mix(in srgb,var(--gf-accent) 30%,transparent)!important;filter:blur(26px)}
+.mini-shell .design-product-orbit{border-color:color-mix(in srgb,var(--gf-accent) 65%,transparent)!important;box-shadow:0 0 26px color-mix(in srgb,var(--gf-accent) 20%,transparent)!important}
+.mini-shell .design-product-object{border-color:var(--gf-accent)!important;background:linear-gradient(140deg,var(--gf-surface),var(--gf-accent) 52%,var(--gf-text))!important;box-shadow:inset 7px 7px 16px color-mix(in srgb,var(--gf-surface) 85%,transparent),inset -8px -8px 16px color-mix(in srgb,var(--gf-text) 25%,transparent),0 17px 25px color-mix(in srgb,var(--gf-text) 18%,transparent)!important}
+.mini-shell .design-product-object span,.mini-shell .design-product-object b{color:var(--gf-button-text)!important;text-shadow:0 2px 8px color-mix(in srgb,var(--gf-text) 40%,transparent)}
+.mini-shell .design-product-object i{background:linear-gradient(145deg,var(--gf-surface),var(--gf-accent))!important;box-shadow:0 5px 10px color-mix(in srgb,var(--gf-text) 20%,transparent)!important}
+.mini-shell .design-product-image{z-index:2!important;display:block!important;opacity:1!important;visibility:visible!important;filter:none!important}
+.mini-shell .design-product-index,.mini-shell .design-product-stage .mini-category{background:var(--gf-surface)!important;color:var(--gf-text)!important;border:1px solid var(--gf-border)!important}
+.mini-shell .design-product-eyebrow,.mini-shell .design-product-foot .mini-price{color:var(--gf-muted)!important}
+.mini-shell .design-product h2,.mini-shell .design-product h3,.mini-shell .design-product-body>p{color:var(--gf-text)!important}
+.mini-shell .mini-freebies-grid .mini-freebie-card,.mini-shell .mini-freebies-empty,
+.mini-shell .mini-freebies-delivery,.mini-shell .mini-freebie-cost,
+.mini-shell .mini-freebie-card-top,.mini-shell .mini-freebie-card-foot{
+  background:var(--gf-surface)!important;color:var(--gf-text)!important;border-color:var(--gf-border)!important;
+}
+.mini-shell .mini-freebie-card h3,.mini-shell .mini-freebie-card p,
+.mini-shell .mini-freebie-card small,.mini-shell .mini-freebie-card-foot span,
+.mini-shell .mini-freebie-cost{color:var(--gf-text)!important}
+.mini-shell [class*="mini-payment-"]:not(.mini-payment-qr-wrap):not(.mini-payment-qr){
+  border-color:var(--gf-border)!important;
+}
+.mini-shell .mini-payment-methods button,.mini-shell .mini-payment-revealed,
+.mini-shell .mini-payment-preconfirm,.mini-shell .mini-payment-slide-card,
+.mini-shell .mini-payment-instructions,.mini-shell .mini-payment-preconfirm-icon,
+.mini-shell .mini-payment-revealed-head small,.mini-shell .mini-payment-fee-line,
+.mini-shell .mini-network-selected-note{
+  background:var(--gf-surface)!important;color:var(--gf-text)!important;border-color:var(--gf-border)!important;
+}
+.mini-shell .mini-payment-methods button.active,.mini-shell .mini-payment-slide-card input{accent-color:var(--gf-accent)!important}
+.mini-shell .mini-payment-revealed-head,.mini-shell .mini-payment-revealed-head span,
+.mini-shell .mini-payment-revealed-head small,.mini-shell .mini-payment-preconfirm *,
+.mini-shell .mini-payment-slide-card *,.mini-shell .mini-payment-fee-line *,
+.mini-shell .mini-network-selected-note *{color:var(--gf-text)!important}
+.mini-shell .mini-payment-qr-wrap{background:#fff!important}
+.mini-shell .mini-payment-qr{filter:none!important;opacity:1!important}
+.mini-shell .mini-payment-status,.mini-shell .mini-payment-success,
+.mini-shell .mini-payment-warning{color:var(--gf-text)!important;background:var(--gf-soft)!important;border-color:var(--gf-border)!important}
+.mini-shell .gf-ads-builder>input[type=range],.mini-shell input[type=range]{accent-color:var(--gf-accent)!important}
+.mini-shell .mini-profile-invite .mini-payid{background:var(--gf-soft)!important;color:var(--gf-text)!important;border-color:var(--gf-border)!important}
+.mini-shell .mini-share-button:disabled{background:var(--gf-soft)!important;color:var(--gf-muted)!important;border-color:var(--gf-border)!important}
+.mini-shell .mini-deadline,.mini-shell .mini-announcement,.mini-shell .mini-payment-fee-line{background:var(--gf-soft)!important;color:var(--gf-text)!important;border-color:var(--gf-border)!important}
+.mini-shell .mini-deadline *,.mini-shell .mini-announcement *{color:var(--gf-text)!important}
+.mini-shell .mini-product-cta{color:var(--gf-text)!important}
+.mini-shell .mini-product-cta svg{color:var(--gf-accent)!important}
+.mini-shell .mini-freebies-home-copy>small{color:var(--gf-muted)!important}
+.mini-shell .mini-freebies-home-copy h2,.mini-shell .mini-freebies-home-copy p{color:var(--gf-text)!important}
+.mini-shell .gf-methods-showcase .gf-verifier-scene{filter:none!important}
+.mini-shell .gf-methods-showcase .gf-verifier-scene canvas{filter:var(--gf-scene-filter)!important}
+.mini-shell .mini-product,.mini-shell .mini-freebie-card,.mini-shell .mini-profile-action,
+.mini-shell .mini-wallet-card,.mini-shell .mini-checkout-summary,.mini-shell .mini-payid,
+.mini-shell .design-product-stage{transition:transform .32s cubic-bezier(.2,.8,.2,1),box-shadow .32s,border-color .32s}
+.mini-shell .design-product-stage{transform-style:preserve-3d;perspective:1000px}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+ .mini-shell .design-product:hover .design-product-stage{transform:translateY(-5px) rotateX(3deg) rotateY(-2deg);box-shadow:0 22px 48px color-mix(in srgb,var(--gf-accent) 20%,transparent)}
+}
