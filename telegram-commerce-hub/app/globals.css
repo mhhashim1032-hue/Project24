@@ -1493,3 +1493,9 @@ body{overflow-x:clip}.mini-shell{--gf-button-text:#fff;isolation:isolate;positio
 @keyframes gf-object-float{0%,100%{transform:translateZ(34px) rotateX(-8deg) rotateY(-12deg) translateY(0)}50%{transform:translateZ(48px) rotateX(-5deg) rotateY(-5deg) translateY(-9px)}}
 @media(max-width:620px){.mini-shell .mini-products{grid-template-columns:1fr!important;gap:12px!important}.mini-shell .mini-hero{grid-template-columns:1fr;min-height:0}.mini-shell .mini-hero-art{min-height:205px!important;grid-row:1}.mini-shell .mini-hero-art .gf-verifier-scene{height:210px!important;min-height:210px!important}.mini-shell .gf-payment-scene{height:155px!important;min-height:155px!important}}
 @media(prefers-reduced-motion:reduce){.mini-shell *, .mini-shell *:before,.mini-shell *:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}.mini-shell .mini-product:hover,.mini-shell .design-product:hover .design-product-stage{transform:none!important}}
+
+/* Admin previews mirror the two exact production palettes. */
+.thumb-light-gold{background:linear-gradient(145deg,#fffdf8 0%,#eee5d5 56%,#c8ad7e 100%);color:#49371e;border:1px solid #dfd3bd}
+.thumb-obsidian{background:radial-gradient(ellipse at 55% 8%,#3b3e43 0%,#171a1e 48%,#08090b 100%);color:#f1f2f3;border:1px solid #34373c}
+.mini-shell.theme-light-gold .mini-header,.mini-shell.theme-light-gold .mini-bottom-nav{color:#302719}
+.mini-shell.theme-obsidian .mini-header,.mini-shell.theme-obsidian .mini-bottom-nav{color:#f1f2f3}
