@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
+import "./verifier-demo.css";
 
 export const metadata: Metadata = {
   title: "Gold Feather Premium · Commerce OS",
