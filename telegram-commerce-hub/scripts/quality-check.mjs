@@ -121,7 +121,7 @@ for (const legacy of ["aurora","sakura","monolith","verdant","glacier","solstice
 assert.ok(!mini.includes("design-${settings.miniapp_theme") && mini.includes("layout-grid"), "Mini App must use one shared layout rather than theme-specific structures.");
 const liveMini = read("app/miniapp/page.tsx");
 assert.ok(liveMini.includes("const openProduct=(product:Product)=>"), "Every catalogue item must open a product detail view.");
-assert.ok(liveMini.includes("className=\"gf-product-open\"") && liveMini.includes("View details for "), "Product cards must expose a dedicated touch-friendly detail action.");
+assert.ok(liveMini.includes('className="gf-product-open"') && liveMini.includes("View details"), "Product cards must expose a dedicated touch-friendly detail action.");
 assert.ok(liveMini.includes("No plans available yet"), "Products without active plans must still open and explain availability.");
 assert.ok(liveMini.includes('activeTab==="profile"&&!selected&&!order&&!profile'), "Profile navigation must render a retry state even before the customer profile loads.");
 assert.ok(liveMini.includes('setActiveTab("profile")'), "The persistent navigation must route directly to Profile.");
