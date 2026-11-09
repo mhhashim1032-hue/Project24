@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 
 const read = (file) => fs.readFileSync(path.join(process.cwd(), file), "utf8");
 const css = read("app/globals.css");
-const themes = ["ocean","rose","emerald","graphite","lavender","crimson","arctic","gold","midnight","cyber"];
+const themes = ["aurum","eclipse","aurora","sakura","monolith","verdant","glacier","solstice","neon-forge","porcelain"];
 function rgb(hex) {
   let value = hex.replace("#", "");
   if (value.length === 3) value = [...value].map((c) => c + c).join("");
@@ -24,11 +24,10 @@ for (const theme of themes) {
   const match = matches.find((candidate) => candidate[1].includes("--gf-bg"));
   assert.ok(match, "Missing semantic palette variables for theme: " + theme);
   const vars = Object.fromEntries([...match[1].matchAll(/--gf-([a-z]+):\s*(#[0-9a-f]{3,6})/gi)].map((m) => [m[1], m[2]]));
-  for (const key of ["bg","surface","text","muted","border","accent","soft"]) assert.ok(vars[key], theme + " is missing --gf-" + key);
+  for (const key of ["bg","surface","text","muted","border","accent","soft","button-text"]) assert.ok(vars[key], theme + " is missing --gf-" + key);
   assert.ok(contrast(vars.text, vars.surface) >= 4.5, theme + " primary text fails WCAG AA");
   assert.ok(contrast(vars.muted, vars.surface) >= 4.5, theme + " muted text fails WCAG AA");
-  const buttonText = theme === "midnight" || theme === "cyber" ? "#101827" : "#ffffff";
-  assert.ok(contrast(buttonText, vars.accent) >= 4.5, theme + " primary button fails WCAG AA");
+  assert.ok(contrast(vars["button-text"], vars.accent) >= 4.5, theme + " primary button fails WCAG AA");
 }
 for (const required of [".mini-profile-telegram-id", ".mini-profile-metrics", ".mini-profile-action", ".mini-wallet", ".storefront-picker"]) {
   assert.ok(css.includes(required), "Missing shared component theme rule: " + required);
@@ -84,4 +83,4 @@ assert.ok(css.includes(".mini-shell > .mini-content{") && css.includes("padding-
 assert.ok(css.includes(".mini-shell > .mini-bottom-nav{") && css.includes("z-index:1000!important"), "Primary navigation must be fixed above page content.");
 assert.ok(mini.includes("next/dynamic") && mini.includes("ssr: false"), "3D scenes must be split into lazy client chunks.");
 for (const tab of ["Store","Orders","Profile"]) assert.ok(mini.includes(tab), "Mini App navigation label missing: " + tab);
-console.log("Quality checks passed: 10 theme palettes (WCAG AA), profile/wallet/admin surfaces, 3D motion lifecycle, API routes and Supabase server actions.");
+console.log("Quality checks passed: 10 rebuilt theme systems (WCAG AA), profile/wallet/admin surfaces, 3D motion lifecycle, API routes and Supabase server actions.");
