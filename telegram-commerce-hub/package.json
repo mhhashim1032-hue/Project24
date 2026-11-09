@@ -19,7 +19,8 @@
     "postcss": "8.5.32",
     "three": "^0.181.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
-    "framer-motion": "^12.23.24"
+    "framer-motion": "^12.23.24",
+    "qrcode.react": "^4.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
