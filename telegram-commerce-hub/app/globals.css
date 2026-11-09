@@ -1395,7 +1395,7 @@
 
 
 /* GOLD FEATHER / TEN NEW STOREFRONT WORLDS — original visual systems */
-.mini-shell{--gf-button-text:#fff;isolation:isolate;position:relative;overflow-x:clip;background:var(--gf-bg,#f4f5f7)!important;color:var(--gf-text,#1c2633)!important}
+body{overflow-x:clip}.mini-shell{--gf-button-text:#fff;isolation:isolate;position:relative;overflow:visible!important;background:var(--gf-bg,#f4f5f7)!important;color:var(--gf-text,#1c2633)!important}
 .mini-shell .mini-header{background:color-mix(in srgb,var(--gf-surface,#fff) 82%,transparent);color:var(--gf-text,#1c2633);border-bottom:1px solid var(--gf-border,#dce1e8);backdrop-filter:blur(24px) saturate(150%)}
 .mini-shell .mini-product,.mini-shell .mini-panel,.mini-shell .mini-orders,.mini-shell .mini-profile{background:var(--gf-surface,#fff);color:var(--gf-text,#1c2633);border:1px solid var(--gf-border,#dce1e8);box-shadow:0 16px 42px color-mix(in srgb,var(--gf-text) 9%,transparent)}
 .mini-shell .mini-heading h1,.mini-shell .mini-section-title,.mini-shell .mini-product h3,.mini-shell .mini-order b,.mini-shell .mini-profile-page h2{color:var(--gf-text)}
