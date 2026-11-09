@@ -23,6 +23,8 @@ for (const legacy of ["gold","midnight","ocean","rose","emerald","graphite","lav
   assert.ok(!css.includes(".mini-shell.theme-" + legacy) && !css.includes(".mini-shell.design-" + legacy), "Legacy storefront theme remains active: " + legacy);
 }
 for (const theme of themes) {
+  assert.ok(css.includes(".mini-shell.design-" + theme), theme + " is missing its own composition rules.");
+  assert.ok(css.includes(".mini-shell.theme-" + theme + " .mini-hero"), theme + " is missing its own hero treatment.");
   const matches = [...css.matchAll(new RegExp("\\.mini-shell\\.theme-" + theme + "\\s*\\{([^}]+)\\}", "g"))];
   const match = matches.find((candidate) => candidate[1].includes("--gf-bg"));
   assert.ok(match, "Missing semantic palette variables for theme: " + theme);
@@ -85,5 +87,7 @@ assert.ok(mini.includes('aria-label="Main navigation"') && (mini.match(/classNam
 assert.ok(css.includes(".mini-shell > .mini-content{") && css.includes("padding-bottom:calc(112px + env(safe-area-inset-bottom))"), "Scrollable content must reserve space above the fixed bottom navigation.");
 assert.ok(css.includes(".mini-shell > .mini-bottom-nav{") && css.includes("z-index:1000!important"), "Primary navigation must be fixed above page content.");
 assert.ok(mini.includes("next/dynamic") && mini.includes("ssr: false"), "3D scenes must be split into lazy client chunks.");
+assert.ok(css.includes("@keyframes gf-card-arrive") && css.includes("@keyframes gf-plinth-float") && css.includes("@keyframes gf-orbit-glow") && css.includes("@keyframes gf-hero-drift"), "The new 3D motion system is incomplete.");
+assert.ok(css.includes(".mini-shell.mini-motion-off") && css.includes("@media(prefers-reduced-motion:reduce)"), "Motion settings and reduced-motion accessibility must be respected.");
 for (const tab of ["Store","Orders","Profile"]) assert.ok(mini.includes(tab), "Mini App navigation label missing: " + tab);
 console.log("Quality checks passed: 10 rebuilt theme systems (WCAG AA), profile/wallet/admin surfaces, 3D motion lifecycle, API routes and Supabase server actions.");
