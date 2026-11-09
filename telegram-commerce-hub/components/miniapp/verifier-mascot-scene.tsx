@@ -35,18 +35,18 @@ export default function VerifierMascotScene({ className = '', compact = false }:
     const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
     camera.position.set(0, 0.15, 7.2);
 
-    scene.add(new THREE.HemisphereLight(0xc9e5ff, 0x15101d, 2.0));
-    const key = new THREE.DirectionalLight(0xffe2a6, 3.2);
+    scene.add(new THREE.HemisphereLight(0xe8e8e8, 0x15101d, 2.0));
+    const key = new THREE.DirectionalLight(0xf0f0f0, 3.2);
     key.position.set(3, 4, 5);
     scene.add(key);
     const rim = new THREE.PointLight(0x2e8cff, 18, 12);
     rim.position.set(-3, 1, 3);
     scene.add(rim);
 
-    const gold = new THREE.MeshStandardMaterial({ color: 0xd9ad58, metalness: 0.82, roughness: 0.24 });
+    const gold = new THREE.MeshStandardMaterial({ color: 0xbfc2c7, metalness: 0.82, roughness: 0.24 });
     const dark = new THREE.MeshStandardMaterial({ color: 0x202a3b, metalness: 0.72, roughness: 0.3 });
-    const glass = new THREE.MeshPhysicalMaterial({ color: 0x7dc5ff, metalness: 0.25, roughness: 0.12, transmission: 0.15, transparent: true, opacity: 0.92 });
-    const white = new THREE.MeshStandardMaterial({ color: 0xe9f2ff, metalness: 0.45, roughness: 0.22 });
+    const glass = new THREE.MeshPhysicalMaterial({ color: 0xd9dce0, metalness: 0.25, roughness: 0.12, transmission: 0.15, transparent: true, opacity: 0.92 });
+    const white = new THREE.MeshStandardMaterial({ color: 0xf0f1f2, metalness: 0.45, roughness: 0.22 });
     const mascot = new THREE.Group();
     scene.add(mascot);
 
@@ -103,7 +103,7 @@ export default function VerifierMascotScene({ className = '', compact = false }:
 
     const orbit = new THREE.Group();
     scene.add(orbit);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(2.2, 0.012, 8, 100), new THREE.MeshBasicMaterial({ color: 0x5a91d6, transparent: true, opacity: 0.5 }));
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(2.2, 0.012, 8, 100), new THREE.MeshBasicMaterial({ color: 0xbfc2c7, transparent: true, opacity: 0.5 }));
     ring.rotation.x = 0.82;
     ring.rotation.y = -0.28;
     orbit.add(ring);
@@ -119,7 +119,7 @@ export default function VerifierMascotScene({ className = '', compact = false }:
     const stars = new THREE.Group();
     scene.add(stars);
     for (let i = 0; i < 18; i++) {
-      const dot = new THREE.Mesh(new THREE.SphereGeometry(0.018 + (i % 3) * 0.008, 8, 8), new THREE.MeshBasicMaterial({ color: i % 2 ? 0xffd78c : 0x77baff }));
+      const dot = new THREE.Mesh(new THREE.SphereGeometry(0.018 + (i % 3) * 0.008, 8, 8), new THREE.MeshBasicMaterial({ color: i % 2 ? 0xe0e1e3 : 0xd0d2d5 }));
       const angle = (i / 18) * Math.PI * 2;
       dot.position.set(Math.cos(angle) * (2.35 + (i % 4) * 0.16), Math.sin(angle) * (1.35 + (i % 3) * 0.12), -0.4);
       stars.add(dot);
@@ -185,7 +185,7 @@ export default function VerifierMascotScene({ className = '', compact = false }:
   }, []);
 
   return (
-    <div ref={hostRef} className={`gf-verifier-scene ${compact ? 'gf-verifier-scene-compact' : ''} ${className}`} role="img" aria-label="Animated metallic Gold Feather verifier robot with a security shield">
+    <div ref={hostRef} className={`gf-verifier-scene ${compact ? 'gf-verifier-scene-compact' : ''} ${className}`} role="img" aria-label="Animated monochrome metallic security robot with a floating shield">
       <span className="gf-verifier-scene-fallback" aria-hidden="true">GF</span>
     </div>
   );

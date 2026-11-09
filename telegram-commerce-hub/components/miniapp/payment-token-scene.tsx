@@ -22,12 +22,12 @@ export default function PaymentTokenScene({ mode = 'coins', className = '' }: Pr
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(35, w / h, .1, 50);
     camera.position.set(0, 0, 6);
-    scene.add(new THREE.HemisphereLight(0xe4f2ff, 0x1b1722, 2));
-    const light = new THREE.DirectionalLight(0xffe0a1, 3.4); light.position.set(3, 4, 5); scene.add(light);
-    const blue = new THREE.MeshStandardMaterial({ color: 0x2d82e8, metalness: .78, roughness: .24 });
-    const gold = new THREE.MeshStandardMaterial({ color: 0xd9ad58, metalness: .86, roughness: .22 });
-    const silver = new THREE.MeshStandardMaterial({ color: 0xcbd7e8, metalness: .82, roughness: .2 });
-    const dark = new THREE.MeshStandardMaterial({ color: 0x26334a, metalness: .68, roughness: .28 });
+    scene.add(new THREE.HemisphereLight(0xe8e8e8, 0x1b1722, 2));
+    const light = new THREE.DirectionalLight(0xf0f0f0, 3.4); light.position.set(3, 4, 5); scene.add(light);
+    const blue = new THREE.MeshStandardMaterial({ color: 0x999da4, metalness: .78, roughness: .24 });
+    const gold = new THREE.MeshStandardMaterial({ color: 0xbfc2c7, metalness: .86, roughness: .22 });
+    const silver = new THREE.MeshStandardMaterial({ color: 0xd5d7da, metalness: .82, roughness: .2 });
+    const dark = new THREE.MeshStandardMaterial({ color: 0x45494f, metalness: .68, roughness: .28 });
     const group = new THREE.Group(); scene.add(group);
     if (mode === 'coins') {
       const materials = [gold, blue, silver];
@@ -36,7 +36,7 @@ export default function PaymentTokenScene({ mode = 'coins', className = '' }: Pr
         const disc = new THREE.Mesh(new THREE.CylinderGeometry(.67 - i*.06, .67 - i*.06, .16, 56), materials[i]);
         disc.rotation.x = Math.PI / 2;
         coin.add(disc);
-        const ring = new THREE.Mesh(new THREE.TorusGeometry(.49 - i*.05, .035, 10, 56), new THREE.MeshStandardMaterial({ color: 0xffedc7, metalness: .8, roughness: .2 }));
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(.49 - i*.05, .035, 10, 56), new THREE.MeshStandardMaterial({ color: 0xe6e7e9, metalness: .8, roughness: .2 }));
         ring.position.z = .1; coin.add(ring);
         coin.position.set((i-1)*1.18, i===1?.12:-.12, (2-i)*.18);
         coin.rotation.y = (i-1)*.25;

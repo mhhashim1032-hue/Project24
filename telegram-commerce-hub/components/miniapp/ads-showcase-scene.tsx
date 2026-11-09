@@ -12,13 +12,13 @@ export default function AdsShowcaseScene() {
     const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.3));renderer.setSize(w,h);renderer.setClearColor(0,0);
     const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(35,w/h,.1,30);camera.position.set(0,0,6);
-    scene.add(new THREE.HemisphereLight(0xfff1d1,0x28354b,2.1));
-    const key=new THREE.DirectionalLight(0xffe4a7,3.3);key.position.set(3,4,5);scene.add(key);
+    scene.add(new THREE.HemisphereLight(0xe8e8e8,0x28354b,2.1));
+    const key=new THREE.DirectionalLight(0xf0f0f0,3.3);key.position.set(3,4,5);scene.add(key);
     const group=new THREE.Group();scene.add(group);
-    const yellow=new THREE.MeshStandardMaterial({color:0xf4c94f,roughness:.35,metalness:.08});
-    const orange=new THREE.MeshStandardMaterial({color:0xe98b37,roughness:.35});
-    const white=new THREE.MeshStandardMaterial({color:0xf7f7f2,roughness:.35});
-    const black=new THREE.MeshStandardMaterial({color:0x1a2433,roughness:.25});
+    const yellow=new THREE.MeshStandardMaterial({color:0xc9cbd0,roughness:.35,metalness:.08});
+    const orange=new THREE.MeshStandardMaterial({color:0x858990,roughness:.35});
+    const white=new THREE.MeshStandardMaterial({color:0xe6e7e9,roughness:.35});
+    const black=new THREE.MeshStandardMaterial({color:0x383c43,roughness:.25});
     const body=new THREE.Mesh(new THREE.SphereGeometry(.88,40,32),yellow);body.scale.set(1,.92,.82);group.add(body);
     const head=new THREE.Mesh(new THREE.SphereGeometry(.58,36,28),yellow);head.position.set(.02,.78,.08);group.add(head);
     const eye1=new THREE.Mesh(new THREE.SphereGeometry(.055,16,12),black);eye1.position.set(-.2,.84,.58);group.add(eye1);
@@ -44,5 +44,5 @@ export default function AdsShowcaseScene() {
     const obs=new ResizeObserver(()=>{const width=Math.max(1,host.clientWidth),height=Math.max(1,host.clientHeight);camera.aspect=width/height;camera.updateProjectionMatrix();renderer.setSize(width,height)});obs.observe(host);
     return()=>{cancelAnimationFrame(raf);obs.disconnect();visibility.disconnect();document.removeEventListener('visibilitychange',onVisibilityChange);motionQuery.removeEventListener?.('change',syncMotion);scene.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>m.dispose())}});renderer.dispose();renderer.domElement.remove()};
   },[]);
-  return <div ref={hostRef} className="gf-ads-scene" role="img" aria-label="Animated 3D yellow duck holding a megaphone"/>
+  return <div ref={hostRef} className="gf-ads-scene" role="img" aria-label="Animated monochrome 3D mascot holding a megaphone"/>
 }

@@ -87,3 +87,23 @@ assert.ok(css.includes(".mini-shell > .mini-bottom-nav{") && css.includes("z-ind
 assert.ok(mini.includes("next/dynamic") && mini.includes("ssr: false"), "3D scenes must be split into lazy client chunks.");
 for (const tab of ["Store","Orders","Profile"]) assert.ok(mini.includes(tab), "Mini App navigation label missing: " + tab);
 console.log("Quality checks passed: 10 rebuilt theme systems (WCAG AA), profile/wallet/admin surfaces, 3D motion lifecycle, API routes and Supabase server actions.");
+
+const monochrome = read("app/globals.css");
+for (const token of [
+  "--gf-scene-filter:grayscale(1) sepia(.72)",
+  ".mini-shell .mini-profile-action",
+  ".mini-shell .mini-freebies-home-art",
+  ".mini-shell .mini-payment-revealed",
+  ".mini-shell .gf-verifier-scene canvas",
+  ".mini-shell .gf-payment-scene canvas",
+  ".mini-shell .gf-ads-scene canvas",
+  "background:var(--gf-accent)!important",
+]) assert.ok(monochrome.includes(token), "Missing monochrome coverage: " + token);
+assert.ok(monochrome.includes(".mini-shell.theme-eclipse{--gf-bg:#08090b") && monochrome.includes("--gf-accent:#d5d7da"), "Obsidian must use a pure black/graphite/silver palette.");
+const verifierScene = read("components/miniapp/verifier-mascot-scene.tsx");
+const paymentScene = read("components/miniapp/payment-token-scene.tsx");
+const adsScene = read("components/miniapp/ads-showcase-scene.tsx");
+for (const [label, source] of [["verifier",verifierScene],["payment",paymentScene],["ads",adsScene]]) {
+  assert.ok(/renderer\.render\(scene,\s*camera\)/.test(source) && source.includes("IntersectionObserver"), label + " 3D model must render and animate when visible.");
+  assert.ok(!source.includes("0xd9ad58") && !source.includes("0xffe2a6") && !source.includes("0x2d82e8"), label + " 3D materials must not retain gold/blue accent colours.");
+}
