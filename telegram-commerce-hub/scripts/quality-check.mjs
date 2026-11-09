@@ -80,7 +80,10 @@ const roleMigration = read("supabase/migrations/20261109163325_use_auth_role_for
 assert.ok(roleMigration.includes("auth.role()") && roleMigration.includes("create_telegram_developer_api_key") && roleMigration.includes("DROP FUNCTION app_private.is_trusted_supabase_server_call()"), "Server-only RPCs must use auth.role() and remove the temporary API-key header helper.");
 assert.ok(["TELEGRAM_BOT_TOKEN","BINANCE_API_KEY","BINANCE_API_SECRET"].every(name => serverFn.includes(name)), "Server function must fall back to existing Supabase Edge Function environment secrets.");
 assert.ok(serverFn.includes(String.raw`/^https:\/\//i`), "Health and Telegram setup must accept standard HTTPS URLs.");
-const mini = read("app/miniapp/page.tsx");
+const mini = read("app/miniapp/legacy-page.tsx");
+const demo = read("components/miniapp/verifier-demo.tsx");
+assert.ok(demo.includes("Pre-purchase verification") && demo.includes("USDT BEP20") && demo.includes("Plagaiscans"), "Verifier demo must include gated verification, crypto checkout and mock customer identity.");
+assert.ok(demo.includes("AnimatePresence") && demo.includes("layoutId") && demo.includes("NEXT_PUBLIC_SUPPORT_URL") === false, "Verifier demo must include animated interactions and use a configured support fallback.");
 const navStart = mini.indexOf('<nav className="mini-bottom-nav"');
 assert.ok(navStart > mini.indexOf('</div><nav className="mini-bottom-nav"'), "Primary navigation must sit outside the scrollable Mini App content.");
 assert.ok(mini.includes('aria-label="Main navigation"') && (mini.match(/className=\{activeTab===/g) || []).length >= 3, "All three persistent navigation destinations must remain available.");
