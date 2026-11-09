@@ -27,7 +27,11 @@ try {
   for (const tab of ["Store", "Orders", "Profile"]) {
     const button = mainNav.getByRole("button", { name: new RegExp(tab, "i") });
     await button.click();
-    await page.waitForFunction((element) => element?.getAttribute("aria-current") === "page", await button.elementHandle(), { timeout: 3000 }).catch(async () => {
+    await page.waitForFunction((label) => {
+      const buttons = [...document.querySelectorAll('nav[aria-label="Main navigation"] button')];
+      const target = buttons.find((item) => item.textContent?.trim().toLowerCase() === label.toLowerCase());
+      return target?.getAttribute("aria-current") === "page";
+    }, tab, { timeout: 3000 }).catch(async () => {
       throw new Error(tab + " navigation did not become active; aria-current=" + await button.getAttribute("aria-current"));
     });
   }
