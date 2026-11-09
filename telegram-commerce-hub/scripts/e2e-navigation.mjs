@@ -58,7 +58,7 @@ try {
   if (tabletOverflow) throw new Error("Mini App has horizontal overflow at 768px viewport.");
 
   await page.setViewportSize({ width: 390, height: 844 });
-  const themes = ["ocean","rose","emerald","graphite","lavender","crimson","arctic","gold","midnight","cyber"];
+  const themes = ["aurum","eclipse","aurora","sakura","monolith","verdant","glacier","solstice","neon-forge","porcelain"];
   for (const theme of themes) {
     const draft = encodeURIComponent(JSON.stringify({ miniapp_theme: theme, miniapp_config: { enable3D: false } }));
     await page.goto(base + "/miniapp?demo=1&draftPreview=" + draft, { waitUntil: "domcontentloaded" });
