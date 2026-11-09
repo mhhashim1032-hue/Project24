@@ -10,7 +10,8 @@ const cors = {
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: cors });
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const secretKeysRaw = Deno.env.get("SUPABASE_SECRET_KEYS");
-const serviceKey = secretKeysRaw ? JSON.parse(secretKeysRaw).default : Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+// These Vault RPCs explicitly require the legacy service_role JWT claim. Prefer the platform-injected legacy key while the database guards use that claim; the newer sb_secret key is not a JWT.
+const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || (secretKeysRaw ? JSON.parse(secretKeysRaw).default : "");
 const admin = createClient(supabaseUrl, serviceKey!, { auth: { persistSession: false, autoRefreshToken: false } });
 
 function fromHex(hex: string) { return new Uint8Array(hex.match(/.{1,2}/g)!.map(x => parseInt(x, 16))); }
@@ -366,6 +367,24 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "METHOD_NOT_ALLOWED" }, 405);
   try {
+    const body = await req.json();
+    const action = String(body.action || "");
+    if (action === "health") {
+      const [settingsResult, telegramResult, binanceKeyResult, binanceSecretResult] = await Promise.all([
+        admin.from("bot_settings").select("id").eq("id", 1).maybeSingle(),
+        admin.rpc("admin_get_payment_secret", { p_name: "telegram_bot_token" }),
+        admin.rpc("admin_get_payment_secret", { p_name: "binance_api_key" }),
+        admin.rpc("admin_get_payment_secret", { p_name: "binance_api_secret" }),
+      ]);
+      const checks = {
+        databaseConfigured: !settingsResult.error && Boolean(settingsResult.data),
+        secretVaultReachable: !telegramResult.error,
+        telegramConfigured: !telegramResult.error && typeof telegramResult.data === "string" && telegramResult.data.length > 0,
+        binanceConfigured: !binanceKeyResult.error && !binanceSecretResult.error && Boolean(binanceKeyResult.data && binanceSecretResult.data),
+      };
+      const ok = checks.databaseConfigured && checks.secretVaultReachable && checks.telegramConfigured;
+      return json({ ok, status: ok ? "ready" : "degraded", checks, functionVersion: 63 }, ok ? 200 : 503);
+    }
     const rawInitData = req.headers.get("x-telegram-init-data") || "";
     if (!rawInitData) return json({ error: "TELEGRAM_INIT_DATA_REQUIRED" }, 401);
     const { data: settings, error: settingsError } = await admin.from("bot_settings").select("*").eq("id", 1).single();
@@ -386,8 +405,6 @@ Deno.serve(async (req: Request) => {
     if (customerError || !customer) return json({ error: "PROFILE_CREATE_FAILED" }, 500);
     if (customer.is_blocked) return json({ error: "ACCOUNT_BLOCKED" }, 403);
 
-    const body = await req.json();
-    const action = String(body.action || "");
     const { error: expiryError } = await admin.rpc("expire_telegram_orders");
     if (expiryError) console.error("Expired order cleanup failed", expiryError);
     const needsChannel = ["create_order","pay_with_wallet","verify_usdt_onchain","refresh_onchain_payment","verify_payment","refresh_payment","resume_order","submit_wallet_recharge","refresh_wallet_recharge"].includes(action);

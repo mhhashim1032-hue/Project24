@@ -127,7 +127,11 @@ export default function VerifierMascotScene({ className = '', compact = false }:
 
     let frame = 0;
     let raf = 0;
+    let inView = false;
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const draw = () => renderer.render(scene, camera);
     const animate = () => {
+      if (!inView || document.hidden || motionQuery.matches) return;
       raf = window.requestAnimationFrame(animate);
       frame += 0.008;
       mascot.rotation.y = Math.sin(frame * 0.65) * 0.16;
@@ -135,9 +139,21 @@ export default function VerifierMascotScene({ className = '', compact = false }:
       shield.rotation.y = Math.sin(frame * 1.2) * 0.12;
       orbit.rotation.z = frame * 0.12;
       token.rotation.z = frame * 0.8;
-      renderer.render(scene, camera);
+      draw();
     };
-    animate();
+    const syncMotion = () => {
+      window.cancelAnimationFrame(raf);
+      if (inView) { draw(); if (!document.hidden && !motionQuery.matches) animate(); }
+    };
+    const visibility = new IntersectionObserver((entries) => {
+      inView = Boolean(entries[0]?.isIntersecting);
+      syncMotion();
+    }, { threshold: 0.05 });
+    visibility.observe(host);
+    const onVisibilityChange = () => syncMotion();
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    motionQuery.addEventListener?.('change', syncMotion);
+    draw();
 
     const resize = () => {
       if (!host) return;
@@ -153,6 +169,9 @@ export default function VerifierMascotScene({ className = '', compact = false }:
     return () => {
       window.cancelAnimationFrame(raf);
       observer.disconnect();
+      visibility.disconnect();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      motionQuery.removeEventListener?.('change', syncMotion);
       scene.traverse((object) => {
         if (object instanceof THREE.Mesh) {
           object.geometry.dispose();

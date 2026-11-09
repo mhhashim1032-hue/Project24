@@ -30,10 +30,19 @@ export default function AdsShowcaseScene() {
     const rim=new THREE.Mesh(new THREE.TorusGeometry(.57,.055,12,40),orange);rim.rotation.y=Math.PI/2;rim.position.x=-.45;megaphone.add(rim);
     const handle=new THREE.Mesh(new THREE.BoxGeometry(.17,.48,.18),black);handle.position.set(.05,-.52,0);megaphone.add(handle);
     const ring=new THREE.Mesh(new THREE.TorusGeometry(1.85,.012,8,80),new THREE.MeshBasicMaterial({color:0x6ca7ee,transparent:true,opacity:.45}));ring.rotation.x=.9;scene.add(ring);
-    let frame=0,raf=0;
-    const animate=()=>{raf=requestAnimationFrame(animate);frame+=.009;group.rotation.y=Math.sin(frame*.7)*.16;group.position.y=Math.sin(frame)*.08;megaphone.rotation.y=Math.sin(frame*1.2)*.12;ring.rotation.z=frame*.12;renderer.render(scene,camera)};animate();
+    let frame=0,raf=0,inView=false;
+    const motionQuery=window.matchMedia('(prefers-reduced-motion: reduce)');
+    const draw=()=>renderer.render(scene,camera);
+    const animate=()=>{if(!inView||document.hidden||motionQuery.matches)return;raf=requestAnimationFrame(animate);frame+=.009;group.rotation.y=Math.sin(frame*.7)*.16;group.position.y=Math.sin(frame)*.08;megaphone.rotation.y=Math.sin(frame*1.2)*.12;ring.rotation.z=frame*.12;draw()};
+    const syncMotion=()=>{cancelAnimationFrame(raf);if(inView){draw();if(!document.hidden&&!motionQuery.matches)animate()}};
+    const visibility=new IntersectionObserver(entries=>{inView=Boolean(entries[0]?.isIntersecting);syncMotion()},{threshold:.05});
+    visibility.observe(host);
+    const onVisibilityChange=()=>syncMotion();
+    document.addEventListener('visibilitychange',onVisibilityChange);
+    motionQuery.addEventListener?.('change',syncMotion);
+    draw();
     const obs=new ResizeObserver(()=>{const width=Math.max(1,host.clientWidth),height=Math.max(1,host.clientHeight);camera.aspect=width/height;camera.updateProjectionMatrix();renderer.setSize(width,height)});obs.observe(host);
-    return()=>{cancelAnimationFrame(raf);obs.disconnect();scene.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>m.dispose())}});renderer.dispose();renderer.domElement.remove()};
+    return()=>{cancelAnimationFrame(raf);obs.disconnect();visibility.disconnect();document.removeEventListener('visibilitychange',onVisibilityChange);motionQuery.removeEventListener?.('change',syncMotion);scene.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>m.dispose())}});renderer.dispose();renderer.domElement.remove()};
   },[]);
   return <div ref={hostRef} className="gf-ads-scene" role="img" aria-label="Animated 3D yellow duck holding a megaphone"/>
 }

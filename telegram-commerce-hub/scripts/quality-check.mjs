@@ -1,0 +1,76 @@
+import fs from "node:fs";
+import path from "node:path";
+import assert from "node:assert/strict";
+
+const read = (file) => fs.readFileSync(path.join(process.cwd(), file), "utf8");
+const css = read("app/globals.css");
+const themes = ["ocean","rose","emerald","graphite","lavender","crimson","arctic","gold","midnight","cyber"];
+function rgb(hex) {
+  let value = hex.replace("#", "");
+  if (value.length === 3) value = [...value].map((c) => c + c).join("");
+  assert.match(value, /^[0-9a-f]{6}$/i, "Invalid palette color: " + hex);
+  return value.match(/../g).map((part) => parseInt(part, 16) / 255);
+}
+function luminance(hex) {
+  return rgb(hex).map((v) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+    .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+}
+function contrast(a, b) {
+  const x = luminance(a), y = luminance(b);
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+}
+for (const theme of themes) {
+  const matches = [...css.matchAll(new RegExp("\\.mini-shell\\.theme-" + theme + "\\s*\\{([^}]+)\\}", "g"))];
+  const match = matches.find((candidate) => candidate[1].includes("--gf-bg"));
+  assert.ok(match, "Missing semantic palette variables for theme: " + theme);
+  const vars = Object.fromEntries([...match[1].matchAll(/--gf-([a-z]+):\s*(#[0-9a-f]{3,6})/gi)].map((m) => [m[1], m[2]]));
+  for (const key of ["bg","surface","text","muted","border","accent","soft"]) assert.ok(vars[key], theme + " is missing --gf-" + key);
+  assert.ok(contrast(vars.text, vars.surface) >= 4.5, theme + " primary text fails WCAG AA");
+  assert.ok(contrast(vars.muted, vars.surface) >= 4.5, theme + " muted text fails WCAG AA");
+  const buttonText = theme === "midnight" || theme === "cyber" ? "#101827" : "#ffffff";
+  assert.ok(contrast(buttonText, vars.accent) >= 4.5, theme + " primary button fails WCAG AA");
+}
+for (const required of [".mini-profile-telegram-id", ".mini-profile-metrics", ".mini-profile-action", ".mini-wallet", ".storefront-picker"]) {
+  assert.ok(css.includes(required), "Missing shared component theme rule: " + required);
+}
+for (const scene of [
+  "components/miniapp/verifier-mascot-scene.tsx",
+  "components/miniapp/payment-token-scene.tsx",
+  "components/miniapp/ads-showcase-scene.tsx",
+]) {
+  const source = read(scene);
+  for (const feature of ["IntersectionObserver", "document.hidden", "prefers-reduced-motion", "geometry.dispose()", "renderer.dispose()"]) {
+    assert.ok(source.includes(feature), scene + " is missing " + feature);
+  }
+}
+const routes = {
+  "app/api/health/route.ts": ["GET"],
+  "app/api/admin/payment-secrets/route.ts": ["GET","POST"],
+  "app/api/admin/payment-qr/route.ts": ["POST"],
+  "app/api/admin/broadcast/route.ts": ["POST"],
+  "app/api/telegram/setup/route.ts": ["POST"],
+  "app/api/telegram/webhook/route.ts": ["POST"],
+  "app/api/developer/v1/catalog/route.ts": ["GET","OPTIONS"],
+};
+for (const [file, methods] of Object.entries(routes)) {
+  const source = read(file);
+  for (const method of methods) assert.ok(source.includes("export async function " + method), file + " is missing " + method);
+  assert.ok(source.includes("invokeGoldFeatherServer"), file + " must use the Supabase server bridge");
+  assert.ok(!source.includes("SUPABASE_SERVICE_ROLE_KEY"), file + " must not depend on a Vercel service-role secret");
+}
+const config = read("supabase/config.toml");
+assert.ok(config.includes("[functions.gold-feather-server]") && config.includes("verify_jwt = false"), "Server Edge Function must use explicit custom authentication.");
+assert.ok(config.includes("[functions.gold-feather-commerce]") && config.includes("verify_jwt = false"), "Commerce Edge Function must validate Telegram initData itself.");
+const serverFn = read("supabase/functions/gold-feather-server/index.ts");
+for (const action of ["health","admin_get_payment_secrets","admin_set_payment_secrets","admin_upload_payment_qr","admin_broadcast","admin_telegram_setup","telegram_webhook","developer_catalog"]) {
+  assert.ok(serverFn.includes('action === "' + action + '"'), "Missing server action: " + action);
+}
+assert.ok(serverFn.includes('Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")'), "Server function must prefer Supabase's service-role runtime secret");
+const packageJson = JSON.parse(read("package.json"));
+assert.ok(String(packageJson.dependencies.xlsx).includes("cdn.sheetjs.com/xlsx-0.20.3"), "Use the patched official SheetJS 0.20.3 package source.");
+const adminSource = read("app/admin/page.tsx");
+assert.ok((adminSource.match(/cellFormula:false/g) || []).length >= 2 && adminSource.includes("sheetRows:20000"), "Spreadsheet imports must disable formulas/HTML and cap parsed rows.");
+const mini = read("app/miniapp/page.tsx");
+assert.ok(mini.includes("next/dynamic") && mini.includes("ssr: false"), "3D scenes must be split into lazy client chunks.");
+for (const tab of ["Store","Orders","Profile"]) assert.ok(mini.includes(tab), "Mini App navigation label missing: " + tab);
+console.log("Quality checks passed: 10 theme palettes (WCAG AA), profile/wallet/admin surfaces, 3D motion lifecycle, API routes and Supabase server actions.");
