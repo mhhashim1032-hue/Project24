@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
     "build": "next build",
-    "start": "next start -H 0.0.0.0"
+    "start": "next start -H 0.0.0.0",
+    "quality:check": "node scripts/quality-check.mjs",
+    "test:e2e": "node scripts/e2e-navigation.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
@@ -15,7 +17,7 @@
     "react-dom": "^19.1.0",
     "postcss": "8.5.32",
     "three": "^0.181.2",
-    "xlsx": "^0.18.5"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

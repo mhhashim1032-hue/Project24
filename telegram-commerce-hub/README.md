@@ -4,31 +4,32 @@ A premium software and subscription store with a Telegram bot, Telegram Mini App
 
 ## Infrastructure
 
-- Next.js 15 / React 19 / TypeScript admin dashboard on Render (Singapore)
-- Supabase PostgreSQL with Row Level Security and subscription records
-- Supabase Edge Function `gold-feather-commerce` for signed Telegram Mini App sessions, customer operations and payment verification
+- Next.js 15 / React 19 / TypeScript admin dashboard and Telegram Mini App on Vercel
+- SheetJS 0.20.3 from the official SheetJS CDN for spreadsheet import/export (avoids the stale, vulnerable npm-registry 0.18.5 package)
+- Supabase PostgreSQL with Row Level Security, Vault-backed credentials and subscription records
+- Supabase Edge Functions `gold-feather-commerce` (customer sessions, checkout and payment verification) and `gold-feather-server` (admin server operations, webhook, health and developer API)
 - Telegram Bot API webhook and Mini App
 - Binance personal-account Pay Trade History API (read-only USER_DATA permission)
 
 ## App URLs
 
-- Admin dashboard: https://nova-telegram-commerce.onrender.com
-- Telegram Mini App: https://nova-telegram-commerce.onrender.com/miniapp
-- Health: https://nova-telegram-commerce.onrender.com/api/health
+- Admin dashboard: https://gold-feather-premium.vercel.app/admin
+- Telegram Mini App: https://gold-feather-premium.vercel.app/miniapp
+- Health: https://gold-feather-premium.vercel.app/api/health
 
-The Render service hostname is still the technical `nova-telegram-commerce` hostname; the product branding displayed to customers is **Gold Feather Premium**. A custom domain can be connected later by updating `APP_URL`.
+The canonical Vercel hostname is `gold-feather-premium.vercel.app`; the product branding displayed to customers is **Gold Feather Premium**. Update `APP_URL` if the canonical domain changes.
 
 ## Telegram bot activation
 
 1. Create the bot with **@BotFather**.
 2. Sign in to the admin dashboard and open **Bot & Store → Encrypted bot & payment credentials**.
 3. Paste the main Telegram bot token from BotFather and save it. The token is encrypted in Supabase Vault and is never returned to the browser.
-4. Keep `TELEGRAM_WEBHOOK_SECRET`, `APP_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and the Supabase public key configured in the Vercel project. `TELEGRAM_BOT_TOKEN` may remain configured as a server-side fallback during migration.
-5. Configure the webhook and Mini App menu button using the protected Telegram setup endpoint, then send `/start` to the bot.
+4. Keep only `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `APP_URL` in the Vercel project. The server-role credential and Telegram/Binance secrets are read inside Supabase Edge Functions and Supabase Vault; do not copy them into Vercel or the browser.
+5. In the admin dashboard, use **Bot & Store → Configure Telegram** to register the webhook and Mini App menu button, then send `/start` to the bot.
 
 The bot username (the `@username`) is controlled by BotFather and cannot be renamed through the Bot API. Save the correct username in the admin dashboard so referral links point to the right bot.
 
-The Mini App authenticates Telegram users using signed `initData`: Telegram's Ed25519 verification is preferred, with standard Bot-token HMAC validation as a compatibility fallback. The Edge Function reads the token from Supabase Vault first and falls back to its `TELEGRAM_BOT_TOKEN` Edge Function secret. It does not trust the browser's `initDataUnsafe`. Customer registration is automatic when the Mini App opens.
+The Mini App authenticates Telegram users using signed `initData`: Telegram's Ed25519 verification is preferred, with standard Bot-token HMAC validation as a compatibility fallback. The Edge Functions read the token from Supabase Vault. The webhook secret is retained from the Supabase Edge Function environment when configured; otherwise it is deterministically derived from the Vault-held bot token during setup. The Next.js API routes proxy authenticated admin work to the Edge Function and do not require a Vercel service-role key. The commerce function does not trust the browser's `initDataUnsafe`. Customer registration is automatic when the Mini App opens.
 
 Telegram shares the fields available in the Telegram profile: Telegram ID, first/last name, username, language, optional profile photo and premium status. Telegram does not automatically share email or phone number.
 
@@ -102,18 +103,14 @@ where p.id = u.id
 
 - Supabase RLS is enabled; security advisor reports no security lints.
 - Telegram Mini App requests are signed and validated server-side.
-- The Edge Function uses Supabase's server-side service role; no service-role key is shipped to the browser.
+- Supabase Edge Functions use the platform's server-side service-role credential; no service-role key is stored in Vercel or shipped to the browser.
 - Customer profiles and payment claims are not directly readable by anonymous users.
-- Internal Render-to-Supabase bot-ID synchronization uses a server-only secret.
+- Privileged admin API operations are executed by the Supabase `gold-feather-server` Edge Function after validating the signed-in admin session; Vercel does not hold a service-role key.
 - Telegram bot token and Binance API credentials are stored in Supabase Vault when configured through the admin dashboard; server-side environment secrets remain fallback options.
 - Product delivery payloads are stored in an admin-only table.
 - No Binance trading or withdrawal permission is required.
 
 ## Remaining activation steps
 
-The infrastructure, database, dashboard, Mini App, bot webhook, Edge Function and verification logic are deployed. Live Telegram registration requires `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `APP_URL`, `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in Render. Automatic Binance verification requires the read-only API key and secret saved in the admin Vault panel (or configured as Edge Function fallback secrets) and the receiving Pay ID in the admin dashboard. The first admin account must also be created and promoted using the SQL above.
+The infrastructure, database, dashboard, Mini App and payment-verification logic are in place. Configure the Telegram bot token in the admin Vault panel, set `APP_URL` in Vercel, and use **Configure Telegram** in the admin dashboard. No Supabase service-role key or Telegram bot token is required in Vercel. Automatic Binance verification requires the read-only API key and secret saved in the admin Vault panel and the receiving Pay ID in the admin dashboard. The first admin account must also be created and promoted using the SQL above.
 \n\n## Commerce extensions added\n\nA follow-up migration adds product warranty duration, per-plan quantity-discount configuration, an auditable stock adjustment ledger, wallet transaction ledger, refund requests and warranty claims. Admin stock adjustments and wallet credits are restricted to authenticated admins; warranty claims are accepted only for paid/fulfilled orders while the product warranty is active. The admin and Mini App screens still need to be wired to all these workflows before they are customer-ready.\n
-
-## Render deployment target
-
-The production Render web service `nova-telegram-commerce` must deploy this project from the `main` branch using `telegram-commerce-hub` as its Docker build context and `telegram-commerce-hub/Dockerfile` as its Dockerfile. After every source update, verify that the live Render deploy commit matches the GitHub `main` commit before treating the change as production-ready. The `/api/health` endpoint confirms process health only; it does not replace checkout and Mini App smoke tests.

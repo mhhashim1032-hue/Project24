@@ -1661,3 +1661,56 @@
 /* Primary CTA contrast: dark palettes use dark foreground on luminous accents */
 .mini-shell.theme-midnight .mini-primary,
 .mini-shell.theme-cyber .mini-primary{color:#101827!important}
+
+
+/* Premium interaction polish with GPU-friendly transforms and reduced-motion support. */
+.mini-shell .mini-wallet,.mini-shell .mini-wallet-card,.mini-shell .mini-checkout-summary,
+.mini-shell .mini-payid,.mini-shell .mini-recharge-option,.mini-shell .mini-profile-action,
+.admin-app-shell .storefront-picker{
+  background:var(--gf-surface, #fff);color:var(--gf-text, #202b3b);
+  border:1px solid var(--gf-border, #e3e7ed);border-radius:16px;
+}
+.mini-shell .mini-wallet h1,.mini-shell .mini-wallet h2,.mini-shell .mini-wallet h3,
+.mini-shell .mini-wallet b,.mini-shell .mini-wallet strong{color:var(--gf-text)}
+.mini-shell .mini-wallet p,.mini-shell .mini-wallet small{color:var(--gf-muted)}
+.mini-shell .mini-wallet input,.mini-shell .mini-wallet select{background:var(--gf-surface);color:var(--gf-text);border-color:var(--gf-border)}
+.admin-app-shell .storefront-picker{padding:14px;box-shadow:0 8px 24px #1111110a}
+.mini-shell .mini-content{animation:gf-screen-enter .28s cubic-bezier(.2,.7,.25,1) both}
+.mini-shell .mini-product,.mini-shell .mini-freebie-card,.mini-shell .mini-profile-action,
+.mini-shell .mini-wallet-card,.mini-shell .mini-checkout-summary,.mini-shell .mini-payid{
+  transition:transform .2s cubic-bezier(.2,.7,.25,1),box-shadow .2s ease,border-color .2s ease;
+}
+.mini-shell button,.mini-shell a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.mini-shell button:active,.mini-shell a:active{transform:scale(.985)}
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+  .mini-shell .mini-product:hover,.mini-shell .mini-freebie-card:hover,
+  .mini-shell .mini-profile-action:hover,.mini-shell .mini-wallet-card:hover{
+    transform:perspective(900px) translateY(-2px) rotateX(1deg);box-shadow:0 12px 28px #11111112;border-color:var(--gf-accent);
+  }
+}
+@keyframes gf-screen-enter{from{opacity:0;transform:translate3d(0,7px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+.gf-verifier-scene canvas,.gf-payment-scene canvas,.gf-ads-scene canvas{display:block;width:100%;height:100%;touch-action:pan-y}
+@media (prefers-reduced-motion:reduce){
+  .mini-shell .mini-content{animation:none!important}
+  .mini-shell *{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
+
+.mini-shell .mini-hero-art,.mini-shell .gf-verifier-scene,.mini-shell .gf-payment-scene,.mini-shell .gf-ads-scene{transform-style:preserve-3d;perspective:1000px}
+.mini-shell .mini-primary{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+  .mini-shell .mini-primary:hover{filter:brightness(1.06);box-shadow:0 8px 24px color-mix(in srgb,var(--gf-accent) 22%,transparent)}
+}
+
+/* Keep mobile rendering fluid: translucent overlays remain, while frequently painted chrome/cards use solid surfaces. */
+@media (max-width:640px){
+  .mini-shell .mini-header,.mini-shell .mini-bottom-nav,.mini-shell .mini-product,
+  .mini-shell .mini-design-ribbon,.mini-shell .design-product,.mini-shell .mini-catalog-search{
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  }
+}
+@media (max-width:768px){
+  .admin-app-shell .topbar,.admin-app-shell .sidebar{
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  }
+}
+.gf-scene-loading{width:100%;height:100%;min-height:96px;display:grid;place-items:center;border-radius:18px;background:var(--gf-soft,#e9edf3);color:var(--gf-accent,#3974a7);font-weight:900;letter-spacing:.12em}

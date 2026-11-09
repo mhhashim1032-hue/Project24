@@ -1,10 +1,12 @@
 'use client';
 import {useCallback,useEffect,useState} from 'react';
+import dynamic from 'next/dynamic';
 import {ArrowLeft,ArrowRight,CheckCircle2,Clock3,Copy,Package,Pencil,Share2,ShieldCheck,ShoppingBag,Trash2,UserRound,Wallet,XCircle} from 'lucide-react';
 import {supabase} from '@/lib/supabase';
-import VerifierMascotScene from '@/components/miniapp/verifier-mascot-scene';
-import PaymentTokenScene from '@/components/miniapp/payment-token-scene';
-import AdsShowcaseScene from '@/components/miniapp/ads-showcase-scene';
+const SceneFallback = () => <div className="gf-scene-loading" aria-hidden="true">GF</div>;
+const VerifierMascotScene = dynamic(() => import('@/components/miniapp/verifier-mascot-scene'), { ssr: false, loading: SceneFallback });
+const PaymentTokenScene = dynamic(() => import('@/components/miniapp/payment-token-scene'), { ssr: false, loading: SceneFallback });
+const AdsShowcaseScene = dynamic(() => import('@/components/miniapp/ads-showcase-scene'), { ssr: false, loading: SceneFallback });
 declare global{interface Window{Telegram?:{WebApp:{initData:string;ready:()=>void;expand:()=>void;downloadFile?:(params:{url:string;file_name:string},callback:(accepted:boolean)=>void)=>void;HapticFeedback?:{notificationOccurred:(s:string)=>void}}}}}
 type Plan={id:string;name:string;description?:string;price:number;currency:string;duration_days:number|null;stock:number|null;quantity_discount_tiers?:{min_quantity:number;discount_percent:number}[]};
 type Product={id:string;name:string;description:string;category:string;image_url?:string;product_plans:Plan[]};

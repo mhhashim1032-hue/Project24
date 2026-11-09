@@ -54,23 +54,35 @@ export default function PaymentTokenScene({ mode = 'coins', className = '' }: Pr
       const coin = new THREE.Mesh(new THREE.CylinderGeometry(.27,.27,.1,40), blue);
       coin.rotation.x = Math.PI/2; coin.position.set(.9,.8,.25); group.add(coin);
     }
-    let frame = 0, raf = 0;
+    let frame = 0, raf = 0, inView = false;
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const draw = () => renderer.render(scene, camera);
     const animate = () => {
+      if (!inView || document.hidden || motionQuery.matches) return;
       raf = requestAnimationFrame(animate); frame += .009;
       group.rotation.y = Math.sin(frame*.65)*.2;
       group.rotation.x = Math.sin(frame*.4)*.06;
       group.position.y = Math.sin(frame)*.07;
       group.children.forEach((child, i) => { if(mode==='coins') child.rotation.y += .003 + i*.001; });
-      renderer.render(scene,camera);
+      draw();
     };
-    animate();
+    const syncMotion = () => {
+      cancelAnimationFrame(raf);
+      if (inView) { draw(); if (!document.hidden && !motionQuery.matches) animate(); }
+    };
+    const visibility = new IntersectionObserver((entries) => { inView = Boolean(entries[0]?.isIntersecting); syncMotion(); }, { threshold: 0.05 });
+    visibility.observe(host);
+    const onVisibilityChange = () => syncMotion();
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    motionQuery.addEventListener?.('change', syncMotion);
+    draw();
     const observer = new ResizeObserver(() => {
       const width = Math.max(1,host.clientWidth), height = Math.max(1,host.clientHeight);
       camera.aspect = width/height; camera.updateProjectionMatrix(); renderer.setSize(width,height);
     });
     observer.observe(host);
     return () => {
-      cancelAnimationFrame(raf); observer.disconnect();
+      cancelAnimationFrame(raf); observer.disconnect(); visibility.disconnect(); document.removeEventListener('visibilitychange', onVisibilityChange); motionQuery.removeEventListener?.('change', syncMotion);
       scene.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>m.dispose())}});
       renderer.dispose(); renderer.domElement.remove();
     };
