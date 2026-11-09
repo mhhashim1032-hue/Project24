@@ -1,8 +1,7 @@
 import { LegacyMiniApp } from './legacy-page';
-import VerifierDemo from '@/components/miniapp/verifier-demo';
 
-export default async function MiniAppPage({ searchParams }: { searchParams: Promise<{ demo?: string }> }) {
-  const params = await searchParams;
-  if (params?.demo === '1' || process.env.NODE_ENV === 'development') return <VerifierDemo />;
+export default function MiniAppPage() {
+  // The production route always uses the authenticated, Supabase-backed customer app.
+  // The standalone VerifierDemo remains a design reference only; it is never served to customers.
   return <LegacyMiniApp />;
 }
