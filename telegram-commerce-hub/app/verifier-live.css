@@ -123,3 +123,78 @@
  .mini-shell.verifier-app .gf-product-info { padding:10px; }
  .mini-shell.verifier-app .gf-product-info h3 { font-size:12px; }
 }
+
+/* Product detail and secure checkout surfaces */
+.mini-shell.verifier-app .mini-panel { padding:18px; border-radius:21px; }
+.mini-shell.verifier-app .mini-back { display:inline-flex; align-items:center; gap:7px; margin:0 0 15px; padding:8px 11px; border:1px solid var(--v-line); border-radius:10px; background:#172436; color:#d9e5f5; font-size:11px; }
+.mini-shell.verifier-app .gf-detail-heading>span,.mini-shell.verifier-app .gf-checkout-brandline b,.mini-shell.verifier-app .mini-checkout-title small { color:#8ea7c6; font:700 9px "JetBrains Mono",monospace; letter-spacing:1.1px; }
+.mini-shell.verifier-app .gf-detail-heading h1,.mini-shell.verifier-app .mini-checkout-title h1 { margin:8px 0; font-size:clamp(24px,5vw,34px); letter-spacing:-.8px; }
+.mini-shell.verifier-app .gf-detail-heading p,.mini-shell.verifier-app .mini-checkout-title p { color:#9eacc0; font-size:12px; line-height:1.7; }
+.mini-shell.verifier-app .gf-detail-stage { position:relative; min-height:190px; margin:15px 0 20px; overflow:hidden; border:1px solid var(--v-line); border-radius:17px; background:radial-gradient(circle at 50% 45%,#314c6c,#172536 62%,#0d141f); }
+.mini-shell.verifier-app .gf-detail-stage img { max-width:100%; max-height:190px; object-fit:contain; }
+.mini-shell.verifier-app .gf-detail-medallion { color:#dceaff; background:linear-gradient(145deg,#667f9e,#1b2b40); border:1px solid #ffffff35; box-shadow:0 15px 35px #0008,inset 0 1px #ffffff55; }
+.mini-shell.verifier-app .gf-detail-plan-heading { display:flex; justify-content:space-between; align-items:center; gap:10px; margin:18px 0 10px; color:#edf4ff; }
+.mini-shell.verifier-app .gf-detail-plan-heading small { color:#8fa1b8; font-size:10px; }
+.mini-shell.verifier-app .mini-plan-list { display:grid; gap:8px; }
+.mini-shell.verifier-app .mini-plan-list .mini-plan { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; padding:13px; border:1px solid var(--v-line); border-radius:13px; background:#121d2b; color:#eaf1fb; text-align:left; }
+.mini-shell.verifier-app .mini-plan-list .mini-plan.active { border-color:#438df0; background:#172c46; box-shadow:0 0 0 1px #438df033; }
+.mini-shell.verifier-app .mini-plan-list .mini-plan b,.mini-shell.verifier-app .mini-plan-list .mini-plan small { display:block; }
+.mini-shell.verifier-app .mini-plan-list .mini-plan small { margin-top:5px; color:#8fa0b7; font-size:10px; }
+.mini-shell.verifier-app .mini-plan-list .mini-plan strong { color:#a8ceff; font-size:12px; white-space:nowrap; }
+.mini-shell.verifier-app .mini-step { margin:14px 0; padding:14px; border:1px solid var(--v-line); border-radius:13px; background:#121c29; color:#e7eef9; }
+.mini-shell.verifier-app .mini-step label,.mini-shell.verifier-app .mini-step p { color:#9eacc0; font-size:11px; }
+.mini-shell.verifier-app .mini-checkout-panel { overflow:hidden; }
+.mini-shell.verifier-app .gf-checkout-brandline { display:flex; align-items:center; gap:9px; margin:-18px -18px 17px; padding:13px 17px; border-bottom:1px solid var(--v-line); background:#111b29; }
+.mini-shell.verifier-app .gf-checkout-brandline>span { width:31px; height:31px; display:grid; place-items:center; border-radius:10px; background:linear-gradient(145deg,#34445b,#10151e); color:#f4f7fc; font-weight:900; }
+.mini-shell.verifier-app .gf-checkout-brandline div { flex:1; }
+.mini-shell.verifier-app .gf-checkout-brandline small { display:block; margin-top:3px; color:#7f91a9; font:600 8px "JetBrains Mono",monospace; letter-spacing:1px; }
+.mini-shell.verifier-app .gf-checkout-brandline>svg { color:#83b5ff; }
+.mini-shell.verifier-app .mini-checkout-summary { margin:15px 0; padding:16px; border:1px solid #3c82d955; border-radius:15px; background:linear-gradient(135deg,#172f4d,#111d2d); color:#fff; }
+.mini-shell.verifier-app .mini-checkout-summary strong { display:block; margin:8px 0; color:#fff; font-size:29px; letter-spacing:-1px; }
+.mini-shell.verifier-app .mini-checkout-summary strong small { color:#9db6d6; font-size:12px; }
+.mini-shell.verifier-app .mini-checkout-summary-top,.mini-shell.verifier-app .mini-checkout-countdown { display:flex; justify-content:space-between; align-items:center; gap:8px; color:#9fb3ce; font-size:10px; }
+.mini-shell.verifier-app .mini-checkout-section-head { display:flex; align-items:center; gap:10px; margin:19px 0 10px; color:#eef4fd; }
+.mini-shell.verifier-app .mini-checkout-section-head>span { width:27px; height:27px; display:grid; place-items:center; border-radius:8px; background:#1c3b60; color:#9fc8ff; font:700 10px "JetBrains Mono",monospace; }
+.mini-shell.verifier-app .mini-checkout-section-head small { display:block; margin-top:3px; color:#8fa0b7; font-size:10px; }
+.mini-shell.verifier-app .mini-payment-methods { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.mini-shell.verifier-app .mini-payment-methods button { min-width:0; padding:12px 7px; border:1px solid var(--v-line); border-radius:13px; background:#131e2c; color:#e8eff9; }
+.mini-shell.verifier-app .mini-payment-methods button.active { border-color:#438df0; background:#1a3452; box-shadow:inset 0 0 0 1px #438df033; }
+.mini-shell.verifier-app .mini-payment-methods button b,.mini-shell.verifier-app .mini-payment-methods button small { display:block; margin-top:5px; font-size:10px; }
+.mini-shell.verifier-app .mini-payment-methods button small { color:#8fa0b7; font-size:9px; }
+.mini-shell.verifier-app .mini-method-icon { display:grid; place-items:center; width:30px; height:30px; margin:0 auto; border-radius:9px; background:#203651; color:#a9ccff; }
+.mini-shell.verifier-app .mini-checkout-instructions,.mini-shell.verifier-app .mini-payment-revealed,.mini-shell.verifier-app .mini-payment-preconfirm { border:1px solid var(--v-line); border-radius:15px; background:#111c2a; color:#eaf1fb; }
+.mini-shell.verifier-app .mini-checkout-network-label span,.mini-shell.verifier-app .mini-payment-revealed-head span { color:#9fc6ff; font:700 9px "JetBrains Mono",monospace; letter-spacing:1px; }
+.mini-shell.verifier-app .mini-checkout-networks button { border:1px solid var(--v-line); border-radius:12px; background:#172536; color:#edf4fc; }
+.mini-shell.verifier-app .mini-checkout-networks button.active,.mini-shell.verifier-app .mini-checkout-networks button[aria-pressed=true] { border-color:#438df0; background:#1c3858; }
+.mini-shell.verifier-app .mini-payment-revealed { padding:14px; }
+.mini-shell.verifier-app .mini-checkout-address,.mini-shell.verifier-app .mini-payid { border:1px solid var(--v-line); border-radius:11px; background:#0b121c; color:#dce8f7; overflow-wrap:anywhere; }
+.mini-shell.verifier-app .mini-payment-live { border:1px solid var(--v-line); border-radius:16px; background:#111c2a; color:#edf4fc; }
+.mini-shell.verifier-app .mini-payment-live.is-success { border-color:#2d956c77; background:#102a25; }
+.mini-shell.verifier-app .mini-payment-live.is-problem { border-color:#a54c4c77; background:#2b171b; }
+.mini-shell.verifier-app .mini-payment-live-message,.mini-shell.verifier-app .mini-checkout-explain,.mini-shell.verifier-app .mini-payment-steps { color:#9eacc0; font-size:11px; line-height:1.65; }
+.mini-shell.verifier-app .mini-checkout-action,.mini-shell.verifier-app .mini-payment-check-now { width:100%; }
+.mini-shell.verifier-app .gf-methods-showcase,.mini-shell.verifier-app .gf-ads-builder { border:1px solid var(--v-line); border-radius:19px; background:linear-gradient(145deg,#17283b,#0d141e); color:#eef4fd; box-shadow:0 15px 35px #0005; }
+.mini-shell.verifier-app .gf-methods-showcase span,.mini-shell.verifier-app .gf-methods-showcase small,.mini-shell.verifier-app .gf-ads-builder p { color:#9baec5; }
+.mini-shell.verifier-app .gf-store-feature-list { display:grid; gap:9px; margin-top:14px; }
+.mini-shell.verifier-app .gf-feature-product { padding:14px; border:1px solid var(--v-line); border-radius:14px; background:#141f2d; color:#eef4fd; }
+.mini-shell.verifier-app .gf-feature-product small,.mini-shell.verifier-app .gf-feature-product p { color:#8fa0b7; }
+.mini-shell.verifier-app .gf-feature-product b { color:#f2f6fc; }
+.mini-shell.verifier-app .mini-orders-heading h1,.mini-shell.verifier-app .gf-balance-heading h1 { font-size:25px; letter-spacing:-.8px; }
+.mini-shell.verifier-app .mini-wallet-card,.mini-shell.verifier-app .mini-profile-metrics,.mini-shell.verifier-app .mini-profile-invite,.mini-shell.verifier-app .mini-freebies-hero,.mini-shell.verifier-app .mini-freebies-invite { border:1px solid var(--v-line); border-radius:15px; background:#141f2d; color:#eef4fd; }
+.mini-shell.verifier-app .mini-order-tabs button { border:1px solid var(--v-line); border-radius:10px; background:#141f2d; color:#a4b2c5; }
+.mini-shell.verifier-app .mini-order-tabs button.active { border-color:#438df0; background:#1a3452; color:#fff; }
+.mini-shell.verifier-app .mini-profile-clean-head { padding:16px; border:1px solid var(--v-line); border-radius:16px; background:linear-gradient(140deg,#1b2d43,#121a26); }
+.mini-shell.verifier-app .mini-avatar { border:1px solid #ffffff25; background:linear-gradient(145deg,#42658c,#17283c); color:#fff; }
+.mini-shell.verifier-app .mini-profile-metrics>div { border-color:var(--v-line); }
+.mini-shell.verifier-app .mini-profile-metrics b { color:#eaf2ff; }
+.mini-shell.verifier-app .mini-profile-invite-title b,.mini-shell.verifier-app .mini-profile-action b { color:#eef4fc; }
+.mini-shell.verifier-app .mini-freebie-card h3,.mini-shell.verifier-app .mini-freebies-hero h1 { color:#f4f7fc; }
+.mini-shell.verifier-app .mini-freebie-card p,.mini-shell.verifier-app .mini-freebies-hero p { color:#9aaac0; }
+.mini-shell.verifier-app .mini-language-overlay,.mini-shell.verifier-app .mini-recharge-overlay { background:rgba(0,0,0,.78); backdrop-filter:blur(10px); }
+.mini-shell.verifier-app .mini-language-dialog { border:1px solid var(--v-line); border-radius:21px; background:linear-gradient(145deg,#1b293b,#0d131d); color:#f4f7fc; }
+.mini-shell.verifier-app .mini-language-options button { border:1px solid var(--v-line); border-radius:12px; background:#141f2d; color:#eaf1fb; }
+.mini-shell.verifier-app .mini-language-options button b { color:#9fc6ff; }
+@media(max-width:420px) {
+ .mini-shell.verifier-app .mini-payment-methods { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .mini-shell.verifier-app .mini-panel { padding:14px; }
+}
