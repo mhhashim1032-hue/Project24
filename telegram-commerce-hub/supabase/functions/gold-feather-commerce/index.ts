@@ -640,12 +640,12 @@ Deno.serve(async (req: Request) => {
       if(!/^[0-9a-f-]{36}$/i.test(orderId))return json({error:"INVALID_ORDER_ID"},400);
       const {data,error}=await admin.rpc("cancel_telegram_order",{p_order_id:orderId,p_customer_id:customer.id});
       if(error)return json({error:error.message||"ORDER_CANCEL_FAILED"},409);
-      return json({ok:true,...data,status:fulfillment.data?.status||data.status});
+      return json({ok:true,...data});
     }
     if (action === 'pay_with_wallet') {
       const orderId=String(body.orderId||''); if(!orderId)return json({error:'ORDER_ID_REQUIRED'},400);
       const {data,error}=await admin.rpc('pay_telegram_order_from_wallet',{p_order_id:orderId,p_customer_id:customer.id});
-      if(error)return json({error:error.message||'WALLET_PAYMENT_FAILED'},400);const fulfillment=await admin.rpc('process_paid_telegram_order',{p_order_id:orderId});if(fulfillment.error)throw fulfillment.error;if(fulfillment.data?.status==='fulfillment_pending')await notifyCommerceEvent(settings,'MANUAL DELIVERY REQUIRED\\nOrder: '+(data.order_number||orderId)+'\\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\\nOpen Admin → Orders to complete delivery.'); await notifyCommerceEvent(settings,'Wallet order paid\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\nOrder: '+(data.order_number||orderId)); return json({ok:true,...data});
+      if(error)return json({error:error.message||'WALLET_PAYMENT_FAILED'},400);const fulfillment=await admin.rpc('process_paid_telegram_order',{p_order_id:orderId});if(fulfillment.error)throw fulfillment.error;if(fulfillment.data?.status==='fulfillment_pending')await notifyCommerceEvent(settings,'MANUAL DELIVERY REQUIRED\\nOrder: '+(data.order_number||orderId)+'\\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\\nOpen Admin → Orders to complete delivery.'); await notifyCommerceEvent(settings,'Wallet order paid\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\nOrder: '+(data.order_number||orderId)); return json({ok:true,...data,status:fulfillment.data?.status||data.status});
     }
     if (action === 'verify_usdt_onchain') {
       const orderId=String(body.orderId||''); const txHash=String(body.transactionHash||'').trim().toLowerCase();
