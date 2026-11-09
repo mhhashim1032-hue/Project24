@@ -1460,7 +1460,7 @@ body{overflow-x:clip}.mini-shell{--gf-button-text:#fff;isolation:isolate;positio
 .mini-shell{
   --mini-accent:var(--gf-accent)!important;
   --gf-scene-hue:0deg;
-  --gf-scene-filter:grayscale(1) contrast(1.22);
+  --gf-scene-filter:grayscale(1) sepia(.72) hue-rotate(var(--gf-scene-hue)) saturate(1.55) contrast(1.12);
   color:var(--gf-text)!important;
   background-color:var(--gf-bg)!important;
   background-image:var(--gf-backdrop)!important;
@@ -1468,14 +1468,14 @@ body{overflow-x:clip}.mini-shell{--gf-button-text:#fff;isolation:isolate;positio
 }
 .mini-shell.theme-aurum{--gf-bg:#f4f0e7;--gf-surface:#fffdf8;--gf-text:#30291f;--gf-muted:#655b4d;--gf-border:#ded4c3;--gf-accent:#826b48;--gf-soft:#ebe3d6;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#f4f0e7,#e9e1d3);--gf-scene-hue:35deg}
 .mini-shell.theme-eclipse{--gf-bg:#08090b;--gf-surface:#111316;--gf-text:#f1f2f3;--gf-muted:#aeb1b5;--gf-border:#303338;--gf-accent:#d5d7da;--gf-soft:#1b1e22;--gf-button-text:#08090b;--gf-backdrop:radial-gradient(ellipse at 50% -15%,#292c31 0%,transparent 48%),linear-gradient(155deg,#08090b,#101114 58%,#070809);--gf-scene-hue:0deg;--gf-scene-filter:grayscale(1) brightness(1.2) contrast(1.18)}
-.mini-shell.theme-aurora{--gf-bg:#f1f0f6;--gf-surface:#fbfaff;--gf-text:#282632;--gf-muted:#686575;--gf-border:#d8d5e2;--gf-accent:#716b87;--gf-soft:#e8e5ef;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#f1f0f6,#e6e3ed);--gf-scene-hue:255deg}
-.mini-shell.theme-sakura{--gf-bg:#f7eff1;--gf-surface:#fffafb;--gf-text:#382a30;--gf-muted:#78636b;--gf-border:#e4d3d9;--gf-accent:#956e7d;--gf-soft:#f0e3e8;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#f7eff1,#eddee4);--gf-scene-hue:330deg}
+.mini-shell.theme-aurora{--gf-bg:#f1f0f6;--gf-surface:#fbfaff;--gf-text:#282632;--gf-muted:#686575;--gf-border:#d8d5e2;--gf-accent:#716b87;--gf-soft:#e8e5ef;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#f1f0f6,#e6e3ed);--gf-scene-hue:245deg}
+.mini-shell.theme-sakura{--gf-bg:#f7eff1;--gf-surface:#fffafb;--gf-text:#382a30;--gf-muted:#78636b;--gf-border:#e4d3d9;--gf-accent:#956e7d;--gf-soft:#f0e3e8;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#f7eff1,#eddee4);--gf-scene-hue:300deg}
 .mini-shell.theme-monolith{--gf-bg:#ededeb;--gf-surface:#fafaf8;--gf-text:#171717;--gf-muted:#555552;--gf-border:#c9c9c4;--gf-accent:#30302e;--gf-soft:#e1e1dc;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#ededeb,#deded9);--gf-scene-hue:0deg}
-.mini-shell.theme-verdant{--gf-bg:#edf1ed;--gf-surface:#fafdfa;--gf-text:#203127;--gf-muted:#5c6d61;--gf-border:#ccd8cf;--gf-accent:#486653;--gf-soft:#e0e9e2;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#edf1ed,#dfe8e1);--gf-scene-hue:125deg}
-.mini-shell.theme-glacier{--gf-bg:#edf2f4;--gf-surface:#fbfdfe;--gf-text:#203039;--gf-muted:#5e7079;--gf-border:#cbd9df;--gf-accent:#557684;--gf-soft:#e0eaee;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#edf2f4,#dce7eb);--gf-scene-hue:190deg}
-.mini-shell.theme-solstice{--gf-bg:#f3eee9;--gf-surface:#fffaf6;--gf-text:#352b25;--gf-muted:#76675c;--gf-border:#dfd1c5;--gf-accent:#8a6b57;--gf-soft:#ebe0d7;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#f3eee9,#e9ded4);--gf-scene-hue:25deg}
-.mini-shell.theme-neon-forge{--gf-bg:#090b10;--gf-surface:#12151c;--gf-text:#f0f2f7;--gf-muted:#aab0bd;--gf-border:#303643;--gf-accent:#aeb9cf;--gf-soft:#1b202a;--gf-button-text:#090b10;--gf-backdrop:linear-gradient(145deg,#090b10,#141923);--gf-scene-hue:220deg}
-.mini-shell.theme-porcelain{--gf-bg:#eff1f3;--gf-surface:#fcfdfe;--gf-text:#26313a;--gf-muted:#62717c;--gf-border:#d2dce2;--gf-accent:#667c8a;--gf-soft:#e4eaee;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#eff1f3,#e0e7eb);--gf-scene-hue:205deg}
+.mini-shell.theme-verdant{--gf-bg:#edf1ed;--gf-surface:#fafdfa;--gf-text:#203127;--gf-muted:#5c6d61;--gf-border:#ccd8cf;--gf-accent:#486653;--gf-soft:#e0e9e2;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#edf1ed,#dfe8e1);--gf-scene-hue:100deg}
+.mini-shell.theme-glacier{--gf-bg:#edf2f4;--gf-surface:#fbfdfe;--gf-text:#203039;--gf-muted:#5e7079;--gf-border:#cbd9df;--gf-accent:#557684;--gf-soft:#e0eaee;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#edf2f4,#dce7eb);--gf-scene-hue:165deg}
+.mini-shell.theme-solstice{--gf-bg:#f3eee9;--gf-surface:#fffaf6;--gf-text:#352b25;--gf-muted:#76675c;--gf-border:#dfd1c5;--gf-accent:#8a6b57;--gf-soft:#ebe0d7;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#f3eee9,#e9ded4);--gf-scene-hue:0deg}
+.mini-shell.theme-neon-forge{--gf-bg:#090b10;--gf-surface:#12151c;--gf-text:#f0f2f7;--gf-muted:#aab0bd;--gf-border:#303643;--gf-accent:#aeb9cf;--gf-soft:#1b202a;--gf-button-text:#090b10;--gf-backdrop:linear-gradient(145deg,#090b10,#141923);--gf-scene-hue:190deg}
+.mini-shell.theme-porcelain{--gf-bg:#eff1f3;--gf-surface:#fcfdfe;--gf-text:#26313a;--gf-muted:#62717c;--gf-border:#d2dce2;--gf-accent:#667c8a;--gf-soft:#e4eaee;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#eff1f3,#e0e7eb);--gf-scene-hue:175deg}
 
 /* The same palette applies to every screen, including screens that previously
    contained hard-coded cream, gold, blue or white component backgrounds. */
