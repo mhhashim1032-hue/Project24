@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 const read = (file) => fs.readFileSync(path.join(process.cwd(), file), "utf8");
 const css = read("app/globals.css");
 const themes = ["light-gold","obsidian"];
-const themeSelectors = [...css.matchAll(/\\.mini-shell\\.theme-([a-z-]+)\\s*\\{/g)].map((m) => m[1]);
+const themeSelectors = [...css.matchAll(/\.mini-shell\.theme-([a-z-]+)\s*\{/g)].map((m) => m[1]);
 assert.deepEqual(themeSelectors, themes, "The Mini App must contain exactly two theme selectors.");
 function rgb(hex) {
   let value = hex.replace("#", "");
