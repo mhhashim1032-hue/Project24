@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const commit =
@@ -15,11 +15,11 @@ export async function GET() {
 
   return Response.json({
     ok: true,
-    service: "gold-feather-premium-commerce-os",
+    service: 'gold-feather-premium-commerce-os',
     gitCommit: commit,
     deployId: deploymentId,
     deploymentUrl,
-    platform: process.env.VERCEL ? "vercel" : process.env.RENDER ? "render" : "unknown",
+    platform: process.env.VERCEL ? 'vercel' : process.env.RENDER ? 'render' : 'unknown',
     timestamp: new Date().toISOString(),
-  });
+  }, { headers: { 'Cache-Control': 'no-store' } });
 }
