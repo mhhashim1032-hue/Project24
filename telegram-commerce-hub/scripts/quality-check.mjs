@@ -62,6 +62,8 @@ const config = read("supabase/config.toml");
 assert.ok(config.includes("[functions.gold-feather-server]") && config.includes("verify_jwt = false"), "Server Edge Function must use explicit custom authentication.");
 assert.ok(config.includes("[functions.gold-feather-commerce]") && config.includes("verify_jwt = false"), "Commerce Edge Function must validate Telegram initData itself.");
 const serverFn = read("supabase/functions/gold-feather-server/index.ts");
+const commerceFn = read("supabase/functions/gold-feather-commerce/index.ts");
+for (const [label, fn] of [["server", serverFn], ["commerce", commerceFn]]) assert.ok(fn.includes('apiKey.startsWith("sb_")') && fn.includes('headers.delete("authorization")'), label + " Edge Function must send new-format Supabase keys in apikey only, not as Bearer tokens.");
 for (const action of ["health","admin_get_payment_secrets","admin_set_payment_secrets","admin_upload_payment_qr","admin_broadcast","admin_telegram_setup","telegram_webhook","developer_catalog"]) {
   assert.ok(serverFn.includes('action === "' + action + '"'), "Missing server action: " + action);
 }
@@ -70,6 +72,10 @@ const packageJson = JSON.parse(read("package.json"));
 assert.ok(String(packageJson.dependencies.xlsx).includes("cdn.sheetjs.com/xlsx-0.20.3"), "Use the patched official SheetJS 0.20.3 package source.");
 const adminSource = read("app/admin/page.tsx");
 assert.ok((adminSource.match(/cellFormula:false/g) || []).length >= 2 && adminSource.includes("sheetRows:20000"), "Spreadsheet imports must disable formulas/HTML and cap parsed rows.");
+const roleMigration = read("supabase/migrations/20261109163325_use_auth_role_for_new_secret_key_server_calls.sql");
+assert.ok(roleMigration.includes("auth.role()") && roleMigration.includes("create_telegram_developer_api_key") && roleMigration.includes("DROP FUNCTION app_private.is_trusted_supabase_server_call()"), "Server-only RPCs must use auth.role() and remove the temporary API-key header helper.");
+assert.ok(["TELEGRAM_BOT_TOKEN","BINANCE_API_KEY","BINANCE_API_SECRET"].every(name => serverFn.includes(name)), "Server function must fall back to existing Supabase Edge Function environment secrets.");
+assert.ok(serverFn.includes(String.raw`/^https:\/\//i`), "Health and Telegram setup must accept standard HTTPS URLs.");
 const mini = read("app/miniapp/page.tsx");
 assert.ok(mini.includes("next/dynamic") && mini.includes("ssr: false"), "3D scenes must be split into lazy client chunks.");
 for (const tab of ["Store","Orders","Profile"]) assert.ok(mini.includes(tab), "Mini App navigation label missing: " + tab);

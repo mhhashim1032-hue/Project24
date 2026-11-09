@@ -12,15 +12,31 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
 const secretKeysRaw = Deno.env.get("SUPABASE_SECRET_KEYS");
 // These Vault RPCs explicitly require the legacy service_role JWT claim. Prefer the platform-injected legacy key while the database guards use that claim; the newer sb_secret key is not a JWT.
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || (secretKeysRaw ? JSON.parse(secretKeysRaw).default : "");
-const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+function createApiKeyFetch(apiKey: string): typeof fetch {
+  return async (input, init) => {
+    const requestHeaders = input instanceof Request ? input.headers : undefined;
+    const headers = new Headers(init?.headers ?? requestHeaders);
+    if (apiKey.startsWith("sb_") && headers.get("authorization") === `Bearer ${apiKey}`) {
+      headers.delete("authorization");
+    }
+    return fetch(input, { ...init, headers });
+  };
+}
+const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: createApiKeyFetch(serviceKey) } });
 const QR_FIELDS = new Set(["binance_pay_qr_url", "usdt_tron_qr_url", "usdt_bep20_qr_url"]);
 const MIME_EXT: Record<string, string> = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" };
 const BATCH_SIZE = 8;
 
+const secretEnvironmentFallbacks: Record<string, string> = {
+  telegram_bot_token: "TELEGRAM_BOT_TOKEN",
+  binance_api_key: "BINANCE_API_KEY",
+  binance_api_secret: "BINANCE_API_SECRET",
+};
 async function getSecret(name: string) {
   const { data, error } = await admin.rpc("admin_get_payment_secret", { p_name: name });
-  if (error) throw new Error("SECRET_VAULT_UNAVAILABLE");
-  return typeof data === "string" ? data : "";
+  if (!error && typeof data === "string" && data.length > 0) return data;
+  const fallbackName = secretEnvironmentFallbacks[name];
+  return fallbackName ? Deno.env.get(fallbackName) || "" : "";
 }
 async function setSecret(name: string, value: string) {
   const { error } = await admin.rpc("admin_set_payment_secret", { p_name: name, p_secret: value });
@@ -55,20 +71,24 @@ function b64ToBytes(value: string) {
   return Uint8Array.from(binary, c => c.charCodeAt(0));
 }
 async function health(appUrl: string) {
-  const [settings, telegramToken, binanceKey, binanceSecret] = await Promise.all([
+  const [settings, vaultProbe] = await Promise.all([
     admin.from("bot_settings").select("id").eq("id", 1).maybeSingle(),
     admin.rpc("admin_get_payment_secret", { p_name: "telegram_bot_token" }),
-    admin.rpc("admin_get_payment_secret", { p_name: "binance_api_key" }),
-    admin.rpc("admin_get_payment_secret", { p_name: "binance_api_secret" }),
   ]);
-  const token = typeof telegramToken.data === "string" ? telegramToken.data : "";
+  const telegramToken = typeof vaultProbe.data === "string" && vaultProbe.data.length > 0
+    ? vaultProbe.data
+    : Deno.env.get("TELEGRAM_BOT_TOKEN") || "";
+  const [binanceKey, binanceSecret] = await Promise.all([
+    getSecret("binance_api_key"),
+    getSecret("binance_api_secret"),
+  ]);
   const safeAppUrl = appUrl.replace(/\/$/, "");
   let webhookConfigured = false, menuButtonConfigured = false;
-  if (token && /^https:\/\/\//i.test(safeAppUrl)) {
+  if (telegramToken && /^https:\/\//i.test(safeAppUrl)) {
     try {
       const [webhook, menu] = await Promise.all([
-        telegram(token, "getWebhookInfo", {}),
-        telegram(token, "getChatMenuButton", {}),
+        telegram(telegramToken, "getWebhookInfo", {}),
+        telegram(telegramToken, "getChatMenuButton", {}),
       ]);
       webhookConfigured = String(webhook.url || "") === safeAppUrl + "/api/telegram/webhook";
       menuButtonConfigured = menu.type === "web_app" && String(menu.web_app?.url || "") === safeAppUrl + "/miniapp";
@@ -76,19 +96,19 @@ async function health(appUrl: string) {
   }
   const checks = {
     databaseConfigured: !settings.error && Boolean(settings.data),
-    secretVaultReachable: !telegramToken.error,
-    serviceRoleVerified: !telegramToken.error,
-    telegramConfigured: !telegramToken.error && token.length > 0,
-    binanceConfigured: !binanceKey.error && !binanceSecret.error && Boolean(binanceKey.data && binanceSecret.data),
-    appUrlConfigured: /^https:\/\/\//i.test(safeAppUrl),
+    secretVaultReachable: !vaultProbe.error,
+    serviceRoleVerified: !vaultProbe.error,
+    telegramConfigured: Boolean(telegramToken),
+    binanceConfigured: Boolean(binanceKey && binanceSecret),
+    appUrlConfigured: /^https:\/\//i.test(safeAppUrl),
     webhookConfigured,
     menuButtonConfigured,
-    customerRegistrationConfigured: !settings.error && !telegramToken.error,
-    miniAppConfigured: !settings.error && !telegramToken.error && token.length > 0,
+    customerRegistrationConfigured: !settings.error && !vaultProbe.error,
+    miniAppConfigured: Boolean(telegramToken && /^https:\/\//i.test(safeAppUrl) && webhookConfigured && menuButtonConfigured),
   };
-  const ok = checks.databaseConfigured && checks.secretVaultReachable && checks.telegramConfigured &&
-    checks.appUrlConfigured && checks.webhookConfigured && checks.menuButtonConfigured;
-  return json({ ok, status: ok ? "ready" : "degraded", checks, functionVersion: 1 }, ok ? 200 : 503);
+  const ok = checks.databaseConfigured && checks.secretVaultReachable && checks.serviceRoleVerified &&
+    checks.telegramConfigured && checks.appUrlConfigured && checks.webhookConfigured && checks.menuButtonConfigured;
+  return json({ ok, status: ok ? "ready" : "degraded", checks, functionVersion: 3 }, ok ? 200 : 503);
 }
 async function handleWebhook(req: Request, body: any) {
   const token = await getSecret("telegram_bot_token");
