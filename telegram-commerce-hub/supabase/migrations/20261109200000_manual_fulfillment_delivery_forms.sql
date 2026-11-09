@@ -3,9 +3,11 @@ alter table public.products
   add column if not exists delivery_form_schema jsonb not null default '[]'::jsonb;
 alter table public.products
   add column if not exists delivery_instructions text not null default '';
-alter table public.products
-  add constraint products_delivery_form_schema_array
-  check (jsonb_typeof(delivery_form_schema) = 'array');
+do $ begin
+  if not exists (select 1 from pg_constraint where conname='products_delivery_form_schema_array' and conrelid='public.products'::regclass) then
+    alter table public.products add constraint products_delivery_form_schema_array check (jsonb_typeof(delivery_form_schema) = 'array');
+  end if;
+end $;
 alter table public.orders
   add column if not exists delivery_form_schema jsonb not null default '[]'::jsonb;
 alter table public.orders
@@ -20,12 +22,14 @@ alter table public.orders
   add column if not exists delivery_completed_by uuid references auth.users(id);
 alter table public.orders
   add column if not exists delivery_updated_at timestamptz;
-alter table public.orders
-  add constraint orders_delivery_form_schema_array
-  check (jsonb_typeof(delivery_form_schema) = 'array');
-alter table public.orders
-  add constraint orders_delivery_form_data_object
-  check (jsonb_typeof(delivery_form_data) = 'object');
+do $ begin
+  if not exists (select 1 from pg_constraint where conname='orders_delivery_form_schema_array' and conrelid='public.orders'::regclass) then
+    alter table public.orders add constraint orders_delivery_form_schema_array check (jsonb_typeof(delivery_form_schema) = 'array');
+  end if;
+  if not exists (select 1 from pg_constraint where conname='orders_delivery_form_data_object' and conrelid='public.orders'::regclass) then
+    alter table public.orders add constraint orders_delivery_form_data_object check (jsonb_typeof(delivery_form_data) = 'object');
+  end if;
+end $;
 
 create or replace function public.process_paid_telegram_order(p_order_id uuid)
 returns jsonb language plpgsql security definer
