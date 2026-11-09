@@ -434,3 +434,17 @@ body:has(.mini-shell.verifier-app .mini-checkout-panel)::before {
     max-height:86dvh;
   }
 }
+
+/* Reliable touch targets and clear product actions in the live storefront. */
+.mini-shell.verifier-app .gf-product-tile { cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+.mini-shell.verifier-app .gf-product-open {
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  min-height:34px; padding:7px 10px; border:1px solid rgba(93,157,255,.35);
+  border-radius:10px; background:rgba(37,111,218,.16); color:#9fc6ff;
+  font-size:10px; font-weight:800; white-space:nowrap; cursor:pointer;
+  touch-action:manipulation; pointer-events:auto;
+}
+.mini-shell.verifier-app .gf-product-open:active { transform:scale(.97); background:rgba(37,111,218,.28); }
+.mini-shell.verifier-app .mini-profile-page { display:block!important; visibility:visible!important; opacity:1!important; min-height:180px; }
+.mini-shell.verifier-app .mini-profile-muted { color:#9aa9bd; font-size:12px; line-height:1.6; }
+.mini-shell.verifier-app .mini-profile-page .mini-primary { margin-top:14px; }
