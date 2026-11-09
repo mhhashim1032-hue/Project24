@@ -104,6 +104,6 @@ const verifierScene = read("components/miniapp/verifier-mascot-scene.tsx");
 const paymentScene = read("components/miniapp/payment-token-scene.tsx");
 const adsScene = read("components/miniapp/ads-showcase-scene.tsx");
 for (const [label, source] of [["verifier",verifierScene],["payment",paymentScene],["ads",adsScene]]) {
-  assert.ok(source.includes("renderer.render(scene, camera)") && source.includes("IntersectionObserver"), label + " 3D model must render and animate when visible.");
+  assert.ok(/renderer\\.render\\(scene,\\s*camera\\)/.test(source) && source.includes("IntersectionObserver"), label + " 3D model must render and animate when visible.");
   assert.ok(!source.includes("0xd9ad58") && !source.includes("0xffe2a6") && !source.includes("0x2d82e8"), label + " 3D materials must not retain gold/blue accent colours.");
 }
