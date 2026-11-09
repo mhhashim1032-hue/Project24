@@ -208,7 +208,7 @@ async function verifyBep20Payment(order:any,customer:any,submission:any,settings
   const fulfillment=await admin.rpc('process_paid_telegram_order',{p_order_id:order.id});if(fulfillment.error)throw fulfillment.error;
   if(fulfillment.data?.status==='fulfillment_pending')await notifyCommerceEvent(settings,'MANUAL DELIVERY REQUIRED\\nOrder: '+order.order_number+'\\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\\nOpen Admin → Orders to complete delivery.');
   await notifyCommerceEvent(settings,'USDT order paid\\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\\nOrder: '+order.order_number+'\\nAmount: '+order.amount+' USDT\\nNetwork: BNB Smart Chain BEP20\\nTX: '+hash);
-  return {state:data.status,message:'USDT BEP20 transfer confirmed on BNB Smart Chain.',order:data};
+  return {state:fulfillment.data?.status||data.status,message:fulfillment.data?.status==='fulfillment_pending'?'Payment verified. Submit your delivery details in My Orders.': 'USDT BEP20 transfer confirmed on BNB Smart Chain.',order:data};
 }
 async function verifyBep20Recharge(recharge:any,customer:any,settings:any) {
   const hash=String(recharge.transaction_reference||'').trim().toLowerCase();
@@ -244,7 +244,7 @@ async function verifyTronPayment(order: any, customer: any, submission: any, set
   const fulfillment=await admin.rpc('process_paid_telegram_order',{p_order_id:order.id});if(fulfillment.error)throw fulfillment.error;
   if(fulfillment.data?.status==='fulfillment_pending')await notifyCommerceEvent(settings,'MANUAL DELIVERY REQUIRED\nOrder: '+order.order_number+'\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\nOpen Admin → Orders to complete delivery.');
   await notifyCommerceEvent(settings,'USDT order paid\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\nOrder: '+order.order_number+'\nAmount: '+order.amount+' USDT\nNetwork: TRON TRC20\nTX: '+hash);
-  return {state:data.status,message:'USDT transfer confirmed on TRON. Payment verified successfully.',order:data};
+  return {state:fulfillment.data?.status||data.status,message:fulfillment.data?.status==='fulfillment_pending'?'Payment verified. Submit your delivery details in My Orders.':'USDT transfer confirmed on TRON. Payment verified successfully.',order:data};
 }
 
 async function verifyTronRecharge(recharge: any, customer: any, settings: any) {
@@ -359,7 +359,7 @@ async function checkPayment(order: any, customer: any, submission: any, settings
   const fulfillment=await admin.rpc('process_paid_telegram_order',{p_order_id:order.id});if(fulfillment.error)throw fulfillment.error;
   if(fulfillment.data?.status==='fulfillment_pending')await notifyCommerceEvent(settings,'MANUAL DELIVERY REQUIRED\\nOrder: '+order.order_number+'\\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\\nOpen Admin → Orders to collect customer details and complete delivery.');
   await notifyCommerceEvent(settings,'Binance Pay order paid\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\nOrder: '+order.order_number+'\nAmount: '+order.amount+' '+order.currency+'\nTransaction: '+String(tx.transactionId));
-  return { state: result.status, message: result.status === "fulfilled" ? "Payment verified. Your digital delivery is ready." : "Payment verified successfully. Your order is now paid.", order: result };
+  return { state: fulfillment.data?.status||result.status, message: fulfillment.data?.status==='fulfillment_pending'?'Payment verified. Please submit your delivery details in My Orders; the admin has been notified.':fulfillment.data?.status==='fulfilled'?'Payment verified and your delivery is ready.':'Payment verified successfully. Your order is now paid.', order: result };
 }
 
 Deno.serve(async (req: Request) => {
@@ -640,7 +640,7 @@ Deno.serve(async (req: Request) => {
       if(!/^[0-9a-f-]{36}$/i.test(orderId))return json({error:"INVALID_ORDER_ID"},400);
       const {data,error}=await admin.rpc("cancel_telegram_order",{p_order_id:orderId,p_customer_id:customer.id});
       if(error)return json({error:error.message||"ORDER_CANCEL_FAILED"},409);
-      return json({ok:true,...data});
+      return json({ok:true,...data,status:fulfillment.data?.status||data.status});
     }
     if (action === 'pay_with_wallet') {
       const orderId=String(body.orderId||''); if(!orderId)return json({error:'ORDER_ID_REQUIRED'},400);
