@@ -35,16 +35,16 @@ export default function VerifierMascotScene({ className = '', compact = false }:
     const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
     camera.position.set(0, 0.15, 7.2);
 
-    scene.add(new THREE.HemisphereLight(0xe8e8e8, 0x15101d, 2.0));
+    scene.add(new THREE.HemisphereLight(0xe8e8e8, 0x292a2d, 2.0));
     const key = new THREE.DirectionalLight(0xf0f0f0, 3.2);
     key.position.set(3, 4, 5);
     scene.add(key);
-    const rim = new THREE.PointLight(0x2e8cff, 18, 12);
+    const rim = new THREE.PointLight(0xc7c9cc, 14, 12);
     rim.position.set(-3, 1, 3);
     scene.add(rim);
 
     const gold = new THREE.MeshStandardMaterial({ color: 0xbfc2c7, metalness: 0.82, roughness: 0.24 });
-    const dark = new THREE.MeshStandardMaterial({ color: 0x202a3b, metalness: 0.72, roughness: 0.3 });
+    const dark = new THREE.MeshStandardMaterial({ color: 0x25272a, metalness: 0.72, roughness: 0.3 });
     const glass = new THREE.MeshPhysicalMaterial({ color: 0xd9dce0, metalness: 0.25, roughness: 0.12, transmission: 0.15, transparent: true, opacity: 0.92 });
     const white = new THREE.MeshStandardMaterial({ color: 0xf0f1f2, metalness: 0.45, roughness: 0.22 });
     const mascot = new THREE.Group();

@@ -4,7 +4,9 @@ import assert from "node:assert/strict";
 
 const read = (file) => fs.readFileSync(path.join(process.cwd(), file), "utf8");
 const css = read("app/globals.css");
-const themes = ["aurum","eclipse","aurora","sakura","monolith","verdant","glacier","solstice","neon-forge","porcelain"];
+const themes = ["light-gold","obsidian"];
+const themeSelectors = [...css.matchAll(/\.mini-shell\.theme-([a-z-]+)\s*\{/g)].map((m) => m[1]);
+assert.deepEqual([...new Set(themeSelectors)], themes, "The Mini App must contain exactly two unique theme selectors.");
 function rgb(hex) {
   let value = hex.replace("#", "");
   if (value.length === 3) value = [...value].map((c) => c + c).join("");
@@ -19,7 +21,7 @@ function contrast(a, b) {
   const x = luminance(a), y = luminance(b);
   return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
 }
-for (const legacy of ["gold","midnight","ocean","rose","emerald","graphite","lavender","crimson","arctic","cyber"]) {
+for (const legacy of ["aurum","eclipse","aurora","sakura","monolith","verdant","glacier","solstice","neon-forge","porcelain","gold","midnight","ocean","rose","emerald","graphite","lavender","crimson","arctic","cyber"]) {
   assert.ok(!css.includes(".mini-shell.theme-" + legacy) && !css.includes(".mini-shell.design-" + legacy), "Legacy storefront theme remains active: " + legacy);
 }
 for (const theme of themes) {
@@ -86,11 +88,11 @@ assert.ok(css.includes(".mini-shell > .mini-content{") && css.includes("padding-
 assert.ok(css.includes(".mini-shell > .mini-bottom-nav{") && css.includes("z-index:1000!important"), "Primary navigation must be fixed above page content.");
 assert.ok(mini.includes("next/dynamic") && mini.includes("ssr: false"), "3D scenes must be split into lazy client chunks.");
 for (const tab of ["Store","Orders","Profile"]) assert.ok(mini.includes(tab), "Mini App navigation label missing: " + tab);
-console.log("Quality checks passed: 10 rebuilt theme systems (WCAG AA), profile/wallet/admin surfaces, 3D motion lifecycle, API routes and Supabase server actions.");
+console.log("Quality checks passed: exactly two premium theme systems (WCAG AA), fully rebuilt storefront structure, account/payment surfaces, 3D motion lifecycle, API routes and Supabase server actions.");
 
 const monochrome = read("app/globals.css");
 for (const token of [
-  "--gf-scene-filter:grayscale(1) sepia(.72)",
+  "--gf-scene-filter:grayscale(1) sepia(.55) saturate(.72) contrast(1.1)",
   ".mini-shell .mini-profile-action",
   ".mini-shell .mini-freebies-home-art",
   ".mini-shell .mini-payment-revealed",
@@ -99,7 +101,7 @@ for (const token of [
   ".mini-shell .gf-ads-scene canvas",
   "background:var(--gf-accent)!important",
 ]) assert.ok(monochrome.includes(token), "Missing monochrome coverage: " + token);
-assert.ok(monochrome.includes(".mini-shell.theme-eclipse{--gf-bg:#08090b") && monochrome.includes("--gf-accent:#d5d7da"), "Obsidian must use a pure black/graphite/silver palette.");
+assert.ok(monochrome.includes(".mini-shell.theme-obsidian{") && monochrome.includes("--gf-bg:#08090b") && monochrome.includes("--gf-accent:#d5d7da"), "Obsidian must use a pure black/graphite/silver palette.");
 const verifierScene = read("components/miniapp/verifier-mascot-scene.tsx");
 const paymentScene = read("components/miniapp/payment-token-scene.tsx");
 const adsScene = read("components/miniapp/ads-showcase-scene.tsx");
@@ -107,3 +109,11 @@ for (const [label, source] of [["verifier",verifierScene],["payment",paymentScen
   assert.ok(/renderer\.render\(scene,\s*camera\)/.test(source) && source.includes("IntersectionObserver"), label + " 3D model must render and animate when visible.");
   assert.ok(!source.includes("0xd9ad58") && !source.includes("0xffe2a6") && !source.includes("0x2d82e8"), label + " 3D materials must not retain gold/blue accent colours.");
 }
+
+const admin = read("app/admin/page.tsx");
+assert.ok(admin.includes("id:'light-gold'") && admin.includes("id:'obsidian'"), "Admin must expose both premium themes.");
+assert.equal((admin.match(/id:'(?:light-gold|obsidian)'/g) || []).length, 2, "Admin gallery must contain exactly two theme choices.");
+const themeMigration = read("supabase/migrations/20261110010000_two_premium_storefront_themes.sql");
+assert.ok(themeMigration.includes("ARRAY['light-gold','obsidian']"), "Database migration must constrain the setting to exactly two themes.");
+for (const legacy of ["aurora","sakura","monolith","verdant","glacier","solstice","neon-forge","porcelain"]) assert.ok(!admin.includes("id:'"+legacy+"'"), "Legacy theme remains in admin gallery: "+legacy);
+assert.ok(!mini.includes("design-${settings.miniapp_theme") && mini.includes("layout-grid"), "Mini App must use one shared layout rather than theme-specific structures.");

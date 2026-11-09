@@ -12,10 +12,10 @@ export default function AdsShowcaseScene() {
     const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.3));renderer.setSize(w,h);renderer.setClearColor(0,0);
     const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(35,w/h,.1,30);camera.position.set(0,0,6);
-    scene.add(new THREE.HemisphereLight(0xe8e8e8,0x28354b,2.1));
+    scene.add(new THREE.HemisphereLight(0xe8e8e8,0x282a2d,2.1));
     const key=new THREE.DirectionalLight(0xf0f0f0,3.3);key.position.set(3,4,5);scene.add(key);
     const group=new THREE.Group();scene.add(group);
-    const yellow=new THREE.MeshStandardMaterial({color:0xc9cbd0,roughness:.35,metalness:.08});
+    const yellow=new THREE.MeshStandardMaterial({color:0xd0d1d2,roughness:.35,metalness:.08});
     const orange=new THREE.MeshStandardMaterial({color:0x858990,roughness:.35});
     const white=new THREE.MeshStandardMaterial({color:0xe6e7e9,roughness:.35});
     const black=new THREE.MeshStandardMaterial({color:0x383c43,roughness:.25});
@@ -29,7 +29,7 @@ export default function AdsShowcaseScene() {
     const horn=new THREE.Mesh(new THREE.CylinderGeometry(.58,.18,.9,40,1,true),white);horn.rotation.z=-Math.PI/2;megaphone.add(horn);
     const rim=new THREE.Mesh(new THREE.TorusGeometry(.57,.055,12,40),orange);rim.rotation.y=Math.PI/2;rim.position.x=-.45;megaphone.add(rim);
     const handle=new THREE.Mesh(new THREE.BoxGeometry(.17,.48,.18),black);handle.position.set(.05,-.52,0);megaphone.add(handle);
-    const ring=new THREE.Mesh(new THREE.TorusGeometry(1.85,.012,8,80),new THREE.MeshBasicMaterial({color:0x6ca7ee,transparent:true,opacity:.45}));ring.rotation.x=.9;scene.add(ring);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(1.85,.012,8,80),new THREE.MeshBasicMaterial({color:0xc4c6c8,transparent:true,opacity:.45}));ring.rotation.x=.9;scene.add(ring);
     let frame=0,raf=0,inView=false;
     const motionQuery=window.matchMedia('(prefers-reduced-motion: reduce)');
     const draw=()=>renderer.render(scene,camera);
