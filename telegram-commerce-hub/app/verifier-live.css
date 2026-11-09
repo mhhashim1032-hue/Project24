@@ -57,7 +57,7 @@
 .verifier-live-shell .gf-pick-card b{color:#eef4ff;font-size:11px}
 .verifier-live-shell .gf-pick-card small{color:#8796ab}
 .verifier-live-shell .gf-pick-card strong{color:#82b5ff}
-.verifier-live-shell .gf-catalogue-heading{display:flex;align-items:end;justify-content:space-between;margin:19px 0 11px}
+.verifier-live-shell .gf-catalogue-heading{display:flex;align-items:flex-end;justify-content:space-between;margin:19px 0 11px}
 .verifier-live-shell .gf-catalogue-heading h2{margin:4px 0;color:#f6f8fc;font-size:21px;letter-spacing:-.035em}
 .verifier-live-shell .gf-catalogue-heading p{margin:0;color:#8592a5;font-size:10px}
 .verifier-live-shell .gf-catalogue-heading>span{color:#8190a5;font:600 9px 'JetBrains Mono'}
