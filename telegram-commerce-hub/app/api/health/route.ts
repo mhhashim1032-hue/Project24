@@ -1,47 +1,53 @@
-import { isServerSecretConfigured } from '@/lib/server-secrets';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-async function verifyServiceRole(supabaseUrl: string, serviceRoleKey: string) {
-  if (!supabaseUrl || !serviceRoleKey) return false;
+async function verifySecretVault(supabaseUrl: string, serviceRoleKey: string) {
+  if (!supabaseUrl || !serviceRoleKey) return { serviceRoleVerified: false, vaultTokenConfigured: false };
   try {
-    const response = await fetch(
-      supabaseUrl + '/rest/v1/profiles?select=id&limit=0',
-      {
-        headers: {
-          apikey: serviceRoleKey,
-          authorization: 'Bearer ' + serviceRoleKey,
-        },
-        cache: 'no-store',
-        signal: AbortSignal.timeout(5000),
+    const response = await fetch(supabaseUrl + '/rest/v1/rpc/admin_get_payment_secret', {
+      method: 'POST',
+      headers: {
+        apikey: serviceRoleKey,
+        authorization: 'Bearer ' + serviceRoleKey,
+        'content-type': 'application/json',
       },
-    );
-    return response.ok;
+      body: JSON.stringify({ p_name: 'telegram_bot_token' }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) return { serviceRoleVerified: false, vaultTokenConfigured: false };
+    const secret = await response.json();
+    return {
+      serviceRoleVerified: true,
+      vaultTokenConfigured: typeof secret === 'string' && secret.length > 0,
+    };
   } catch {
-    return false;
+    return { serviceRoleVerified: false, vaultTokenConfigured: false };
   }
 }
 
 export async function GET() {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-  const [telegramConfigured, serviceRoleVerified] = await Promise.all([
-    isServerSecretConfigured('telegram_bot_token', 'TELEGRAM_BOT_TOKEN'),
-    verifyServiceRole(supabaseUrl, serviceRoleKey),
+  const anonKey = Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const appUrl = Boolean(process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL);
+  const [vault, envTelegramToken] = await Promise.all([
+    verifySecretVault(supabaseUrl, serviceRoleKey),
+    Promise.resolve(Boolean(process.env.TELEGRAM_BOT_TOKEN)),
   ]);
 
-  const appUrl = Boolean(process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL);
+  const telegramConfigured = vault.vaultTokenConfigured || envTelegramToken;
   const webhookConfigured = Boolean(telegramConfigured && process.env.TELEGRAM_WEBHOOK_SECRET && appUrl);
-  const anonKey = Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
   const databaseConfigured = Boolean(supabaseUrl && anonKey);
-  const customerRegistrationConfigured = Boolean(supabaseUrl && serviceRoleVerified);
+  const customerRegistrationConfigured = Boolean(supabaseUrl && vault.serviceRoleVerified);
   const miniAppConfigured = Boolean(telegramConfigured && appUrl && databaseConfigured);
   const checks = {
     telegramConfigured,
     webhookConfigured,
     databaseConfigured,
-    serviceRoleVerified,
+    serviceRoleVerified: vault.serviceRoleVerified,
+    secretVaultReachable: vault.serviceRoleVerified,
     customerRegistrationConfigured,
     miniAppConfigured,
   };
