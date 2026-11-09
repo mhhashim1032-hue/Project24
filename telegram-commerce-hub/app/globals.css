@@ -1714,3 +1714,21 @@
   }
 }
 .gf-scene-loading{width:100%;height:100%;min-height:96px;display:grid;place-items:center;border-radius:18px;background:var(--gf-soft,#e9edf3);color:var(--gf-accent,#3974a7);font-weight:900;letter-spacing:.12em}
+
+/* The three primary Mini App destinations stay anchored to the viewport,
+   independent of the scrollable storefront/checkout content. */
+.mini-shell > .mini-content{
+  padding-bottom:calc(112px + env(safe-area-inset-bottom))!important;
+}
+.mini-shell > .mini-bottom-nav{
+  position:fixed!important;
+  z-index:1000!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:calc(10px + env(safe-area-inset-bottom))!important;
+  top:auto!important;
+  transform:translateX(-50%)!important;
+  width:min(92%,390px)!important;
+  max-width:390px!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}

@@ -10,6 +10,7 @@ export async function GET() {
     ok, status: ok ? "ready" : "degraded",
     service: "gold-feather-premium-commerce-os",
     timestamp: new Date().toISOString(), checks,
+    telegramDiagnostics: result.data?.telegramDiagnostics || {},
     backend: "supabase_edge_function",
   }, { status: ok ? 200 : 503, headers: { "Cache-Control": "no-store" } });
 }

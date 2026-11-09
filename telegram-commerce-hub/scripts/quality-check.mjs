@@ -77,6 +77,11 @@ assert.ok(roleMigration.includes("auth.role()") && roleMigration.includes("creat
 assert.ok(["TELEGRAM_BOT_TOKEN","BINANCE_API_KEY","BINANCE_API_SECRET"].every(name => serverFn.includes(name)), "Server function must fall back to existing Supabase Edge Function environment secrets.");
 assert.ok(serverFn.includes(String.raw`/^https:\/\//i`), "Health and Telegram setup must accept standard HTTPS URLs.");
 const mini = read("app/miniapp/page.tsx");
+const navStart = mini.indexOf('<nav className="mini-bottom-nav"');
+assert.ok(navStart > mini.indexOf('</div><nav className="mini-bottom-nav"'), "Primary navigation must sit outside the scrollable Mini App content.");
+assert.ok(mini.includes('aria-label="Main navigation"') && (mini.match(/className=\{activeTab===/g) || []).length >= 3, "All three persistent navigation destinations must remain available.");
+assert.ok(css.includes(".mini-shell > .mini-content{") && css.includes("padding-bottom:calc(112px + env(safe-area-inset-bottom))"), "Scrollable content must reserve space above the fixed bottom navigation.");
+assert.ok(css.includes(".mini-shell > .mini-bottom-nav{") && css.includes("z-index:1000!important"), "Primary navigation must be fixed above page content.");
 assert.ok(mini.includes("next/dynamic") && mini.includes("ssr: false"), "3D scenes must be split into lazy client chunks.");
 for (const tab of ["Store","Orders","Profile"]) assert.ok(mini.includes(tab), "Mini App navigation label missing: " + tab);
 console.log("Quality checks passed: 10 theme palettes (WCAG AA), profile/wallet/admin surfaces, 3D motion lifecycle, API routes and Supabase server actions.");

@@ -22,13 +22,19 @@ try {
 
   await page.goto(base + "/miniapp?demo=1", { waitUntil: "domcontentloaded" });
   await page.locator('nav[aria-label="Main navigation"]').waitFor({ state: "visible", timeout: 15000 });
+  await page.locator('.mini-shell[data-client-ready="true"]').waitFor({ state: "attached", timeout: 15000 });
 
   const mainNav = page.locator('nav[aria-label="Main navigation"]');
   for (const tab of ["Store", "Orders", "Profile"]) {
     const button = mainNav.getByRole("button", { name: new RegExp(tab, "i") });
     await button.click();
-    await page.waitForTimeout(100);
-    if (!(await button.getAttribute("aria-current") === "page")) throw new Error(tab + " navigation did not become active.");
+    await page.waitForFunction((label) => {
+      const buttons = [...document.querySelectorAll('nav[aria-label="Main navigation"] button')];
+      const target = buttons.find((item) => item.textContent?.trim().toLowerCase() === label.toLowerCase());
+      return target?.getAttribute("aria-current") === "page";
+    }, tab, { timeout: 3000 }).catch(async () => {
+      throw new Error(tab + " navigation did not become active; aria-current=" + await button.getAttribute("aria-current"));
+    });
   }
 
   await mainNav.getByRole("button", { name: /store/i }).click();
