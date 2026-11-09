@@ -205,6 +205,8 @@ async function verifyBep20Payment(order:any,customer:any,submission:any,settings
   if(result.state==='rejected'){await admin.from('payment_submissions').update({status:'rejected',verification_source:'bsc_rpc',verification_payload:result,review_note:result.message,last_verification_at:new Date().toISOString(),verification_attempts:(submission.verification_attempts||0)+1}).eq('id',submission.id);return result;}
   const {data,error}=await admin.rpc('record_verified_onchain_payment',{p_order_id:order.id,p_customer_id:customer.id,p_submission_id:submission.id,p_tx_hash:hash,p_network:'BEP20',p_amount:String(order.amount),p_token_contract:BSC_USDT_CONTRACT,p_sender:result.sender,p_receiver:result.receiver,p_block_time:result.blockTimestamp,p_raw:{receipt:result.receipt,transaction:result.transaction,confirmations:result.confirmations}});
   if(error){if(error.code==='23505'||error.message?.includes('duplicate key'))return {state:'duplicate',message:'This transaction hash has already been used.'};throw error;}
+  const fulfillment=await admin.rpc('process_paid_telegram_order',{p_order_id:order.id});if(fulfillment.error)throw fulfillment.error;
+  if(fulfillment.data?.status==='fulfillment_pending')await notifyCommerceEvent(settings,'MANUAL DELIVERY REQUIRED\\nOrder: '+order.order_number+'\\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\\nOpen Admin → Orders to complete delivery.');
   await notifyCommerceEvent(settings,'USDT order paid\\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\\nOrder: '+order.order_number+'\\nAmount: '+order.amount+' USDT\\nNetwork: BNB Smart Chain BEP20\\nTX: '+hash);
   return {state:data.status,message:'USDT BEP20 transfer confirmed on BNB Smart Chain.',order:data};
 }
@@ -239,6 +241,8 @@ async function verifyTronPayment(order: any, customer: any, submission: any, set
   if (!valid) { await admin.from('payment_submissions').update({ status:'rejected',verification_source:'onchain_explorer',verification_payload:tx,review_note:'On-chain transfer rejected: token contract, recipient, exact amount or payment time did not match.',last_verification_at:new Date().toISOString(),verification_attempts:(submission.verification_attempts||0)+1 }).eq('id',submission.id); return { state:'rejected',message:'This transaction does not match the required USDT token, receiving address, exact amount or 30-minute order window.' }; }
   const { data, error } = await admin.rpc('record_verified_onchain_payment',{p_order_id:order.id,p_customer_id:customer.id,p_submission_id:submission.id,p_tx_hash:hash,p_network:'TRON',p_amount:String(amount),p_token_contract:contract,p_sender:sender,p_receiver:receiver,p_block_time:new Date(timestamp).toISOString(),p_raw:tx});
   if (error) { if (error.code==='23505'||error.message?.includes('duplicate key')) return {state:'duplicate',message:'This transaction hash has already been used.'}; if(error.message?.includes('ORDER_NOT_PAYABLE')) return {state:'rejected',message:'The order has expired or is no longer payable.'}; throw error; }
+  const fulfillment=await admin.rpc('process_paid_telegram_order',{p_order_id:order.id});if(fulfillment.error)throw fulfillment.error;
+  if(fulfillment.data?.status==='fulfillment_pending')await notifyCommerceEvent(settings,'MANUAL DELIVERY REQUIRED\nOrder: '+order.order_number+'\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\nOpen Admin → Orders to complete delivery.');
   await notifyCommerceEvent(settings,'USDT order paid\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\nOrder: '+order.order_number+'\nAmount: '+order.amount+' USDT\nNetwork: TRON TRC20\nTX: '+hash);
   return {state:data.status,message:'USDT transfer confirmed on TRON. Payment verified successfully.',order:data};
 }
@@ -352,6 +356,8 @@ async function checkPayment(order: any, customer: any, submission: any, settings
     throw error;
   }
   await admin.from('orders').update({payment_method:'binance_pay'}).eq('id',order.id);
+  const fulfillment=await admin.rpc('process_paid_telegram_order',{p_order_id:order.id});if(fulfillment.error)throw fulfillment.error;
+  if(fulfillment.data?.status==='fulfillment_pending')await notifyCommerceEvent(settings,'MANUAL DELIVERY REQUIRED\\nOrder: '+order.order_number+'\\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\\nOpen Admin → Orders to collect customer details and complete delivery.');
   await notifyCommerceEvent(settings,'Binance Pay order paid\nCustomer: '+customer.first_name+' (@'+(customer.username||'no username')+')\nOrder: '+order.order_number+'\nAmount: '+order.amount+' '+order.currency+'\nTransaction: '+String(tx.transactionId));
   return { state: result.status, message: result.status === "fulfilled" ? "Payment verified. Your digital delivery is ready." : "Payment verified successfully. Your order is now paid.", order: result };
 }
@@ -557,7 +563,7 @@ Deno.serve(async (req: Request) => {
     if (action === "bootstrap") {
       const [products, orders, recharges, freebies, referralEvents, redemptions] = await Promise.all([
         admin.from("products").select("id,name,description,category,image_url,product_plans(id,name,description,price,currency,duration_days,stock,is_active,quantity_discount_tiers)").eq("is_active", true).eq("product_plans.is_active", true).order("sort_order"),
-        admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,product_id,plan_id,quantity,paid_at,payment_method,products(name,warranty_days),product_plans(name)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(200),
+        admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,subscription_expires_at,delivery_data,delivery_form_schema,delivery_form_data,delivery_requested_at,delivery_admin_note,product_id,plan_id,quantity,paid_at,payment_method,fulfillment_mode,products(name,warranty_days),product_plans(name)").eq("telegram_customer_id", customer.id).order("created_at", { ascending: false }).limit(200),
         admin.from("wallet_recharge_requests").select("id,amount,currency,provider,transaction_reference,status,review_note,last_verification_at,created_at").eq("telegram_customer_id",customer.id).order("created_at",{ascending:false}).limit(10),
         admin.from("freebies").select("id,title,description,category,stars_cost,duration_days,stock,sort_order,product_id,plan_id,products(name),product_plans(name)").eq("is_active",true).order("sort_order"),
         admin.from("referral_events").select("id,stars_awarded,created_at,referred_customer_id",{count:"exact"}).eq("referrer_id",customer.id).order("created_at",{ascending:false}).limit(100),
@@ -593,8 +599,9 @@ Deno.serve(async (req: Request) => {
         p_quantity: Math.max(1, Math.min(1000, Number(body.quantity || 1))),
       });
       if (error) return json({ error: error.message || "ORDER_CREATE_FAILED" }, 400);
+      const {data:productConfig}=await admin.from('products').select('delivery_form_schema,delivery_instructions,fulfillment_mode').eq('id',order.product_id).maybeSingle();
       if (body.paymentMethod) await admin.from('orders').update({payment_method:String(body.paymentMethod)}).eq('id',order.id);
-      return json({ ok: true, order: {...order,payment_deadline_at:order.payment_deadline_at||order.expires_at}, reusedOpenOrder: Boolean(order?.reusedOpenOrder) });
+      return json({ ok: true, order: {...order,delivery_form_schema:productConfig?.delivery_form_schema||[],delivery_instructions:productConfig?.delivery_instructions||'',fulfillment_mode:productConfig?.fulfillment_mode||'manual',payment_deadline_at:order.payment_deadline_at||order.expires_at}, reusedOpenOrder: Boolean(order?.reusedOpenOrder) });
     }
     if (action === "update_order") {
       const orderId=String(body.orderId||""), planId=String(body.planId||"");
@@ -603,6 +610,30 @@ Deno.serve(async (req: Request) => {
       const {data,error}=await admin.rpc("modify_telegram_order",{p_order_id:orderId,p_customer_id:customer.id,p_plan_id:planId,p_quantity:quantity});
       if(error)return json({error:error.message||"ORDER_UPDATE_FAILED"},409);
       return json({ok:true,order:data});
+    }
+    if (action === "submit_delivery_form") {
+      const orderId=String(body.orderId||"");
+      const values=body.values&&typeof body.values==="object"&&!Array.isArray(body.values)?body.values:{};
+      if(!/^[0-9a-f-]{36}$/i.test(orderId))return json({error:"INVALID_ORDER_ID"},400);
+      const {data:order}=await admin.from("orders").select("id,order_number,status,product_id,delivery_form_schema,delivery_form_data").eq("id",orderId).eq("telegram_customer_id",customer.id).maybeSingle();
+      if(!order)return json({error:"ORDER_NOT_FOUND"},404);
+      if(!["paid","fulfillment_pending"].includes(order.status))return json({error:"ORDER_NOT_READY_FOR_DELIVERY"},409);
+      const schema=Array.isArray(order.delivery_form_schema)?order.delivery_form_schema:[];
+      if(!schema.length)return json({error:"NO_DELIVERY_FORM_REQUIRED"},400);
+      const safe:any={};
+      for(const field of schema){
+        const key=String(field.key||"").trim();
+        if(!/^[a-zA-Z0-9_-]{1,48}$/.test(key))continue;
+        const value=String(values[key]??"").trim();
+        if(field.required&&!value)return json({error:String(field.label||key)+" is required."},400);
+        if(value.length>2000)return json({error:String(field.label||key)+" is too long."},400);
+        safe[key]=value;
+      }
+      const {error}=await admin.from("orders").update({delivery_form_data:safe,delivery_requested_at:new Date().toISOString(),delivery_updated_at:new Date().toISOString()}).eq("id",order.id).eq("telegram_customer_id",customer.id);
+      if(error)throw error;
+      await admin.from("deliveries").upsert({order_id:order.id,mode:"manual",status:"queued",payload:{mode:"manual",form_schema:schema,customer_form:safe}},{onConflict:"order_id"});
+      await notifyCommerceEvent(settings,"CUSTOMER DELIVERY FORM SUBMITTED\nOrder: "+order.order_number+"\nCustomer: "+customer.first_name+" (@"+(customer.username||"no username")+")\nAdmin → Orders: review customer details and complete manual delivery.");
+      return json({ok:true,message:"Your details have been sent securely. The admin will now process your delivery."});
     }
     if (action === "cancel_order") {
       const orderId=String(body.orderId||"");
