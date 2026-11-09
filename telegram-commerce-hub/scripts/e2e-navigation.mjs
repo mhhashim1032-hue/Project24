@@ -27,8 +27,9 @@ try {
   for (const tab of ["Store", "Orders", "Profile"]) {
     const button = mainNav.getByRole("button", { name: new RegExp(tab, "i") });
     await button.click();
-    await page.waitForTimeout(100);
-    if (!(await button.getAttribute("aria-current") === "page")) throw new Error(tab + " navigation did not become active.");
+    await page.waitForFunction((element) => element?.getAttribute("aria-current") === "page", await button.elementHandle(), { timeout: 3000 }).catch(async () => {
+      throw new Error(tab + " navigation did not become active; aria-current=" + await button.getAttribute("aria-current"));
+    });
   }
 
   await mainNav.getByRole("button", { name: /store/i }).click();
