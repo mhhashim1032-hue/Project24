@@ -404,3 +404,33 @@
 .mini-shell.verifier-app .gf-store-feature-head p { color:#9aaac0; }
 .mini-shell.verifier-app .gf-ads-top b { color:#f5f7fb; }
 .mini-shell.verifier-app .gf-ads-builder p { color:#9aaac0; }
+
+/* Product details and checkout use the demo's spring-sheet presentation. */
+body:has(.mini-shell.verifier-app .gf-detail-heading)::before,
+body:has(.mini-shell.verifier-app .mini-checkout-panel)::before {
+  content:""; position:fixed; inset:0; z-index:85; background:rgba(2,5,10,.78);
+  backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+}
+.mini-shell.verifier-app .vmain:has(.gf-detail-heading) > .mini-panel,
+.mini-shell.verifier-app .vmain:has(.mini-checkout-panel) > .mini-checkout-panel {
+  position:fixed; z-index:90; left:50%; bottom:0; transform:translateX(-50%);
+  width:min(100%,680px); max-height:min(88dvh,900px); overflow-y:auto; overscroll-behavior:contain;
+  margin:0; padding:22px 18px calc(24px + env(safe-area-inset-bottom));
+  border:1px solid #ffffff1b; border-bottom:0; border-radius:23px 23px 0 0;
+  background:linear-gradient(145deg,#1b293b,#0c121c); box-shadow:0 -22px 70px #000b;
+  animation:vDemoSheetIn .32s cubic-bezier(.2,.8,.2,1) both;
+}
+.mini-shell.verifier-app .vmain:has(.gf-detail-heading) > .mini-panel::before,
+.mini-shell.verifier-app .vmain:has(.mini-checkout-panel) > .mini-checkout-panel::before {
+  content:""; position:absolute; top:8px; left:50%; width:38px; height:4px; border-radius:99px;
+  transform:translateX(-50%); background:#8192a8; opacity:.55;
+}
+@keyframes vDemoSheetIn { from { transform:translate(-50%,28px); opacity:.7; } to { transform:translate(-50%,0); opacity:1; } }
+.mini-shell.verifier-app .mini-bottom-nav.vdock { z-index:80; }
+@media(min-width:700px) {
+  .mini-shell.verifier-app .vmain:has(.gf-detail-heading) > .mini-panel,
+  .mini-shell.verifier-app .vmain:has(.mini-checkout-panel) > .mini-checkout-panel {
+    bottom:18px; border-bottom:1px solid #ffffff1b; border-radius:23px;
+    max-height:86dvh;
+  }
+}
