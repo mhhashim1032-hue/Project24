@@ -1,0 +1,37 @@
+name: Mini App build check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'telegram-commerce-hub/**'
+      - '.github/workflows/miniapp-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: telegram-commerce-hub
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: build-only-placeholder-publishable-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build Next.js app
+        run: npm run build
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Supabase Edge Function
+        run: deno check --node-modules-dir=auto --no-lock supabase/functions/gold-feather-commerce/index.ts
+
+# Validate the full Next.js application, including admin API routes and Mini App scenes.
+
+# Build check includes all 3D scene components and Store panels.

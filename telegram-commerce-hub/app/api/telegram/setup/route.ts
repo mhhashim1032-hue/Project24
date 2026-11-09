@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSecret } from '@/lib/server-secrets';
 
 export const runtime = 'nodejs';
+
+const URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
+const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 type TelegramResult = { ok?: boolean; description?: string; result?: any };
 
@@ -17,6 +22,29 @@ async function telegram(token: string, method: string, body: Record<string, unkn
     throw new Error(data.description || `${method} failed (HTTP ${response.status})`);
   }
   return data.result;
+}
+
+async function requireAdmin(req: NextRequest) {
+  const bearer = req.headers.get('authorization') || '';
+  if (!bearer.startsWith('Bearer ')) return false;
+  if (!URL || !ANON || !SERVICE) return false;
+  try {
+    const auth = await fetch(URL + '/auth/v1/user', {
+      headers: { apikey: ANON, authorization: bearer }, cache: 'no-store',
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!auth.ok) return false;
+    const user = await auth.json();
+    const response = await fetch(
+      URL + '/rest/v1/profiles?select=role&id=eq.' + encodeURIComponent(user.id) + '&limit=1',
+      { headers: { apikey: SERVICE, authorization: 'Bearer ' + SERVICE }, cache: 'no-store',
+        signal: AbortSignal.timeout(8000) },
+    );
+    const profiles = await response.json();
+    return response.ok && profiles?.[0]?.role === 'admin';
+  } catch {
+    return false;
+  }
 }
 
 async function diagnostics(token: string, webhookUrl: string, miniAppUrl: string) {
@@ -40,12 +68,14 @@ async function diagnostics(token: string, webhookUrl: string, miniAppUrl: string
 
 export async function POST(req: NextRequest) {
   const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-  if (!secret || req.headers.get('x-setup-secret') !== secret) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  const secretAuthorized = Boolean(secret && req.headers.get('x-setup-secret') === secret);
+  const adminAuthorized = secretAuthorized ? false : await requireAdmin(req);
+  if (!secretAuthorized && !adminAuthorized) {
+    return NextResponse.json({ ok: false, error: 'Admin authentication required' }, { status: 401 });
   }
 
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
+  const token = await getServerSecret('telegram_bot_token', 'TELEGRAM_BOT_TOKEN');
+  const appUrl = (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || '').replace(/\/$/, '');
   if (!token || !appUrl) {
     return NextResponse.json({ ok: false, error: 'Telegram bot token or APP_URL is not configured' }, { status: 503 });
   }
@@ -66,8 +96,25 @@ export async function POST(req: NextRequest) {
     });
 
     const result = await diagnostics(token, webhookUrl, miniAppUrl);
-    const ok = result.verification.webhook && result.verification.menuButton;
-    return NextResponse.json({ ok, ...result }, { status: ok ? 200 : 502 });
+    const syncResponse = await fetch(URL + '/rest/v1/bot_settings?id=eq.1', {
+      method: 'PATCH',
+      headers: {
+        apikey: SERVICE,
+        authorization: 'Bearer ' + SERVICE,
+        'content-type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({
+        telegram_bot_id: String(result.bot.id),
+        ...(result.bot.username ? { telegram_bot_username: String(result.bot.username) } : {}),
+      }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(8000),
+    });
+    const settingsSynced = syncResponse.ok;
+    if (!settingsSynced) console.error('Telegram bot identity sync failed:', syncResponse.status, (await syncResponse.text()).slice(0, 300));
+    const ok = result.verification.webhook && result.verification.menuButton && settingsSynced;
+    return NextResponse.json({ ok, settingsSynced, ...result }, { status: ok ? 200 : 502 });
   } catch (error) {
     return NextResponse.json({
       ok: false,

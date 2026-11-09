@@ -1,8 +1,10 @@
+import { getServerSecret } from '@/lib/server-secrets';
+
 export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return;
   // Telegram rate-limits bot configuration. Keep setup manual; do not call Telegram on every Render restart.
   if (process.env.TELEGRAM_SETUP_ON_STARTUP !== 'true') return;
-  const token=process.env.TELEGRAM_BOT_TOKEN, secret=process.env.TELEGRAM_WEBHOOK_SECRET, appUrl=process.env.APP_URL;
+  const token=await getServerSecret('telegram_bot_token','TELEGRAM_BOT_TOKEN'), secret=process.env.TELEGRAM_WEBHOOK_SECRET, appUrl=process.env.APP_URL;
   if(!token||!secret||!appUrl)return;
   const base='https://api.telegram.org/bot'+token+'/';
   const call=async(method:string,body:Record<string,unknown>)=>{const r=await fetch(base+method,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(8000)});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.description||method+' failed');return d};

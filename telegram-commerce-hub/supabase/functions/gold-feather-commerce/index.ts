@@ -49,7 +49,7 @@ async function verifyTelegramInitData(raw: string, botId: string) {
     } catch { valid = false; }
   }
   if (!valid) {
-    const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
+    const botToken = await getAdminPaymentSecret("telegram_bot_token", "TELEGRAM_BOT_TOKEN");
     if (!botToken) throw new Error("TELEGRAM_BOT_TOKEN_NOT_CONFIGURED");
     const encoder = new TextEncoder();
     const secretKey = await crypto.subtle.importKey("raw", encoder.encode("WebAppData"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
@@ -97,9 +97,25 @@ function decimalEqual(a: unknown, b: unknown) {
   return norm(a) !== "" && norm(a) === norm(b);
 }
 function hex(buffer: ArrayBuffer) { return [...new Uint8Array(buffer)].map(x => x.toString(16).padStart(2, "0")).join(""); }
+async function getAdminPaymentSecret(name: string, fallbackEnv: string) {
+  try {
+    const { data, error } = await admin.rpc("admin_get_payment_secret", { p_name: name });
+    if (!error && typeof data === "string" && data.length > 0) return data;
+  } catch (error) { console.warn("Vault credential lookup failed for", name); }
+  return Deno.env.get(fallbackEnv) || "";
+}
+async function binanceCredentialsConfigured() {
+  const [apiKey, apiSecret] = await Promise.all([
+    getAdminPaymentSecret("binance_api_key", "BINANCE_API_KEY"),
+    getAdminPaymentSecret("binance_api_secret", "BINANCE_API_SECRET"),
+  ]);
+  return Boolean(apiKey && apiSecret);
+}
 async function binancePayHistory(startTime: number, endTime: number) {
-  const apiKey = Deno.env.get("BINANCE_API_KEY");
-  const apiSecret = Deno.env.get("BINANCE_API_SECRET");
+  const [apiKey, apiSecret] = await Promise.all([
+    getAdminPaymentSecret("binance_api_key", "BINANCE_API_KEY"),
+    getAdminPaymentSecret("binance_api_secret", "BINANCE_API_SECRET"),
+  ]);
   if (!apiKey || !apiSecret) throw new Error("BINANCE_API_NOT_CONFIGURED");
   const params = new URLSearchParams();
   params.set("startTime", String(startTime));
@@ -130,13 +146,21 @@ async function referralBotLink(code:string,settings:any) {
   return "https://t.me/"+configured+"?start=ref_"+encodeURIComponent(code);
 }
 async function notifyCommerceEvent(settings: any, message: string) {
-  const token = Deno.env.get("NOTIFICATION_BOT_TOKEN"); const chatId = String(settings.notification_chat_id || "").trim();
+  const token = await getAdminPaymentSecret("telegram_bot_token", "TELEGRAM_BOT_TOKEN");
+  const chatId = String(settings.notification_chat_id || settings.admin_telegram_id || "").trim();
   if (!token || !chatId) return;
-  try { await fetch("https://api.telegram.org/bot"+token+"/sendMessage",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:chatId,text:message,disable_web_page_preview:true}),signal:AbortSignal.timeout(8000)}); } catch (err) { console.error("Notification bot delivery failed",err); }
+  try {
+    const response = await fetch("https://api.telegram.org/bot"+token+"/sendMessage",{
+      method:"POST",headers:{"content-type":"application/json"},
+      body:JSON.stringify({chat_id:chatId,text:message,disable_web_page_preview:true}),
+      signal:AbortSignal.timeout(8000)
+    });
+    if(!response.ok)console.error("Telegram commerce notification returned HTTP",response.status);
+  } catch (err) { console.error("Telegram commerce notification failed",err); }
 }
 async function telegramChannelJoined(customer: any, settings: any) {
   const channelId=String(settings.required_channel_id||"").trim(); if(!channelId)return true;
-  const token=Deno.env.get("TELEGRAM_BOT_TOKEN"); if(!token)return false;
+  const token=await getAdminPaymentSecret("telegram_bot_token", "TELEGRAM_BOT_TOKEN"); if(!token)return false;
   try { const r=await fetch("https://api.telegram.org/bot"+token+"/getChatMember",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:channelId,user_id:Number(customer.telegram_user_id)}),signal:AbortSignal.timeout(8000)}); const d=await r.json(); const s=d?.result?.status; return Boolean(d?.ok&&(["creator","administrator","member"].includes(s)||(s==="restricted"&&d.result?.is_member===true))); } catch { return false; }
 }
 
@@ -363,6 +387,43 @@ Deno.serve(async (req: Request) => {
     const needsChannel = ["create_order","pay_with_wallet","verify_usdt_onchain","refresh_onchain_payment","verify_payment","refresh_payment","resume_order","submit_wallet_recharge","refresh_wallet_recharge"].includes(action);
     const channelJoined = await telegramChannelJoined(customer,settings);
     if (needsChannel && !channelJoined) return json({error:"CHANNEL_JOIN_REQUIRED",message:"Join our Telegram channel before purchasing.",joinUrl:settings.required_channel_url||null},403);
+    if (action === "list_developer_api_keys") {
+      const {data,error}=await admin.from("telegram_developer_api_keys")
+        .select("id,name,key_prefix,created_at,last_used_at,revoked_at")
+        .eq("telegram_customer_id",customer.id)
+        .order("created_at",{ascending:false}).limit(10);
+      if(error)return json({error:"API_KEY_LIST_FAILED"},500);
+      return json({ok:true,keys:data||[]});
+    }
+    if (action === "create_developer_api_key") {
+      const name=String(body.name||"Default key").trim().slice(0,60);
+      if(!name)return json({error:"API_KEY_NAME_REQUIRED"},400);
+      const bytes=new Uint8Array(32);crypto.getRandomValues(bytes);
+      const token=btoa(String.fromCharCode(...bytes)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+      const apiKey="gf_live_"+token;
+      const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(apiKey));
+      const keyHash=Array.from(new Uint8Array(digest)).map(x=>x.toString(16).padStart(2,"0")).join("");
+      const keyPrefix=apiKey.slice(0,16);
+      const {data,error}=await admin.rpc("create_telegram_developer_api_key",{
+        p_customer_id:customer.id,p_name:name,p_key_prefix:keyPrefix,p_key_hash:keyHash
+      });
+      if(error){
+        if(error.message?.includes("API_KEY_LIMIT_REACHED"))return json({error:"API_KEY_LIMIT_REACHED",message:"You can keep up to five active developer API keys."},409);
+        return json({error:"API_KEY_CREATE_FAILED"},500);
+      }
+      return json({ok:true,key:apiKey,record:data,message:"Copy this key now. It will not be shown again."});
+    }
+    if (action === "revoke_developer_api_key") {
+      const keyId=String(body.keyId||"");
+      if(!keyId)return json({error:"API_KEY_ID_REQUIRED"},400);
+      const {data,error}=await admin.from("telegram_developer_api_keys")
+        .update({revoked_at:new Date().toISOString()})
+        .eq("id",keyId).eq("telegram_customer_id",customer.id).is("revoked_at",null)
+        .select("id").maybeSingle();
+      if(error)return json({error:"API_KEY_REVOKE_FAILED"},500);
+      if(!data)return json({error:"API_KEY_NOT_FOUND_OR_REVOKED"},404);
+      return json({ok:true,keyId:data.id});
+    }
     if (action === "resume_order") {
       const orderId=String(body.orderId||"");
       const {data:order,error}=await admin.from("orders").select("id,order_number,amount,currency,status,created_at,expires_at,payment_deadline_at,product_id,plan_id,quantity,payment_method,products(name)").eq("id",orderId).eq("telegram_customer_id",customer.id).maybeSingle();
@@ -382,7 +443,7 @@ Deno.serve(async (req: Request) => {
       if(provider==="usdt_tron"&&!settings.usdt_wallet_address)return json({error:"STORE_USDT_ADDRESS_NOT_CONFIGURED"},503);
       if(provider==="usdt_bep20"&&!settings.usdt_bep20_wallet_address)return json({error:"STORE_BEP20_ADDRESS_NOT_CONFIGURED"},503);
       if(provider==="binance_pay_api"&&!settings.binance_pay_id)return json({error:"STORE_BINANCE_PAY_NOT_CONFIGURED"},503);
-      if(provider==="binance_pay_api"&&(!Deno.env.get("BINANCE_API_KEY")||!Deno.env.get("BINANCE_API_SECRET")))return json({error:"BINANCE_API_NOT_CONFIGURED",message:"Automatic Binance verification is not configured yet. Please contact store support."},503);
+      if(provider==="binance_pay_api"&&!(await binanceCredentialsConfigured()))return json({error:"BINANCE_API_NOT_CONFIGURED",message:"Automatic Binance verification is not configured yet. Please contact store support."},503);
       const {data:usedOrderSubmission}=await admin.from("payment_submissions").select("id").ilike("transaction_reference",reference).limit(1).maybeSingle();
       if(usedOrderSubmission)return json({error:"DUPLICATE_TRANSACTION",message:"This transaction has already been used for an order payment."},409);
       const {data:recharge,error}=await admin.from("wallet_recharge_requests").insert({telegram_customer_id:customer.id,amount,currency:"USDT",provider,transaction_reference:provider==="usdt_tron"?reference.toLowerCase():reference,status:"pending"}).select("*").single();
@@ -503,7 +564,7 @@ Deno.serve(async (req: Request) => {
         admin.from("freebie_redemptions").select("id,freebie_id,order_id,stars_spent,status,redeemed_at,delivery_payload,freebies(title)").eq("telegram_customer_id",customer.id).order("redeemed_at",{ascending:false}).limit(50),
       ]);
       const referralLink=await referralBotLink(customer.referral_code||"",settings);
-      return json({ ok: true, profile: customer, referral: { code:customer.referral_code||null, stars:Number(customer.referral_stars||0), link:referralLink, total:referralEvents.count??referralEvents.data?.length??0, events:referralEvents.data||[] }, freebies:freebies.data||[], redemptions:redemptions.data||[], channelJoined: await telegramChannelJoined(customer,settings), settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, binance_pay_qr_url: settings.binance_pay_qr_url, usdt_tron_qr_url: settings.usdt_tron_qr_url, usdt_bep20_qr_url: settings.usdt_bep20_qr_url, currency: settings.currency, usdt_network: settings.usdt_network||'TRON', usdt_wallet_address: settings.usdt_wallet_address, usdt_bep20_wallet_address: settings.usdt_bep20_wallet_address, payment_readiness: { usdt_wallet_configured: Boolean(settings.usdt_wallet_address), bep20_wallet_configured: Boolean(settings.usdt_bep20_wallet_address), binance_pay_configured: Boolean(settings.binance_pay_id), binance_api_configured: Boolean(Deno.env.get("BINANCE_API_KEY") && Deno.env.get("BINANCE_API_SECRET")) }, support_url: settings.support_url, required_channel_url: settings.required_channel_url, tempsms_url: settings.tempsms_url||'https://tempsmslive.com', miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837', miniapp_hero_title: settings.miniapp_hero_title||'', miniapp_hero_subtitle: settings.miniapp_hero_subtitle||'', miniapp_banner_text: settings.miniapp_banner_text||'', miniapp_show_promo: settings.miniapp_show_promo!==false, miniapp_show_categories: settings.miniapp_show_categories!==false, miniapp_show_stock: settings.miniapp_show_stock!==false, miniapp_enable_search: settings.miniapp_enable_search!==false }, products: products.data || [], orders: orders.data || [], recharges: recharges.data || [] });
+      return json({ ok: true, profile: customer, referral: { code:customer.referral_code||null, stars:Number(customer.referral_stars||0), link:referralLink, total:referralEvents.count??referralEvents.data?.length??0, events:referralEvents.data||[] }, freebies:freebies.data||[], redemptions:redemptions.data||[], channelJoined: await telegramChannelJoined(customer,settings), settings: { store_name: settings.store_name, welcome_message: settings.welcome_message, payment_instructions: settings.payment_instructions, binance_pay_id: settings.binance_pay_id, binance_pay_qr_url: settings.binance_pay_qr_url, usdt_tron_qr_url: settings.usdt_tron_qr_url, usdt_bep20_qr_url: settings.usdt_bep20_qr_url, currency: settings.currency, usdt_network: settings.usdt_network||'TRON', usdt_wallet_address: settings.usdt_wallet_address, usdt_bep20_wallet_address: settings.usdt_bep20_wallet_address, payment_readiness: { usdt_wallet_configured: Boolean(settings.usdt_wallet_address), bep20_wallet_configured: Boolean(settings.usdt_bep20_wallet_address), binance_pay_configured: Boolean(settings.binance_pay_id), binance_api_configured: Boolean((await getAdminPaymentSecret("binance_api_key", "BINANCE_API_KEY")) && (await getAdminPaymentSecret("binance_api_secret", "BINANCE_API_SECRET"))) }, support_url: settings.support_url, required_channel_url: settings.required_channel_url, tempsms_url: settings.tempsms_url||'https://tempsmslive.com', miniapp_theme: settings.miniapp_theme||'gold', miniapp_layout: settings.miniapp_layout||'grid', miniapp_accent_color: settings.miniapp_accent_color||'#9a7837', miniapp_hero_title: settings.miniapp_hero_title||'', miniapp_hero_subtitle: settings.miniapp_hero_subtitle||'', miniapp_banner_text: settings.miniapp_banner_text||'', miniapp_show_promo: settings.miniapp_show_promo!==false, miniapp_show_categories: settings.miniapp_show_categories!==false, miniapp_show_stock: settings.miniapp_show_stock!==false, miniapp_enable_search: settings.miniapp_enable_search!==false, miniapp_config: settings.miniapp_config&&typeof settings.miniapp_config==='object'?settings.miniapp_config:{} }, products: products.data || [], orders: orders.data || [], recharges: recharges.data || [] });
     }
     if (action === "redeem_freebie") {
       const freebieId=String(body.freebieId||"");
@@ -586,7 +647,7 @@ Deno.serve(async (req: Request) => {
       if (!orderId || transactionId.length < 5 || transactionId.length > 128) return json({ error: "INVALID_PAYMENT_REFERENCE" }, 400);
       const { data: order } = await admin.from("orders").select("*").eq("id", orderId).eq("telegram_customer_id", customer.id).maybeSingle();
       if (!order || order.status !== "awaiting_payment") return json({ error: "ORDER_NOT_PAYABLE" }, 409);
-      if(!Deno.env.get("BINANCE_API_KEY")||!Deno.env.get("BINANCE_API_SECRET"))return json({error:"BINANCE_API_NOT_CONFIGURED"},503);
+      if(!(await binanceCredentialsConfigured()))return json({error:"BINANCE_API_NOT_CONFIGURED"},503);
       const {data:rechargeClaim}=await admin.from("wallet_recharge_requests").select("id").eq("provider","binance_pay_api").ilike("transaction_reference",transactionId).limit(1).maybeSingle();
       if(rechargeClaim)return json({error:"DUPLICATE_TRANSACTION",message:"This Binance transaction has already been submitted as a wallet recharge."},409);
       if (new Date(order.expires_at).getTime() < Date.now() - 120000) return json({ error: "ORDER_EXPIRED" }, 409);
@@ -617,7 +678,7 @@ Deno.serve(async (req: Request) => {
       if (!submission) return json({ error: "SUBMISSION_NOT_FOUND" }, 404);
       if (submission.status === "verified") return json({ ok: true, state: "verified", message: "This payment has already been verified." });
       if (submission.status === "rejected") return json({ error: "PAYMENT_REJECTED", message: submission.review_note || "This payment reference was rejected." }, 409);
-      if(!Deno.env.get("BINANCE_API_KEY")||!Deno.env.get("BINANCE_API_SECRET"))return json({error:"BINANCE_API_NOT_CONFIGURED"},503);
+      if(!(await binanceCredentialsConfigured()))return json({error:"BINANCE_API_NOT_CONFIGURED"},503);
       if (submission.last_verification_at && Date.now() - new Date(submission.last_verification_at).getTime() < 60000) {
         return json({ ok: true, state: "pending", message: "Please wait at least 60 seconds between Binance verification checks." }, 429);
       }

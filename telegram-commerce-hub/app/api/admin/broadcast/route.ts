@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSecret } from '@/lib/server-secrets';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -6,11 +7,11 @@ export const maxDuration = 60;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 
 export async function POST(req: NextRequest) {
   try {
-    if (!SUPABASE_URL || !ANON_KEY || !SERVICE_KEY || !BOT_TOKEN) {
+    const botToken = await getServerSecret('telegram_bot_token', 'TELEGRAM_BOT_TOKEN');
+    if (!SUPABASE_URL || !ANON_KEY || !SERVICE_KEY || !botToken) {
       return NextResponse.json({ error: 'Broadcast service is not configured.' }, { status: 503 });
     }
     const bearer = req.headers.get('authorization') || '';
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
     if (!customersRes.ok) return NextResponse.json({ error: 'Could not load recipients.' }, { status: 500 });
     let sent = 0, failed = 0;
     for (const customer of customers) {
-      const response = await fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage', {
+      const response = await fetch('https://api.telegram.org/bot' + botToken + '/sendMessage', {
         method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ chat_id: customer.telegram_user_id, text: message, disable_web_page_preview: false }),
         signal: AbortSignal.timeout(10000),
