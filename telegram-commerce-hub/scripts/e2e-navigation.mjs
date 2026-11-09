@@ -22,6 +22,7 @@ try {
 
   await page.goto(base + "/miniapp?demo=1", { waitUntil: "domcontentloaded" });
   await page.locator('nav[aria-label="Main navigation"]').waitFor({ state: "visible", timeout: 15000 });
+  await page.locator('.mini-shell[data-client-ready="true"]').waitFor({ state: "attached", timeout: 15000 });
 
   const mainNav = page.locator('nav[aria-label="Main navigation"]');
   for (const tab of ["Store", "Orders", "Profile"]) {
