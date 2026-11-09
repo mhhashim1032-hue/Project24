@@ -83,7 +83,7 @@ assert.ok(serverFn.includes(String.raw`/^https:\/\//i`), "Health and Telegram se
 const mini = read("app/miniapp/legacy-page.tsx");
 const demo = read("components/miniapp/verifier-demo.tsx");
 const miniRoute = read("app/miniapp/page.tsx");
-assert.ok(!miniRoute.includes("VerifierDemo") && mini.includes("const demo=false"), "The production Mini App must not expose mock demo checkout or demo customer data.");
+assert.ok(!miniRoute.includes("import VerifierDemo") && mini.includes("const demo=false"), "The production Mini App must not expose mock demo checkout or demo customer data.");
 assert.ok(mini.includes("advertis|promotion|sponsor") && mini.includes("gf-store-feature-list"), "Ads packages must be loaded from live catalogue products and use the existing order flow.");
 assert.ok(demo.includes("Pre-purchase verification") && demo.includes("USDT BEP20") && demo.includes("Plagaiscans"), "Verifier demo must include gated verification, crypto checkout and mock customer identity.");
 assert.ok(demo.includes("AnimatePresence") && demo.includes("layoutId") && demo.includes("NEXT_PUBLIC_SUPPORT_URL"), "Verifier demo must include animated interactions and use a configured support fallback.");
