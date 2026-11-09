@@ -1603,3 +1603,37 @@
 .mini-shell .mini-delivery-form,.mini-shell .mini-delivery-result{background:var(--gf-soft);color:var(--gf-text);border:1px solid var(--gf-border)}
 .mini-shell .mini-delivery-form label{color:var(--gf-text)}
 .mini-shell .mini-delivery-form input,.mini-shell .mini-delivery-form textarea,.mini-shell .mini-delivery-form select{background:var(--gf-surface);color:var(--gf-text);border-color:var(--gf-border)}
+
+
+/* Profile-screen contrast correction — screenshot regression */
+.mini-shell .mini-profile-clean{color:var(--gf-text)!important}
+.mini-shell .mini-profile-clean-head .mini-profile-clean-identity h1,
+.mini-shell .mini-profile-clean-head .mini-profile-clean-identity small,
+.mini-shell .mini-profile-clean-head .mini-profile-member-mark{color:var(--gf-text)!important}
+.mini-shell .mini-profile-clean-head .mini-profile-clean-identity span{color:var(--gf-muted)!important}
+.mini-shell .mini-profile-telegram-id,
+.mini-shell .mini-profile-metrics>div,
+.mini-shell .mini-profile-invite,
+.mini-shell .mini-profile-action{
+ color:#263244!important;
+}
+.mini-shell .mini-profile-telegram-id small,
+.mini-shell .mini-profile-metrics small,
+.mini-shell .mini-profile-invite-title small,
+.mini-shell .mini-profile-action small{color:#526174!important;opacity:1!important}
+.mini-shell .mini-profile-telegram-id b,
+.mini-shell .mini-profile-metrics b,
+.mini-shell .mini-profile-invite-title b,
+.mini-shell .mini-profile-action b{color:#202b3b!important}
+.mini-shell .mini-profile-action{background:#fff!important;border:1px solid #d8dce3!important}
+.mini-shell .mini-profile-action-icon{color:#78613a!important;background:#f2eee4!important}
+.mini-shell .mini-profile-invite{background:#f6f1e5!important;border:1px solid #dfd2b6!important}
+.mini-shell .mini-profile-invite-title{color:#263244!important}
+.mini-shell .mini-share-button:disabled{opacity:1!important;color:#5b5140!important;background:#e5d6b6!important;border-color:#d4c29b!important}
+.mini-shell .mini-profile-telegram-id{background:#f8f7f2!important;border:1px solid #ded9cc!important}
+.mini-shell .mini-profile-metrics>div{background:#f8f7f2!important;border:1px solid #ded9cc!important}
+.mini-shell .mini-profile-telegram-id button{color:#55462d!important;background:#eee7d7!important}
+.mini-shell .mini-profile-member-mark{background:#eaf4e8!important;color:#426d4c!important}
+.mini-shell .mini-bottom-nav{z-index:30}
+.mini-shell .mini-promo{margin-bottom:96px}
+.mini-shell .mini-footer{padding-bottom:100px}
