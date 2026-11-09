@@ -25,6 +25,14 @@ try {
   await page.locator('.mini-shell[data-client-ready="true"]').waitFor({ state: "attached", timeout: 15000 });
 
   const mainNav = page.locator('nav[aria-label="Main navigation"]');
+  const navLayout = await mainNav.evaluate((el) => ({ position: getComputedStyle(el).position, columns: getComputedStyle(el).gridTemplateColumns.split(" ").length }));
+  if (navLayout.position !== "fixed" || navLayout.columns !== 3) throw new Error("Primary navigation must be a fixed three-column bar.");
+  const navBeforeScroll = await mainNav.boundingBox();
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(150);
+  const navAfterScroll = await mainNav.boundingBox();
+  if (!navBeforeScroll || !navAfterScroll || Math.abs(navAfterScroll.y - navBeforeScroll.y) > 2) throw new Error("Primary navigation moved or disappeared while scrolling.");
+  await page.evaluate(() => window.scrollTo(0, 0));
   for (const tab of ["Store", "Orders", "Profile"]) {
     const button = mainNav.getByRole("button", { name: new RegExp(tab, "i") });
     await button.click();
