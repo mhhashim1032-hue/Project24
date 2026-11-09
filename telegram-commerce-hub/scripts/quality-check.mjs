@@ -124,7 +124,7 @@ assert.ok(liveMini.includes("const openProduct=(product:Product)=>"), "Every cat
 assert.ok(liveMini.includes('className="gf-product-open"') && liveMini.includes("View details"), "Product cards must expose a dedicated touch-friendly detail action.");
 assert.ok(liveMini.includes("No plans available yet"), "Products without active plans must still open and explain availability.");
 assert.ok(liveMini.includes('activeTab==="profile"&&!selected&&!order&&!profile'), "Profile navigation must render a retry state even before the customer profile loads.");
-assert.ok(liveMini.includes('setActiveTab("profile")'), "The persistent navigation must route directly to Profile.");
+assert.ok(liveMini.includes('navigateTab("profile")'), "The persistent navigation must route directly to Profile.");
 assert.ok(liveMini.includes("const getProductPlans=(product:Product):Plan[]=>"), "Product plans must be normalized before opening details.");
 assert.ok(liveMini.includes('languagePickerOpen&&<div className="mini-language-overlay"') && !liveMini.includes('profile&&!language&&<div className="mini-language-overlay"'), "First launch must not block storefront navigation with a mandatory language modal.");
 assert.ok(liveMini.includes('aria-label="Close language selector"') && liveMini.includes("setLanguagePickerOpen(true)"), "The language picker must be explicitly openable and dismissible.");
