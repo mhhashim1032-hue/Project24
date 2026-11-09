@@ -125,3 +125,10 @@ assert.ok(liveMini.includes("className=\"gf-product-open\"") && liveMini.include
 assert.ok(liveMini.includes("No plans available yet"), "Products without active plans must still open and explain availability.");
 assert.ok(liveMini.includes('activeTab==="profile"&&!selected&&!order&&!profile'), "Profile navigation must render a retry state even before the customer profile loads.");
 assert.ok(liveMini.includes('setActiveTab("profile")'), "The persistent navigation must route directly to Profile.");
+assert.ok(liveMini.includes("const getProductPlans=(product:Product):Plan[]=>"), "Product plans must be normalized before opening details.");
+assert.ok(liveMini.includes('languagePickerOpen&&<div className="mini-language-overlay"') && !liveMini.includes('profile&&!language&&<div className="mini-language-overlay"'), "First launch must not block storefront navigation with a mandatory language modal.");
+assert.ok(liveMini.includes('aria-label="Close language selector"') && liveMini.includes("setLanguagePickerOpen(true)"), "The language picker must be explicitly openable and dismissible.");
+assert.ok(liveMini.includes('!profile&&["orders","balance","freebies"].includes(activeTab)'), "All account tabs must show a retry state when profile bootstrap is unavailable.");
+assert.ok(liveMini.includes("disabled={pl.stock!=null&&Number(pl.stock)<=0}"), "Sold-out product plans must not be selectable.");
+assert.ok(liveMini.includes('<article className="gf-product-tile"') && liveMini.includes('<span className="gf-product-open">') && !liveMini.includes('className="gf-product-open" onClick'), "Product cards must be one accessible tap target without nested buttons.");
+assert.ok(liveMini.includes("View sold-out options") && liveMini.includes("View details"), "Promotional products must open details even when no plan is currently available.");

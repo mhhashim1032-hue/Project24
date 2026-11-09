@@ -448,3 +448,13 @@ body:has(.mini-shell.verifier-app .mini-checkout-panel)::before {
 .mini-shell.verifier-app .mini-profile-page { display:block!important; visibility:visible!important; opacity:1!important; min-height:180px; }
 .mini-shell.verifier-app .mini-profile-muted { color:#9aa9bd; font-size:12px; line-height:1.6; }
 .mini-shell.verifier-app .mini-profile-page .mini-primary { margin-top:14px; }
+
+/* Consolidated mobile interaction fixes: product tap target and dismissible language picker. */
+.mini-shell.verifier-app .gf-product-tile { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+.mini-shell.verifier-app .gf-product-tile:focus-visible { outline:2px solid #69a9ff; outline-offset:3px; }
+.mini-shell.verifier-app .gf-product-open { pointer-events:none; cursor:inherit; }
+.mini-shell.verifier-app .mini-language-dialog-top { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.mini-shell.verifier-app .mini-language-dialog-top>small { font:800 9px Manrope; letter-spacing:2px; color:#d9bd7e; }
+.mini-shell.verifier-app .mini-language-close { min-height:34px; padding:7px 11px; border:1px solid #ffffff30; border-radius:10px; background:#ffffff0d; color:#e8edf6; font-size:11px; font-weight:700; cursor:pointer; }
+.mini-shell.verifier-app .mini-profile-clean-identity h1 { margin:3px 0 1px; font:800 16px/1.2 Manrope; color:#f7f9fd; overflow-wrap:anywhere; }
+.mini-shell.verifier-app .mini-account-unavailable { margin-top:8px; }
