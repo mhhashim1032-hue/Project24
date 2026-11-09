@@ -50,11 +50,11 @@
 .mini-payment-methods button span{font-size:18px}
 @media(max-width:390px){.mini-payment-methods{gap:5px}.mini-payment-methods button{padding:10px 7px;font-size:10px}}
 
-/* Ten complete storefront concepts and visual admin preview gallery */
+/* Two premium storefront design systems and visual admin preview gallery */
 .storefront-design-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
 .storefront-design-card{display:flex;flex-direction:column;gap:10px;text-align:left;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff;color:inherit;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}
 .storefront-design-card:hover{transform:translateY(-2px);box-shadow:0 10px 25px #1b20300f}
-.storefront-design-card.selected{border:2px solid #7154b8;box-shadow:0 0 0 3px #7154b817}
+.storefront-design-card.selected{border:2px solid #927344;box-shadow:0 0 0 3px #9273441a}
 .storefront-thumb{height:158px;border-radius:8px;overflow:hidden;padding:9px;display:flex;flex-direction:column;gap:9px;position:relative}
 .thumb-top{height:15px;display:flex;align-items:center;gap:4px}.thumb-top i{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.55}.thumb-top span{margin-left:auto;font:800 8px Manrope;letter-spacing:2px}
 .thumb-hero{display:flex;flex-direction:column;gap:5px;flex:1;justify-content:center}.thumb-hero small{font:700 5px Manrope;letter-spacing:1px;opacity:.7}.thumb-hero b{font:800 15px/1.05 Manrope;max-width:90%;letter-spacing:-.5px}
