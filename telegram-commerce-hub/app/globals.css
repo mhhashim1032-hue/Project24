@@ -1511,3 +1511,60 @@
 .mini-shell.video-reference .mini-footer{color:#71839c}
 .mini-shell.video-reference .mini-secondary{background:#131e2d;border-color:#2a3b53;color:#dceaff}
 .mini-shell.video-reference .mini-checkout-summary,.mini-shell.video-reference .mini-payid{background:#0b111a;border-color:#27374d;color:#eaf3ff}
+
+
+/* High-contrast Midnight customer storefront: consistent readable surfaces and controls */
+.mini-shell.theme-midnight{
+ --mini-bg:#101827;--mini-surface:#1a2638;--mini-surface-raised:#223149;
+ --mini-text:#f4f7fc;--mini-muted:#b8c5d8;--mini-line:#3a4b64;
+ background:var(--mini-bg)!important;color:var(--mini-text)!important;
+}
+.mini-shell.theme-midnight .mini-content{color:var(--mini-text)}
+.mini-shell.theme-midnight .mini-product,.mini-shell.theme-midnight .mini-panel,
+.mini-shell.theme-midnight .mini-orders,.mini-shell.theme-midnight .mini-profile,
+.mini-shell.theme-midnight .mini-pending-card,.mini-shell.theme-midnight .mini-order,
+.mini-shell.theme-midnight .mini-step,.mini-shell.theme-midnight .mini-edit-order,
+.mini-shell.theme-midnight .mini-freebie-card,.mini-shell.theme-midnight .mini-wallet-card{
+ background:var(--mini-surface)!important;color:var(--mini-text)!important;
+ border:1px solid var(--mini-line)!important;box-shadow:0 12px 30px #050b1666;
+}
+.mini-shell.theme-midnight h1,.mini-shell.theme-midnight h2,.mini-shell.theme-midnight h3,
+.mini-shell.theme-midnight b,.mini-shell.theme-midnight strong,.mini-shell.theme-midnight label,
+.mini-shell.theme-midnight .mini-section-title,.mini-shell.theme-midnight .mini-heading h1,
+.mini-shell.theme-midnight .mini-product h3,.mini-shell.theme-midnight .mini-order b{color:var(--mini-text)!important}
+.mini-shell.theme-midnight p,.mini-shell.theme-midnight small,.mini-shell.theme-midnight .mini-heading p,
+.mini-shell.theme-midnight .mini-product>p,.mini-shell.theme-midnight .mini-order small,
+.mini-shell.theme-midnight .mini-muted{color:var(--mini-muted)!important}
+.mini-shell.theme-midnight input,.mini-shell.theme-midnight textarea,.mini-shell.theme-midnight select{
+ background:#101b2b!important;color:#f7f9ff!important;border:1px solid #52647e!important;
+ color-scheme:dark;caret-color:#8fc2ff;
+}
+.mini-shell.theme-midnight input::placeholder,.mini-shell.theme-midnight textarea::placeholder{color:#9eacc1!important;opacity:1}
+.mini-shell.theme-midnight .mini-secondary,.mini-shell.theme-midnight .mini-back,
+.mini-shell.theme-midnight .mini-order-tabs button,.mini-shell.theme-midnight .mini-plan{
+ background:#24344b!important;color:#f1f5fb!important;border:1px solid #50627b!important;
+}
+.mini-shell.theme-midnight .mini-status,.mini-shell.theme-midnight .mini-category{
+ background:#2a3c56!important;color:#e4efff!important;border:1px solid #526985;
+}
+.mini-shell.theme-midnight .mini-primary{background:linear-gradient(110deg,#2679d8,#3d9bff)!important;color:#fff!important;border:1px solid #70b7ff}
+.mini-shell.theme-midnight .mini-delivery-form,.mini-shell.theme-midnight .mini-delivery-result{
+ background:#152238!important;color:#f4f7fc!important;border:1px solid #4a6382!important;border-radius:14px;padding:14px;margin-top:12px;
+}
+.mini-shell.theme-midnight .mini-delivery-form label{display:grid;gap:7px;margin:12px 0}
+.mini-shell.theme-midnight .mini-delivery-result pre,.mini-shell.theme-midnight .mini-delivery-form pre{
+ white-space:pre-wrap;overflow-wrap:anywhere;color:#dce9fa;background:#0b1422;padding:12px;border-radius:10px;
+}
+.mini-shell.theme-midnight .mini-delivery-submitted{padding:12px;border-radius:10px;background:#153d35;color:#a9f1d2;border:1px solid #28785f}
+.mini-shell.theme-midnight .mini-empty,.mini-shell.theme-midnight .mini-orders-empty{color:var(--mini-muted)}
+.mini-shell.theme-midnight button:focus-visible,.mini-shell.theme-midnight input:focus-visible,
+.mini-shell.theme-midnight textarea:focus-visible,.mini-shell.theme-midnight select:focus-visible{
+ outline:2px solid #83bdff;outline-offset:2px;
+}
+.admin-app-shell .delivery-form-details{margin-top:8px;max-width:280px}
+.admin-app-shell .delivery-form-details summary{cursor:pointer;color:#356da8;font-size:11px;font-weight:700}
+.admin-app-shell .delivery-form-details pre,.admin-app-shell .delivery-customer-data{
+ white-space:pre-wrap;overflow-wrap:anywhere;max-height:220px;overflow:auto;padding:12px;
+ background:#f1f5fa;border:1px solid #d8e2ef;border-radius:10px;color:#1f2b3a;font-size:11px;
+}
+.admin-app-shell .delivery-customer-data{max-height:260px}
