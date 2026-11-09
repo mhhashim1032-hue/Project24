@@ -1453,3 +1453,137 @@ body{overflow-x:clip}.mini-shell{--gf-button-text:#fff;isolation:isolate;positio
 @keyframes gf-orbit-glow{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-18px,14px,0) scale(1.08)}}
 @media(max-width:520px){.mini-shell .mini-hero{grid-template-columns:1fr;min-height:0}.mini-shell .mini-hero-art{min-height:145px;grid-row:1}.mini-shell .mini-hero-art canvas{height:170px!important}.mini-shell .mini-design-ribbon{border-radius:20px}.mini-shell .mini-product{animation-duration:.45s}}
 @media(prefers-reduced-motion:reduce){.mini-shell .mini-product,.mini-shell .mini-design-ribbon:before,.mini-shell .mini-design-ribbon:after{animation:none!important;transition:none!important}.mini-shell .mini-product:hover{transform:none!important}}
+
+
+/* MONOCHROME DESIGN SYSTEM v2 — every Mini App surface inherits its selected theme.
+   No legacy gold/blue/pink/green accents are allowed to leak into sub-pages. */
+.mini-shell{
+  --mini-accent:var(--gf-accent)!important;
+  --gf-scene-hue:0deg;
+  --gf-scene-filter:grayscale(1) contrast(1.22);
+  color:var(--gf-text)!important;
+  background-color:var(--gf-bg)!important;
+  background-image:var(--gf-backdrop)!important;
+  color-scheme:light;
+}
+.mini-shell.theme-aurum{--gf-bg:#f4f0e7;--gf-surface:#fffdf8;--gf-text:#30291f;--gf-muted:#655b4d;--gf-border:#ded4c3;--gf-accent:#826b48;--gf-soft:#ebe3d6;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#f4f0e7,#e9e1d3);--gf-scene-hue:35deg}
+.mini-shell.theme-eclipse{--gf-bg:#08090b;--gf-surface:#111316;--gf-text:#f1f2f3;--gf-muted:#aeb1b5;--gf-border:#303338;--gf-accent:#d5d7da;--gf-soft:#1b1e22;--gf-button-text:#08090b;--gf-backdrop:radial-gradient(ellipse at 50% -15%,#292c31 0%,transparent 48%),linear-gradient(155deg,#08090b,#101114 58%,#070809);--gf-scene-hue:0deg;--gf-scene-filter:grayscale(1) brightness(1.2) contrast(1.18)}
+.mini-shell.theme-aurora{--gf-bg:#f1f0f6;--gf-surface:#fbfaff;--gf-text:#282632;--gf-muted:#686575;--gf-border:#d8d5e2;--gf-accent:#716b87;--gf-soft:#e8e5ef;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#f1f0f6,#e6e3ed);--gf-scene-hue:255deg}
+.mini-shell.theme-sakura{--gf-bg:#f7eff1;--gf-surface:#fffafb;--gf-text:#382a30;--gf-muted:#78636b;--gf-border:#e4d3d9;--gf-accent:#956e7d;--gf-soft:#f0e3e8;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#f7eff1,#eddee4);--gf-scene-hue:330deg}
+.mini-shell.theme-monolith{--gf-bg:#ededeb;--gf-surface:#fafaf8;--gf-text:#171717;--gf-muted:#555552;--gf-border:#c9c9c4;--gf-accent:#30302e;--gf-soft:#e1e1dc;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#ededeb,#deded9);--gf-scene-hue:0deg}
+.mini-shell.theme-verdant{--gf-bg:#edf1ed;--gf-surface:#fafdfa;--gf-text:#203127;--gf-muted:#5c6d61;--gf-border:#ccd8cf;--gf-accent:#486653;--gf-soft:#e0e9e2;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#edf1ed,#dfe8e1);--gf-scene-hue:125deg}
+.mini-shell.theme-glacier{--gf-bg:#edf2f4;--gf-surface:#fbfdfe;--gf-text:#203039;--gf-muted:#5e7079;--gf-border:#cbd9df;--gf-accent:#557684;--gf-soft:#e0eaee;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#edf2f4,#dce7eb);--gf-scene-hue:190deg}
+.mini-shell.theme-solstice{--gf-bg:#f3eee9;--gf-surface:#fffaf6;--gf-text:#352b25;--gf-muted:#76675c;--gf-border:#dfd1c5;--gf-accent:#8a6b57;--gf-soft:#ebe0d7;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#f3eee9,#e9ded4);--gf-scene-hue:25deg}
+.mini-shell.theme-neon-forge{--gf-bg:#090b10;--gf-surface:#12151c;--gf-text:#f0f2f7;--gf-muted:#aab0bd;--gf-border:#303643;--gf-accent:#aeb9cf;--gf-soft:#1b202a;--gf-button-text:#090b10;--gf-backdrop:linear-gradient(145deg,#090b10,#141923);--gf-scene-hue:220deg}
+.mini-shell.theme-porcelain{--gf-bg:#eff1f3;--gf-surface:#fcfdfe;--gf-text:#26313a;--gf-muted:#62717c;--gf-border:#d2dce2;--gf-accent:#667c8a;--gf-soft:#e4eaee;--gf-button-text:#fff;--gf-backdrop:linear-gradient(145deg,#eff1f3,#e0e7eb);--gf-scene-hue:205deg}
+
+/* The same palette applies to every screen, including screens that previously
+   contained hard-coded cream, gold, blue or white component backgrounds. */
+.mini-shell .mini-header,.mini-shell .mini-bottom-nav,.mini-shell .mini-content,
+.mini-shell .mini-panel,.mini-shell .mini-orders,.mini-shell .mini-profile,
+.mini-shell .mini-product,.mini-shell .mini-order,.mini-shell .mini-pending-card,
+.mini-shell .mini-step,.mini-shell .mini-edit-order,.mini-shell .mini-freebie-card,
+.mini-shell .mini-wallet,.mini-shell .mini-wallet-card,.mini-shell .mini-checkout-summary,
+.mini-shell .mini-payid,.mini-shell .mini-payment-methods button,
+.mini-shell .mini-payment-revealed,.mini-shell .mini-payment-preconfirm,
+.mini-shell .mini-payment-slide-card,.mini-shell .mini-profile-action,
+.mini-shell .mini-profile-invite,.mini-shell .mini-profile-telegram-id,
+.mini-shell .mini-profile-metrics>div,.mini-shell .mini-recharge-option,
+.mini-shell .mini-delivery-form,.mini-shell .mini-delivery-result,
+.mini-shell .mini-channel-gate,.mini-shell .mini-order-delivery,
+.mini-shell .mini-balance-history,.mini-shell .mini-freebies-home,
+.mini-shell .mini-freebies-home-art,.mini-shell .gf-methods-showcase,
+.mini-shell .gf-ads-builder,.mini-shell .gf-todays-pick,
+.mini-shell .gf-pick-card,.mini-shell .mini-payment-instructions,
+.mini-shell .mini-payment-revealed-head,.mini-shell .mini-network-selected-note{
+  background-color:var(--gf-surface)!important;
+  background-image:none!important;
+  color:var(--gf-text)!important;
+  border-color:var(--gf-border)!important;
+  box-shadow:0 12px 34px color-mix(in srgb,var(--gf-text) 8%,transparent)!important;
+}
+.mini-shell .mini-content{background:transparent!important;box-shadow:none!important}
+.mini-shell .mini-header{background:color-mix(in srgb,var(--gf-surface) 94%,transparent)!important}
+.mini-shell .mini-header *,.mini-shell .mini-logo b,.mini-shell .mini-logo small,
+.mini-shell .mini-secure,.mini-shell .mini-language-chip,.mini-shell .mini-corner-profile{color:var(--gf-text)!important}
+.mini-shell .mini-primary,.mini-shell .mini-share-button,.mini-shell .mini-payment-methods button.active,
+.mini-shell .mini-category-rail button.active,.mini-shell .mini-plan.active,
+.mini-shell .mini-order-tabs button.active,.mini-shell .mini-profile-member-mark{
+  background:var(--gf-accent)!important;color:var(--gf-button-text)!important;border-color:var(--gf-accent)!important;
+  box-shadow:0 8px 22px color-mix(in srgb,var(--gf-accent) 20%,transparent)!important;
+}
+.mini-shell .mini-secondary,.mini-shell .mini-back,.mini-shell .mini-plan,
+.mini-shell .mini-order-tabs button:not(.active),.mini-shell .mini-category,
+.mini-shell .mini-status,.mini-shell .mini-category-rail button,
+.mini-shell .mini-profile-telegram-id button,.mini-shell .mini-save-qr{
+  background:var(--gf-soft)!important;color:var(--gf-text)!important;border-color:var(--gf-border)!important;
+}
+.mini-shell .mini-profile-clean,.mini-shell .mini-profile-clean *,
+.mini-shell .mini-profile-telegram-id,.mini-shell .mini-profile-metrics>div,
+.mini-shell .mini-profile-invite,.mini-shell .mini-profile-action,
+.mini-shell .mini-profile-action b,.mini-shell .mini-profile-invite-title b,
+.mini-shell .mini-profile-telegram-id b,.mini-shell .mini-profile-metrics b,
+.mini-shell .mini-profile-member-mark,.mini-shell .mini-profile-invite-title>span,
+.mini-shell .mini-profile-action-icon,.mini-shell .mini-profile-clean-head *{
+  color:var(--gf-text)!important;border-color:var(--gf-border)!important;
+}
+.mini-shell .mini-profile-action-icon,.mini-shell .mini-profile-invite-title>span,
+.mini-shell .mini-profile-member-mark{background:var(--gf-soft)!important}
+.mini-shell .mini-profile-clean-head .mini-profile-member-mark{background:var(--gf-accent)!important;color:var(--gf-button-text)!important}
+.mini-shell .mini-profile-clean small,.mini-shell .mini-profile-clean span,
+.mini-shell .mini-profile-telegram-id small,.mini-shell .mini-profile-metrics small,
+.mini-shell .mini-profile-action small,.mini-shell .mini-profile-invite-title small,
+.mini-shell .mini-profile-copy span,.mini-shell .mini-muted,.mini-shell .mini-footer,
+.mini-shell .mini-heading p,.mini-shell .mini-product p,.mini-shell .mini-order small,
+.mini-shell .mini-wallet p,.mini-shell .mini-wallet small{color:var(--gf-muted)!important}
+.mini-shell .mini-freebies-home-art{min-height:112px!important;border:1px solid var(--gf-border)!important}
+.mini-shell .mini-freebies-home-copy>small,.mini-shell .mini-freebies-home-copy h2,
+.mini-shell .mini-freebies-home-copy p,.mini-shell .gf-ads-top span,.mini-shell .gf-ads-top b,
+.mini-shell .gf-ads-builder p,.mini-shell .gf-ads-range,.mini-shell .gf-ads-link,
+.mini-shell .gf-methods-showcase b,.mini-shell .gf-methods-showcase span,
+.mini-shell .gf-methods-showcase small{color:var(--gf-text)!important}
+.mini-shell .mini-payment-revealed-head,.mini-shell .mini-payment-revealed-head span,
+.mini-shell .mini-payment-revealed-head small,.mini-shell .mini-payment-preconfirm *,
+.mini-shell .mini-payment-slide-card *, .mini-shell .mini-payment-fee-line *,
+.mini-shell .mini-network-selected-note *{color:var(--gf-text)!important}
+.mini-shell .mini-payment-qr-wrap{background:#fff!important;border:1px solid var(--gf-border)!important}
+.mini-shell input,.mini-shell textarea,.mini-shell select{background:var(--gf-surface)!important;color:var(--gf-text)!important;border-color:var(--gf-border)!important}
+.mini-shell input::placeholder,.mini-shell textarea::placeholder{color:var(--gf-muted)!important}
+.mini-shell .mini-product-icon,.mini-shell .mini-category-rail button,
+.mini-shell .mini-method-icon,.mini-shell .mini-payment-preconfirm-icon{
+  background:var(--gf-soft)!important;color:var(--gf-text)!important;border-color:var(--gf-border)!important;
+}
+.mini-shell .mini-product img,.mini-shell .mini-product-image img,.mini-shell .mini-featured-image{
+  display:block;max-width:100%;object-fit:cover;border:1px solid var(--gf-border);border-radius:14px;
+}
+.mini-shell .mini-hero,.mini-shell .mini-design-ribbon{
+  background:linear-gradient(145deg,var(--gf-surface),var(--gf-soft))!important;
+  color:var(--gf-text)!important;border:1px solid var(--gf-border)!important;
+}
+.mini-shell .mini-hero:before{background:radial-gradient(ellipse at 72% 28%,color-mix(in srgb,var(--gf-accent) 16%,transparent),transparent 58%)!important}
+.mini-shell .mini-design-ribbon:before{background:radial-gradient(circle at 35% 35%,color-mix(in srgb,var(--gf-accent) 22%,transparent),transparent 66%)!important}
+.mini-shell .mini-design-ribbon:after{background:linear-gradient(135deg,color-mix(in srgb,var(--gf-surface) 70%,transparent),color-mix(in srgb,var(--gf-accent) 14%,transparent))!important;border-color:var(--gf-border)!important}
+.mini-shell .mini-hero-art,.mini-shell .gf-verifier-scene,.mini-shell .gf-payment-scene,
+.mini-shell .gf-ads-scene{position:relative;z-index:3;isolation:isolate;overflow:visible!important;opacity:1!important;visibility:visible!important;filter:none!important}
+.mini-shell .mini-hero-art{min-height:220px!important}
+.mini-shell .mini-hero-art .gf-verifier-scene{width:100%!important;height:230px!important;min-height:230px!important;overflow:visible!important}
+.mini-shell .mini-hero-art canvas,.mini-shell .gf-verifier-scene canvas,
+.mini-shell .gf-payment-scene canvas,.mini-shell .gf-ads-scene canvas{
+  display:block!important;position:relative!important;z-index:4!important;width:100%!important;height:100%!important;
+  opacity:1!important;visibility:visible!important;filter:var(--gf-scene-filter)!important;
+}
+.mini-shell .gf-payment-scene{height:170px!important;min-height:170px!important;overflow:visible!important}
+.mini-shell .gf-payment-scene-wallet,.mini-shell .gf-wallet-purse-scene{width:100%!important;height:180px!important;min-height:180px!important;margin:0 auto!important}
+.mini-shell .gf-ads-scene{height:220px!important;min-height:220px!important;overflow:visible!important}
+.mini-shell .gf-verifier-scene-fallback,.mini-shell .gf-payment-scene>span{display:none!important}
+.mini-shell .gf-methods-showcase,.mini-shell .gf-ads-builder{overflow:visible!important;position:relative;isolation:isolate}
+.mini-shell .gf-methods-showcase .gf-verifier-scene{flex:0 0 48%!important;width:48%!important;height:180px!important;min-height:180px!important}
+.mini-shell .gf-ads-builder .gf-ads-scene{margin:0 auto 10px!important}
+.mini-shell .mini-product{position:relative;overflow:visible}
+.mini-shell .mini-product:hover{border-color:var(--gf-accent)!important;box-shadow:0 20px 45px color-mix(in srgb,var(--gf-accent) 18%,transparent)!important}
+.mini-shell .mini-bottom-nav{background:color-mix(in srgb,var(--gf-surface) 96%,transparent)!important;border-color:var(--gf-border)!important}
+.mini-shell .mini-bottom-nav button{color:var(--gf-muted)!important}
+.mini-shell .mini-bottom-nav button.active{background:var(--gf-accent)!important;color:var(--gf-button-text)!important}
+.mini-shell .mini-footer{color:var(--gf-muted)!important}
+@media(max-width:520px){.mini-shell .mini-hero-art{min-height:205px!important;grid-row:1}.mini-shell .mini-hero-art .gf-verifier-scene{height:210px!important;min-height:210px!important}.mini-shell .gf-payment-scene{height:155px!important;min-height:155px!important}}
+@media(prefers-reduced-motion:reduce){.mini-shell .mini-hero-art canvas,.mini-shell .gf-verifier-scene canvas,.mini-shell .gf-payment-scene canvas,.mini-shell .gf-ads-scene canvas{filter:var(--gf-scene-filter)!important}}
