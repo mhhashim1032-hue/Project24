@@ -26,7 +26,7 @@ for (const theme of themes) {
   const matches = [...css.matchAll(new RegExp("\\.mini-shell\\.theme-" + theme + "\\s*\\{([^}]+)\\}", "g"))];
   const match = matches.find((candidate) => candidate[1].includes("--gf-bg"));
   assert.ok(match, "Missing semantic palette variables for theme: " + theme);
-  const vars = Object.fromEntries([...match[1].matchAll(/--gf-([a-z-]+):\s*(#[0-9a-f]{3,6})/gi)].map((m) => [m[1], m[2]]));
+  const vars = Object.fromEntries([...match[1].matchAll(/--gf-([a-z-]+):\s*(?:var\(--mini-accent,\s*)?(#[0-9a-f]{3,6})/gi)].map((m) => [m[1], m[2]]));
   for (const key of ["bg","surface","text","muted","border","accent","soft","button-text"]) assert.ok(vars[key], theme + " is missing --gf-" + key);
   assert.ok(contrast(vars.text, vars.surface) >= 4.5, theme + " primary text fails WCAG AA");
   assert.ok(contrast(vars.muted, vars.surface) >= 4.5, theme + " muted text fails WCAG AA");
