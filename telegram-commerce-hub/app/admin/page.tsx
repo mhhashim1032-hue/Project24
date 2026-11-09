@@ -99,7 +99,7 @@ const logout=async()=>supabase.auth.signOut();
 <div className="storefront-design-grid">
 {[
 {id:'aurum',name:'01 · AURUM / Gilded Atelier',type:'Sculpted heritage luxury',desc:'Ivory marble, warm gold foil, dimensional product plinths and slow cinematic movement.',layout:'grid',headline:'THE ART OF EXCEPTION'},
-{id:'eclipse',name:'02 · ECLIPSE / Black Label',type:'Obsidian cinematic',desc:'Deep-black surfaces, champagne metal, dramatic spotlights and elevated product staging.',layout:'list',headline:'BEYOND ORDINARY'},
+{id:'eclipse',name:'02 · OBSIDIAN / Black Label',type:'Pure monochrome obsidian',desc:'Pure black, graphite and silver surfaces, sculptural chrome lighting and high-contrast product staging.',layout:'list',headline:'BEYOND ORDINARY'},
 {id:'aurora',name:'03 · AURORA / Prism Lab',type:'Iridescent glass future',desc:'Prismatic gradients, translucent layers, refracted light and fluid motion.',layout:'grid',headline:'A NEW LIGHT ON DIGITAL'},
 {id:'sakura',name:'04 · SAKURA / Tokyo Edit',type:'Japanese editorial',desc:'Soft porcelain pink, asymmetric magazine composition and refined kinetic typography.',layout:'list',headline:'CURATED WITH INTENTION'},
 {id:'monolith',name:'05 · MONOLITH / Form',type:'Architectural brutalism',desc:'Oversized typography, hard geometry, monochrome surfaces and precise transitions.',layout:'compact',headline:'FORM FOLLOWS FUNCTION'},
