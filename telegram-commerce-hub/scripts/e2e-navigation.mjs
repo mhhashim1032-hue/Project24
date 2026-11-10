@@ -69,9 +69,10 @@ try {
   await page.locator(".gf-detail-heading").waitFor({ state: "visible", timeout: 5000 });
   if (!(await page.locator(".mini-plan-list .mini-plan").count())) throw new Error("Product detail did not render its pricing plans.");
   const backToCatalogue = page.getByRole("button", { name: /catalogue/i });
-  const backHitTest = await backToCatalogue.evaluate(el => { const r = el.getBoundingClientRect(); const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { rect: { left: r.left, top: r.top, width: r.width, height: r.height }, pointerEvents: getComputedStyle(el).pointerEvents, hitTag: hit?.tagName, hitClass: String(hit?.className ?? "") }; });
-  console.log("Product detail back-control hit test:", JSON.stringify(backHitTest));
-  await backToCatalogue.evaluate(el => el.click());
+  await backToCatalogue.evaluate(el => el.scrollIntoView({ block: "center", inline: "nearest" }));
+  const backHitTest = await backToCatalogue.evaluate(el => { const r = el.getBoundingClientRect(); const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { hitWithinButton: Boolean(hit && (hit === el || el.contains(hit))), hitTag: hit?.tagName, rectTop: r.top }; });
+  if (!backHitTest.hitWithinButton) throw new Error("Product detail back button is not pointer-accessible: " + JSON.stringify(backHitTest));
+  await backToCatalogue.click();
   await page.locator(".gf-product-grid").waitFor({ state: "visible", timeout: 5000 });
 
   for (const width of [390, 768, 1920]) {
