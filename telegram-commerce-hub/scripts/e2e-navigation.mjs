@@ -68,7 +68,10 @@ try {
   await firstProduct.click();
   await page.locator(".gf-detail-heading").waitFor({ state: "visible", timeout: 5000 });
   if (!(await page.locator(".mini-plan-list .mini-plan").count())) throw new Error("Product detail did not render its pricing plans.");
-  await page.getByRole("button", { name: /catalogue/i }).click();
+  const backToCatalogue = page.getByRole("button", { name: /catalogue/i });
+  await backToCatalogue.evaluate(el => el.scrollIntoView({ block: "center", inline: "nearest" }));
+  await page.waitForTimeout(180);
+  await backToCatalogue.click();
   await page.locator(".gf-product-grid").waitFor({ state: "visible", timeout: 5000 });
 
   for (const width of [390, 768, 1920]) {
