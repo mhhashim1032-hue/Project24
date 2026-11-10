@@ -52,7 +52,7 @@ try {
   await mainNav.getByRole("button", { name: /store/i }).click();
   const sections = page.locator('nav[aria-label="Store sections"]');
   await sections.waitFor({ state: "visible", timeout: 10000 });
-  for (const section of ["Products", "Verify", "Methods", "Promos"]) {
+  for (const section of ["Products", "Verify", "Methods", "Ads"]) {
     const button = sections.getByRole("button", { name: section, exact: true });
     await button.click();
     if (!(await button.evaluate(el => el.classList.contains("active")))) throw new Error(section + " store section did not activate.");
