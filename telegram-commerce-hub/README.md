@@ -1,20 +1,19 @@
 # Gold Feather Premium — Telegram Commerce OS
 
-A premium software and subscription store with a Telegram bot, Telegram Mini App, private admin dashboard, Binance Pay ID transaction verification and automatic/manual fulfilment.
+A Telegram commerce administration system with a private admin dashboard, bot webhook, Binance Pay ID transaction verification and automatic/manual fulfilment. The customer-facing Telegram Mini App has been retired; existing customer, product, order, payment and fulfilment data is retained.
 
 ## Infrastructure
 
-- Next.js 15 / React 19 / TypeScript admin dashboard and Telegram Mini App on Vercel
+- Next.js 15 / React 19 / TypeScript admin dashboard on Vercel
 - SheetJS 0.20.3 from the official SheetJS CDN for spreadsheet import/export (avoids the stale, vulnerable npm-registry 0.18.5 package)
 - Supabase PostgreSQL with Row Level Security, Vault-backed credentials and subscription records
 - Supabase Edge Functions `gold-feather-commerce` (customer sessions, checkout and payment verification) and `gold-feather-server` (admin server operations, webhook, health and developer API)
-- Telegram Bot API webhook and Mini App
+- Telegram Bot API webhook for customer registration, referral attribution and support
 - Binance personal-account Pay Trade History API (read-only USER_DATA permission)
 
 ## App URLs
 
 - Admin dashboard: https://gold-feather-premium.vercel.app/admin
-- Telegram Mini App: https://gold-feather-premium.vercel.app/miniapp
 - Health: https://gold-feather-premium.vercel.app/api/health
 
 The canonical Vercel hostname is `gold-feather-premium.vercel.app`; the product branding displayed to customers is **Gold Feather Premium**. Update `APP_URL` if the canonical domain changes.
@@ -25,11 +24,11 @@ The canonical Vercel hostname is `gold-feather-premium.vercel.app`; the product 
 2. Sign in to the admin dashboard and open **Bot & Store → Encrypted bot & payment credentials**.
 3. Paste the main Telegram bot token from BotFather and save it. The token is encrypted in Supabase Vault and is never returned to the browser.
 4. Keep only `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `APP_URL` in the Vercel project. The server-role credential and Telegram/Binance secrets are read inside Supabase Edge Functions and Supabase Vault; do not copy them into Vercel or the browser.
-5. In the admin dashboard, use **Bot & Store → Configure Telegram** to register the webhook and Mini App menu button, then send `/start` to the bot.
+5. In the admin dashboard, use **Bot & Store → Configure Telegram webhook** to register the webhook and remove any old Mini App menu button, then send `/start` to the bot.
 
 The bot username (the `@username`) is controlled by BotFather and cannot be renamed through the Bot API. Save the correct username in the admin dashboard so referral links point to the right bot.
 
-The Mini App authenticates Telegram users using signed `initData`: Telegram's Ed25519 verification is preferred, with standard Bot-token HMAC validation as a compatibility fallback. The Edge Functions read the token from Supabase Vault. The webhook secret is retained from the Supabase Edge Function environment when configured; otherwise it is deterministically derived from the Vault-held bot token during setup. The Next.js API routes proxy authenticated admin work to the Edge Function and do not require a Vercel service-role key. The commerce function does not trust the browser's `initDataUnsafe`. Customer registration is automatic when the Mini App opens.
+The Telegram webhook registers customers when they send `/start`, applies referral attribution where appropriate, and keeps the admin broadcast and support workflows available. The webhook secret is retained from the Supabase Edge Function environment when configured; otherwise it is deterministically derived from the Vault-held bot token during setup. The Next.js API routes proxy authenticated admin work to the Edge Function and do not require a Vercel service-role key.
 
 Telegram shares the fields available in the Telegram profile: Telegram ID, first/last name, username, language, optional profile photo and premium status. Telegram does not automatically share email or phone number.
 
@@ -76,7 +75,7 @@ Until both Binance credentials are configured, transaction references can be sav
 - Expired unpaid orders are cancelled and reserved stock is restored.
 - **Automatic fulfilment:** admins save licence keys, download links or delivery instructions in the admin-only `product_delivery_secrets` table. Delivery is released only after payment verification.
 - **Manual fulfilment:** admins can complete paid orders from the dashboard.
-- Customers can see their order status, subscription expiry and released delivery in the Mini App.
+- Existing order, subscription, payment and delivery records remain in Supabase and can be reviewed by administrators.
 
 Never put licence keys, account credentials or other secrets in public product descriptions.
 
@@ -112,5 +111,5 @@ where p.id = u.id
 
 ## Remaining activation steps
 
-The infrastructure, database, dashboard, Mini App and payment-verification logic are in place. Configure the Telegram bot token in the admin Vault panel, set `APP_URL` in Vercel, and use **Configure Telegram** in the admin dashboard. No Supabase service-role key or Telegram bot token is required in Vercel. Automatic Binance verification requires the read-only API key and secret saved in the admin Vault panel and the receiving Pay ID in the admin dashboard. The first admin account must also be created and promoted using the SQL above.
+The database, admin dashboard, bot webhook and payment-verification logic remain in place. Configure the Telegram bot token in the admin Vault panel, set `APP_URL` in Vercel, and use **Configure Telegram webhook** in the admin dashboard to clear any old Mini App menu button. No Supabase service-role key or Telegram bot token is required in Vercel. Automatic Binance verification requires the read-only API key and secret saved in the admin Vault panel and the receiving Pay ID in the admin dashboard. The first admin account must also be created and promoted using the SQL above.
 \n\n## Commerce extensions added\n\nA follow-up migration adds product warranty duration, per-plan quantity-discount configuration, an auditable stock adjustment ledger, wallet transaction ledger, refund requests and warranty claims. Admin stock adjustments and wallet credits are restricted to authenticated admins; warranty claims are accepted only for paid/fulfilled orders while the product warranty is active. The admin and Mini App screens still need to be wired to all these workflows before they are customer-ready.\n
