@@ -113,8 +113,8 @@ for (const [label, source] of [["verifier",verifierScene],["payment",paymentScen
 }
 
 const admin = read("app/admin/page.tsx");
-assert.ok(admin.includes("id:'light-gold'") && admin.includes("id:'obsidian'"), "Admin must expose both premium themes.");
-assert.equal((admin.match(/id:'(?:light-gold|obsidian)'/g) || []).length, 2, "Admin gallery must contain exactly two theme choices.");
+assert.ok(admin.includes("Configure Telegram webhook") && admin.includes("Bot & Store"), "Admin operations and Telegram setup must remain available.");
+assert.ok(!admin.includes("id:'light-gold'") && !admin.includes("id:'obsidian'"), "Customer storefront theme customization must stay outside the admin operations panel.");
 const themeMigration = read("supabase/migrations/20261110010000_two_premium_storefront_themes.sql");
 assert.ok(themeMigration.includes("ARRAY['light-gold','obsidian']"), "Database migration must constrain the setting to exactly two themes.");
 for (const legacy of ["aurora","sakura","monolith","verdant","glacier","solstice","neon-forge","porcelain"]) assert.ok(!admin.includes("id:'"+legacy+"'"), "Legacy theme remains in admin gallery: "+legacy);
