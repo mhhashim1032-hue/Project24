@@ -494,3 +494,7 @@ body:has(.mini-shell.verifier-app .mini-checkout-panel)::before {
 @media(min-width:1120px){.verifier-live-shell .gf-product-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.verifier-live-shell .mini-content{padding-bottom:130px!important}}
 @media(max-width:520px){.verifier-live-shell .mini-header.vf-header{height:62px;padding-inline:12px}.verifier-live-shell .mini-content{padding:12px 12px 22px!important}.verifier-live-shell .gf-editorial-hero{min-height:210px;border-radius:19px}.verifier-live-shell .gf-editorial-copy{max-width:68%;padding:20px 16px}.verifier-live-shell .mini-bottom-nav.vdock{bottom:10px}}
 @media(prefers-reduced-motion:reduce){.verifier-live-shell *,.verifier-live-shell *:before,.verifier-live-shell *:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+
+/* Keep the four primary destinations visible above the persistent dock. */
+.verifier-live-shell .mini-bottom-nav.vdock{grid-template-columns:repeat(4,minmax(0,1fr))!important;}
