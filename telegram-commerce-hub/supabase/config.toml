@@ -1,7 +1,0 @@
-project_id = "ckresrujdienuqczzyki"
-
-[functions.gold-feather-commerce]
-verify_jwt = false
-
-[functions.gold-feather-server]
-verify_jwt = false
