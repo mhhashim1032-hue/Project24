@@ -1,0 +1,45 @@
+name: Admin and backend build check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'telegram-commerce-hub/**'
+      - '.github/workflows/admin-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: telegram-commerce-hub
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: build-only-placeholder-publishable-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Audit dependencies
+        run: npm audit --audit-level=high --no-audit --no-fund
+      - name: Build Next.js admin
+        run: npm run build
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Supabase Edge Functions
+        run: |
+          deno check --node-modules-dir=auto --no-lock supabase/functions/gold-feather-commerce/index.ts
+          deno check --node-modules-dir=auto --no-lock supabase/functions/gold-feather-server/index.ts
+      - name: Run retirement and backend quality checks
+        run: npm run quality:check
+      - name: Install Playwright browser
+        run: |
+          npm install --no-save --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+      - name: Test admin and retired storefront routes
+        run: npm run test:e2e
