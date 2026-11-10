@@ -51,7 +51,7 @@ Customers are never asked for a Binance UID. They submit only the Binance transa
 
 Open **Admin → Bot & Store → Encrypted bot & payment credentials** and save the Binance API key and secret. The admin API stores them in Supabase Vault. The Edge Function reads Vault first and retains `BINANCE_API_KEY` / `BINANCE_API_SECRET` Edge Function secrets as a server-side fallback.
 
-Create the personal Binance API key with **Enable Reading / USER_DATA only**. Do not enable trading, withdrawals or transfers. Use IP restrictions if your Binance account supports them. The credentials are never sent to the Mini App or browser.
+Create the personal Binance API key with **Enable Reading / USER_DATA only**. Do not enable trading, withdrawals or transfers. Use IP restrictions if your Binance account supports them. The credentials are never sent to the browser.
 
 Until both Binance credentials are configured, transaction references can be saved but automatic verification remains unavailable. Admins can manually approve or reject a submission after checking the receiving Binance account; all manual approvals are audited and transaction IDs are globally claimed. No product is delivered without either a successful automatic match or an explicit admin approval.
 
@@ -101,7 +101,6 @@ where p.id = u.id
 ## Security
 
 - Supabase RLS is enabled; security advisor reports no security lints.
-- Telegram Mini App requests are signed and validated server-side.
 - Supabase Edge Functions use the platform's server-side service-role credential; no service-role key is stored in Vercel or shipped to the browser.
 - Customer profiles and payment claims are not directly readable by anonymous users.
 - Privileged admin API operations are executed by the Supabase `gold-feather-server` Edge Function after validating the signed-in admin session; Vercel does not hold a service-role key.
