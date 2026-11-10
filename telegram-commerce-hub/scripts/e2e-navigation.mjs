@@ -31,7 +31,7 @@ try {
     position: getComputedStyle(el).position,
     columns: getComputedStyle(el).gridTemplateColumns.split(" ").length,
   }));
-  if (navLayout.position !== "fixed" || navLayout.columns !== 4) throw new Error("Primary navigation must be a fixed four-column bar.");
+  if (navLayout.position !== "fixed" || navLayout.columns !== 4) throw new Error("Primary navigation layout mismatch: " + JSON.stringify(navLayout));
   const navBeforeScroll = await mainNav.boundingBox();
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.waitForTimeout(150);
