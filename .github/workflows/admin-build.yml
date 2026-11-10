@@ -35,11 +35,11 @@ jobs:
         run: |
           deno check --node-modules-dir=auto --no-lock supabase/functions/gold-feather-commerce/index.ts
           deno check --node-modules-dir=auto --no-lock supabase/functions/gold-feather-server/index.ts
-      - name: Run retirement and backend quality checks
+      - name: Run storefront and backend quality checks
         run: npm run quality:check
       - name: Install Playwright browser
         run: |
           npm install --no-save --no-audit --no-fund playwright
           npx playwright install --with-deps chromium
-      - name: Test admin and retired storefront routes
+      - name: Test customer storefront and admin routes
         run: npm run test:e2e
