@@ -1691,3 +1691,9 @@ body{overflow-x:clip}.mini-shell{--gf-button-text:#fff;isolation:isolate;positio
 .mini-shell .gf-unpaid-invoice b{display:block;color:var(--gf-text)!important;font-size:10px!important}
 .mini-shell .gf-unpaid-invoice button{min-height:31px;padding:0 9px;border-radius:8px;background:var(--gf-accent);color:var(--gf-button-text);font-size:9px;font-weight:800}
 .mini-shell .gf-unpaid-invoice .gf-invoice-cancel{background:transparent;color:var(--gf-muted);border:1px solid var(--gf-border)}
+
+
+/* Reliable full-card tap target for Telegram WebView and touch browsers. */
+.mini-shell .gf-product-tile{position:relative;isolation:isolate;touch-action:manipulation}
+.mini-shell .gf-product-hitarea{position:absolute!important;inset:0!important;z-index:8!important;display:block!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:inherit!important;background:transparent!important;opacity:0!important;cursor:pointer!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important}
+.mini-shell .gf-product-hitarea:focus-visible{opacity:1!important;outline:3px solid var(--gf-accent)!important;outline-offset:-4px!important}
