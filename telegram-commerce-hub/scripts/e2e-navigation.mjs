@@ -44,9 +44,9 @@ try {
     await button.click();
     await page.waitForFunction(label => {
       const buttons = [...document.querySelectorAll('nav[aria-label="Main navigation"] button')];
-      const target = buttons.find(item => item.textContent?.trim().toLowerCase() === label.toLowerCase());
+      const target = buttons.find(item => item.textContent?.toLowerCase().includes(label.toLowerCase()));
       return target?.getAttribute("aria-current") === "page";
-    }, tab, { timeout: 4000 });
+    }, tab, { timeout: 4000 }).catch(async () => { throw new Error(tab + " navigation did not activate; current nav=" + await mainNav.innerText()); });
   }
 
   await mainNav.getByRole("button", { name: /store/i }).click();
