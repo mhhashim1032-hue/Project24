@@ -83,12 +83,13 @@ async function health(appUrl: string) {
     getSecret("binance_api_secret"),
   ]);
   const safeAppUrl = appUrl.replace(/\/$/, "");
-  let webhookConfigured = false;
+  let webhookConfigured = false, menuButtonConfigured = false;
   let telegramDiagnostics: Record<string, unknown> = {};
   if (telegramToken && /^https:\/\//i.test(safeAppUrl)) {
     try {
-      const webhook = await telegram(telegramToken, "getWebhookInfo", {});
+      const [webhook, menuButton] = await Promise.all([telegram(telegramToken, "getWebhookInfo", {}), telegram(telegramToken, "getChatMenuButton", {})]);
       webhookConfigured = String(webhook.url || "") === safeAppUrl + "/api/telegram/webhook";
+      menuButtonConfigured = menuButton.type === "web_app" && String(menuButton.web_app?.url || "") === safeAppUrl + "/miniapp";
       telegramDiagnostics = {
         pendingUpdateCount: Number(webhook.pending_update_count || 0),
         lastWebhookError: webhook.last_error_message || null,
@@ -108,15 +109,16 @@ async function health(appUrl: string) {
     binanceConfigured: Boolean(binanceKey && binanceSecret),
     appUrlConfigured: /^https:\/\//i.test(safeAppUrl),
     webhookConfigured,
+    menuButtonConfigured,
     customerRegistrationConfigured: !settings.error && !vaultProbe.error,
-    customerStorefront: "retired",
+    customerStorefront: "active",
     webhookPendingUpdates: Number(telegramDiagnostics.pendingUpdateCount || 0),
     webhookLastError: telegramDiagnostics.lastWebhookError || null,
     webhookLastErrorDate: telegramDiagnostics.lastWebhookErrorDate || null,
   };
   const ok = checks.databaseConfigured && checks.secretVaultReachable && checks.serviceRoleVerified &&
-    checks.telegramConfigured && checks.appUrlConfigured && checks.webhookConfigured;
-  return json({ ok, status: ok ? "ready" : "degraded", checks, telegramDiagnostics, functionVersion: 5 }, ok ? 200 : 503);
+    checks.telegramConfigured && checks.appUrlConfigured && checks.webhookConfigured && checks.menuButtonConfigured;
+  return json({ ok, status: ok ? "ready" : "degraded", checks, telegramDiagnostics, functionVersion: 6 }, ok ? 200 : 503);
 }
 async function handleWebhook(req: Request, body: any) {
   const token = await getSecret("telegram_bot_token");
@@ -132,8 +134,10 @@ async function handleWebhook(req: Request, body: any) {
   const chatId = message.chat.id;
   const input = String(message.text || "").trim();
   const user = message.from || {};
+  const appUrl = String(body.appUrl || Deno.env.get("APP_URL") || "").replace(/\/$/, "");
+  const keyboard = /^https:\/\//i.test(appUrl) ? { inline_keyboard: [[{ text: "🛍 Open Store", web_app: { url: appUrl + "/miniapp" } }]] } : undefined;
   const send = (text: string, parseMode?: string) => telegram(token, "sendMessage", {
-    chat_id: chatId, text, ...(parseMode ? { parse_mode: parseMode } : {}),
+    chat_id: chatId, text, ...(parseMode ? { parse_mode: parseMode } : {}), ...(keyboard ? { reply_markup: keyboard } : {}),
   });
   if (input.startsWith("/start") || input.startsWith("/help")) {
     if (user.id) {
@@ -156,18 +160,18 @@ async function handleWebhook(req: Request, body: any) {
     }
     const safeName = String(user.first_name || "there").replace(/[&<>"]/g, "");
     const storeName = String(body.storeName || Deno.env.get("STORE_NAME") || "GOLD FEATHER PREMIUM").replace(/[&<>"]/g, "");
-    await send("<b>" + storeName + "</b>\nWelcome, " + safeName + "! Your Telegram account is registered. The customer storefront has been retired. For existing orders or assistance, contact @GoldFeatherSupport.", "HTML");
+    await send("<b>" + storeName + "</b>\nWelcome, " + safeName + "! Your Telegram account is ready. Tap below to browse products, place orders and manage purchases.", "HTML");
     return json({ ok: true, registered: Boolean(user.id) });
   }
   if (input.startsWith("/catalog") || input === "Browse catalogue") {
-    await send("The customer storefront has been retired. For existing orders or assistance, contact @GoldFeatherSupport.");
+    await send("Browse products and plans in the store:");
     return json({ ok: true });
   }
   if (input.startsWith("/orders") || input === "My orders") {
-    await send("The customer storefront has been retired. For existing orders, payments or delivery assistance, contact @GoldFeatherSupport.");
+    await send("Open the store to view your orders, payment status and digital deliveries:");
     return json({ ok: true });
   }
-  await send("Use /start to register with the bot. The customer storefront has been retired; for assistance, contact @GoldFeatherSupport.");
+  await send("Use /start to register or open the store below. For assistance, contact @GoldFeatherSupport.");
   return json({ ok: true });
 }
 
@@ -283,23 +287,24 @@ Deno.serve(async (req: Request) => {
       const configuredSecret = Deno.env.get("TELEGRAM_WEBHOOK_SECRET") || "";
       const secret = /^[A-Za-z0-9_-]{1,256}$/.test(configuredSecret) ? configuredSecret : await webhookSecret(token);
       const webhookUrl = appUrl + "/api/telegram/webhook";
+      const miniAppUrl = appUrl + "/miniapp";
       await telegram(token, "setMyName", { name: "Gold Feather Premium", language_code: "en" });
       await telegram(token, "setMyDescription", { description: "Gold Feather Premium — premium digital products, software and subscriptions with secure checkout." });
       await telegram(token, "setMyShortDescription", { short_description: "Shop premium digital products and subscriptions." });
       await telegram(token, "setMyCommands", { commands: [
         { command: "start", description: "Register with Gold Feather Premium" },
-        { command: "catalog", description: "Storefront retired · contact support" },
+        { command: "catalog", description: "Browse products and subscriptions" },
         { command: "orders", description: "Get order support" },
         { command: "help", description: "Get store help" },
       ] });
       await telegram(token, "setWebhook", { url: webhookUrl, secret_token: secret, allowed_updates: ["message", "callback_query"], drop_pending_updates: false });
-      await telegram(token, "setChatMenuButton", { menu_button: { type: "default" } });
+      await telegram(token, "setChatMenuButton", { menu_button: { type: "web_app", text: "Open Store", web_app: { url: miniAppUrl } } });
       const [webhookInfo, menuButton, bot] = await Promise.all([
         telegram(token, "getWebhookInfo", {}), telegram(token, "getChatMenuButton", {}), telegram(token, "getMe", {}),
       ]);
       const settingsSynced = Boolean((await admin.from("bot_settings").update({ telegram_bot_id: String(bot.id), ...(bot.username ? { telegram_bot_username: String(bot.username) } : {}) }).eq("id", 1)).error === null);
-      const ok = String(webhookInfo.url || "") === webhookUrl && menuButton.type !== "web_app" && settingsSynced;
-      return json({ ok, settingsSynced, webhookInfo, menuButton, bot: { id: bot.id, username: bot.username }, verification: { webhook: String(webhookInfo.url || "") === webhookUrl, miniAppMenuButtonRemoved: menuButton.type !== "web_app", pendingUpdateCount: Number(webhookInfo.pending_update_count || 0), lastWebhookError: webhookInfo.last_error_message || null } }, ok ? 200 : 502);
+      const ok = String(webhookInfo.url || "") === webhookUrl && menuButton.type === "web_app" && String(menuButton.web_app?.url || "") === miniAppUrl && settingsSynced;
+      return json({ ok, settingsSynced, webhookInfo, menuButton, bot: { id: bot.id, username: bot.username }, verification: { webhook: String(webhookInfo.url || "") === webhookUrl, menuButton: menuButton.type === "web_app" && String(menuButton.web_app?.url || "") === miniAppUrl, pendingUpdateCount: Number(webhookInfo.pending_update_count || 0), lastWebhookError: webhookInfo.last_error_message || null } }, ok ? 200 : 502);
     }
     return json({ error: "UNKNOWN_ACTION" }, 400);
   } catch (error) {

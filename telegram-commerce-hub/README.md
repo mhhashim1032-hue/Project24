@@ -1,6 +1,6 @@
 # Gold Feather Premium — Telegram Commerce OS
 
-A Telegram commerce administration system with a private admin dashboard, bot webhook, Binance Pay ID transaction verification and automatic/manual fulfilment. The customer-facing Telegram Mini App has been retired; existing customer, product, order, payment and fulfilment data is retained.
+A Telegram commerce platform with a premium customer Mini App, private admin dashboard, secure bot webhook, Binance Pay ID transaction verification and automatic/manual fulfilment.
 
 ## Infrastructure
 
@@ -24,7 +24,7 @@ The canonical Vercel hostname is `gold-feather-premium.vercel.app`; the product 
 2. Sign in to the admin dashboard and open **Bot & Store → Encrypted bot & payment credentials**.
 3. Paste the main Telegram bot token from BotFather and save it. The token is encrypted in Supabase Vault and is never returned to the browser.
 4. Keep only `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `APP_URL` in the Vercel project. The server-role credential and Telegram/Binance secrets are read inside Supabase Edge Functions and Supabase Vault; do not copy them into Vercel or the browser.
-5. In the admin dashboard, use **Bot & Store → Configure Telegram webhook** to register the webhook and remove any old Mini App menu button, then send `/start` to the bot.
+5. In the admin dashboard, use **Settings → Configure Telegram webhook** to register the webhook and point Telegram's menu button to `/miniapp`, then send `/start` to the bot.
 
 The bot username (the `@username`) is controlled by BotFather and cannot be renamed through the Bot API. Save the correct username in the admin dashboard so referral links point to the right bot.
 
@@ -110,5 +110,5 @@ where p.id = u.id
 
 ## Remaining activation steps
 
-The database, admin dashboard, bot webhook and payment-verification logic remain in place. Configure the Telegram bot token in the admin Vault panel, set `APP_URL` in Vercel, and use **Configure Telegram webhook** in the admin dashboard to clear any old Mini App menu button. No Supabase service-role key or Telegram bot token is required in Vercel. Automatic Binance verification requires the read-only API key and secret saved in the admin Vault panel and the receiving Pay ID in the admin dashboard. The first admin account must also be created and promoted using the SQL above.
+The customer Mini App is served at `/miniapp` (the legacy `/store` route redirects there). The database, admin dashboard, bot webhook, wallet, order fulfilment and payment-verification logic remain in place. Configure the Telegram bot token in the admin Vault panel, set `APP_URL` in Vercel, deploy the `gold-feather-server` Edge Function, and use **Settings → Configure Telegram webhook** in the admin dashboard to set the Mini App menu button. No Supabase service-role key or Telegram bot token is required in Vercel. Automatic Binance verification requires the read-only API key and secret saved in the admin Vault panel and the receiving Pay ID in the admin dashboard. The first admin account must also be created and promoted using the SQL above.
 \n\n## Commerce extensions added\n\nA follow-up migration adds product warranty duration, per-plan quantity-discount configuration, an auditable stock adjustment ledger, wallet transaction ledger, refund requests and warranty claims. Admin stock adjustments and wallet credits are restricted to authenticated admins; warranty claims are accepted only for paid/fulfilled orders while the product warranty is active. The admin screens still need to be wired to all these workflows before they are administrator-ready.\n

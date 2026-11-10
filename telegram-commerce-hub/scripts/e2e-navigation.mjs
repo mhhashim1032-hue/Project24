@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 
 const port = 3210;
 const base = "http://127.0.0.1:" + port;
+const preview = "/miniapp?draftPreview=%7B%7D";
 const server = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-p", String(port)], {
   stdio: "inherit",
   env: { ...process.env, NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co", NEXT_PUBLIC_SUPABASE_ANON_KEY: "build-only-placeholder-publishable-key" },
@@ -11,7 +12,7 @@ let browser;
 try {
   let ready = false;
   for (let i = 0; i < 60; i++) {
-    try { const response = await fetch(base + "/admin"); if (response.ok) { ready = true; break; } } catch {}
+    try { const response = await fetch(base + preview); if (response.ok) { ready = true; break; } } catch {}
     await new Promise(resolve => setTimeout(resolve, 500));
   }
   if (!ready) throw new Error("Next.js server did not become ready.");
@@ -20,24 +21,74 @@ try {
   const pageErrors = [];
   page.on("pageerror", error => pageErrors.push(error.message));
 
-  const rootResponse = await page.goto(base + "/", { waitUntil: "domcontentloaded" });
-  if (!rootResponse || rootResponse.status() >= 400 || !page.url().endsWith("/admin")) throw new Error("Root route must redirect to /admin.");
+  await page.goto(base + preview, { waitUntil: "domcontentloaded" });
+  await page.locator('nav[aria-label="Main navigation"]').waitFor({ state: "visible", timeout: 15000 });
+  await page.locator('.mini-shell[data-client-ready="true"]').waitFor({ state: "attached", timeout: 15000 });
+  await page.waitForTimeout(1300);
 
-  await page.locator('input[type="email"], input[autocomplete="email"]').first().waitFor({ state: "visible", timeout: 10000 });
-  const adminHtml = await page.locator("body").innerText();
-  if (!adminHtml.toLowerCase().includes("sign in") && !adminHtml.toLowerCase().includes("email")) throw new Error("Admin sign-in screen did not render.");
+  const mainNav = page.locator('nav[aria-label="Main navigation"]');
+  const navLayout = await mainNav.evaluate(el => ({
+    position: getComputedStyle(el).position,
+    columns: getComputedStyle(el).gridTemplateColumns.split(" ").length,
+  }));
+  if (navLayout.position !== "fixed" || navLayout.columns !== 4) throw new Error("Primary navigation layout mismatch: " + JSON.stringify(navLayout));
+  const navBeforeScroll = await mainNav.boundingBox();
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(150);
+  const navAfterScroll = await mainNav.boundingBox();
+  if (!navBeforeScroll || !navAfterScroll || Math.abs(navAfterScroll.y - navBeforeScroll.y) > 2) throw new Error("Primary navigation moved or disappeared while scrolling.");
+  await page.evaluate(() => window.scrollTo(0, 0));
 
-  for (const route of ["/miniapp", "/store"]) {
-    const response = await page.goto(base + route, { waitUntil: "domcontentloaded" });
-    if (!response || response.status() !== 404) throw new Error(route + " must return 404 after storefront retirement.");
+  for (const tab of ["Store", "Orders", "Balance", "Profile"]) {
+    const button = mainNav.getByRole("button", { name: new RegExp(tab, "i") });
+    await button.click();
+    await page.waitForFunction(label => {
+      const buttons = [...document.querySelectorAll('nav[aria-label="Main navigation"] button')];
+      const target = buttons.find(item => item.textContent?.toLowerCase().includes(label.toLowerCase()));
+      return target?.getAttribute("aria-current") === "page";
+    }, tab, { timeout: 4000 }).catch(async () => { throw new Error(tab + " navigation did not activate; current nav=" + await mainNav.innerText()); });
+  }
+
+  await mainNav.getByRole("button", { name: /store/i }).click();
+  const sections = page.locator('nav[aria-label="Store sections"]');
+  await sections.waitFor({ state: "visible", timeout: 10000 });
+  for (const section of ["Products", "Verify", "Methods", "Ads"]) {
+    const button = sections.getByRole("button", { name: section, exact: true });
+    await button.click();
+    if (!(await button.evaluate(el => el.classList.contains("active")))) throw new Error(section + " store section did not activate.");
+  }
+  await sections.getByRole("button", { name: "Products", exact: true }).click();
+
+  const search = page.getByLabel("Search catalogue");
+  await search.fill("Creative");
+  const matchingProduct = page.locator(".gf-product-tile:visible").filter({ hasText: "Creative Suite Pro" }).first();
+  await matchingProduct.waitFor({ state: "visible", timeout: 5000 });
+  await search.fill("");
+  const firstProduct = page.locator(".gf-product-tile:visible").first();
+  await firstProduct.click();
+  await page.locator(".gf-detail-heading").waitFor({ state: "visible", timeout: 5000 });
+  if (!(await page.locator(".mini-plan-list .mini-plan").count())) throw new Error("Product detail did not render its pricing plans.");
+  const backToCatalogue = page.getByRole("button", { name: /catalogue/i });
+  await backToCatalogue.evaluate(el => el.scrollIntoView({ block: "center", inline: "nearest" }));
+  const backHitTest = await backToCatalogue.evaluate(el => { const r = el.getBoundingClientRect(); const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { hitWithinButton: Boolean(hit && (hit === el || el.contains(hit))), hitTag: hit?.tagName, rectTop: r.top }; });
+  await backToCatalogue.evaluate(el => el.click());
+  await page.locator(".gf-product-grid").waitFor({ state: "visible", timeout: 5000 });
+
+  for (const width of [390, 768, 1920]) {
+    await page.setViewportSize({ width, height: width > 1000 ? 1080 : 1024 });
+    await page.waitForTimeout(100);
+    const dimensions = await page.evaluate(() => ({
+      overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+      columns: getComputedStyle(document.querySelector(".gf-product-grid")).gridTemplateColumns.split(" ").length,
+    }));
+    if (dimensions.overflow) throw new Error("Mini App has horizontal overflow at " + width + "px viewport.");
+    if (width >= 1120 && dimensions.columns < 4) throw new Error("Full HD desktop catalogue must show at least four product columns.");
   }
 
   await page.goto(base + "/admin", { waitUntil: "domcontentloaded" });
   await page.locator('input[type="email"], input[autocomplete="email"]').first().waitFor({ state: "visible", timeout: 10000 });
-  const links = await page.locator("a").evaluateAll(nodes => nodes.map(node => node.getAttribute("href") || ""));
-  if (links.some(href => href.includes("/miniapp"))) throw new Error("Admin page still exposes a Mini App launch link.");
   if (pageErrors.length) throw new Error("Browser runtime errors: " + pageErrors.join(" | "));
-  console.log("E2E passed: admin root redirect, admin sign-in screen, retired /miniapp and /store return 404, and no admin launch links.");
+  console.log("E2E passed: storefront navigation, store sections, catalogue search, product details/plans, mobile/tablet/Full HD responsive layouts, and preserved admin sign-in.");
 } finally {
   if (browser) await browser.close();
   server.kill("SIGTERM");
