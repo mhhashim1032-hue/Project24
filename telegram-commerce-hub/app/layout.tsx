@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
-import "./verifier-live.css";
 
 export const metadata: Metadata = {
   title: "Gold Feather Premium · Commerce OS",
-  description: "Gold Feather Premium — Telegram software store, customer Mini App and secure digital commerce.",
+  description: "Gold Feather Premium secure administration dashboard.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -16,7 +14,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body>
-        <Script src="https://telegram.org/js/telegram-web-app.js?64" strategy="beforeInteractive" />
         {children}
       </body>
     </html>
