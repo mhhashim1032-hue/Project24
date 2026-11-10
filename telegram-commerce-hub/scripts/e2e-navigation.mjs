@@ -71,7 +71,7 @@ try {
   const backToCatalogue = page.getByRole("button", { name: /catalogue/i });
   const backHitTest = await backToCatalogue.evaluate(el => { const r = el.getBoundingClientRect(); const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { pointerEvents: getComputedStyle(el).pointerEvents, hitTag: hit?.tagName, hitClass: String(hit?.className ?? "") }; });
   console.log("Product detail back-control hit test:", JSON.stringify(backHitTest));
-  await backToCatalogue.evaluate(el => (el as HTMLButtonElement).click());
+  await backToCatalogue.evaluate(el => el.click());
   await page.locator(".gf-product-grid").waitFor({ state: "visible", timeout: 5000 });
 
   for (const width of [390, 768, 1920]) {
