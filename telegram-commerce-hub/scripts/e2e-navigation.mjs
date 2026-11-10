@@ -61,9 +61,10 @@ try {
 
   const search = page.getByLabel("Search catalogue");
   await search.fill("Creative");
-  await page.getByText("Creative Suite Pro", { exact: true }).first().waitFor({ state: "visible", timeout: 5000 });
+  const matchingProduct = page.locator(".gf-product-tile:visible").filter({ hasText: "Creative Suite Pro" }).first();
+  await matchingProduct.waitFor({ state: "visible", timeout: 5000 });
   await search.fill("");
-  const firstProduct = page.locator(".gf-product-tile").first();
+  const firstProduct = page.locator(".gf-product-tile:visible").first();
   await firstProduct.click();
   await page.locator(".gf-detail-heading").waitFor({ state: "visible", timeout: 5000 });
   if (!(await page.locator(".mini-plan-list .mini-plan").count())) throw new Error("Product detail did not render its pricing plans.");
