@@ -535,3 +535,6 @@ body:has(.mini-shell.verifier-app .mini-checkout-panel)::before {
   align-items:center!important;
   justify-content:flex-start!important;
 }
+
+/* Give the product-detail back button clear space below the sticky header. */
+.mini-shell.verifier-live-shell .mini-panel .mini-back{margin-top:24px!important;}
